@@ -1,0 +1,4 @@
+# On-demand query for the latest world state and virtual sensors in frame "arena"
+---
+WorldState world
+VirtualSensors sensors
