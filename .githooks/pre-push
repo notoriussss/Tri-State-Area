@@ -1,0 +1,17 @@
+#!/bin/sh
+# Pre-push hook to block direct pushes updating main/develop
+
+zero_sha="0000000000000000000000000000000000000000"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ] || [ "$remote_ref" = "refs/heads/develop" ]; then
+    # Allow branch creation (remote_sha is zero) or deletion (local_sha is zero)
+    if [ "$local_sha" != "$zero_sha" ] && [ "$remote_sha" != "$zero_sha" ]; then
+      echo "ERROR: Direct push updating '$remote_ref' is forbidden."
+      echo "All changes must enter through a Pull Request approved on GitHub."
+      exit 1
+    fi
+  fi
+done
+
+exit 0

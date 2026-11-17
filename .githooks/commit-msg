@@ -1,0 +1,24 @@
+#!/bin/sh
+# Enforces Conventional Commits format matching AGENTS.md section 5.1
+
+commit_file="$1"
+first_line=$(head -n 1 "$commit_file")
+
+# Allow merge and revert commits
+case "$first_line" in
+  "Merge "*|"Revert "*)
+    exit 0
+    ;;
+esac
+
+regex='^(feat|fix|refactor|perf|test|docs|style|build|ci|chore|revert)\(([a-z0-9_-]+)\): (TSA-[0-9]+ )?[a-z].{0,70}[^.]$'
+
+if ! echo "$first_line" | grep -Eq "$regex"; then
+  echo "ERROR: Invalid commit message format."
+  echo "First line was: $first_line"
+  echo ""
+  echo "Expected format: <type>(<scope>): [TSA-<n> ]<summary in lowercase, no final period>"
+  echo "Allowed types: feat, fix, refactor, perf, test, docs, style, build, ci, chore, revert"
+  echo "Example: feat(overhead_core): TSA-4 add triangle pose detector with tip heading"
+  exit 1
+fi

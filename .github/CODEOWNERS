@@ -1,0 +1,7 @@
+# CODEOWNERS for Tri-State-Area monorepo
+# NOTE: Replace placeholder team handles (@*-team) with actual GitHub team or user handles.
+
+overhead/      @overhead-team
+fleet/         @fleet-team
+manipulator/   @manipulator-team
+interfaces/    @overhead-team @fleet-team @manipulator-team

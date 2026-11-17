@@ -1,0 +1,33 @@
+#!/bin/sh
+# Pre-commit hook to block direct commits to main/develop and run Ruff on staged Python files
+
+branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+if [ "$branch" = "main" ] || [ "$branch" = "develop" ]; then
+  echo "ERROR: Direct commits to '$branch' are not allowed."
+  echo "Please create a branch: <type>/<scope>-<short-description>"
+  echo "Example: git checkout -b feat/overhead-triangle-detector"
+  exit 1
+fi
+
+staged_py=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$')
+
+if [ -n "$staged_py" ]; then
+  if command -v ruff >/dev/null 2>&1; then
+    echo "Running ruff format --check on staged Python files..."
+    if ! echo "$staged_py" | xargs ruff format --check; then
+      echo "ERROR: Ruff format check failed. Run 'ruff format .' to fix formatting."
+      exit 1
+    fi
+
+    echo "Running ruff check on staged Python files..."
+    if ! echo "$staged_py" | xargs ruff check; then
+      echo "ERROR: Ruff lint check failed. Fix errors or run 'ruff check --fix .'."
+      exit 1
+    fi
+  else
+    echo "WARNING: 'ruff' is not installed or not on PATH. Skipping Python formatting/linting checks."
+  fi
+fi
+
+exit 0

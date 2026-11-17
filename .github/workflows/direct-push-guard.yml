@@ -1,0 +1,27 @@
+name: Direct Push Guard
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  guard:
+    name: Verify Merged Pull Request
+    runs-on: ubuntu-latest
+    if: github.event.before != '0000000000000000000000000000000000000000'
+    steps:
+      - name: Check whether commit originated from a merged PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          merged_prs=$(gh api repos/$REPO/commits/$SHA/pulls --jq '[.[] | select(.merged_at != null)] | length')
+          if [ "$merged_prs" -eq 0 ]; then
+            echo "ERROR: Direct push to protected branch detected."
+            echo "Commit $SHA does not belong to a merged pull request."
+            exit 1
+          fi
+          echo "Commit $SHA belongs to $merged_prs merged pull request(s). Check passed."
