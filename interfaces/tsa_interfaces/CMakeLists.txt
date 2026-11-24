@@ -12,12 +12,15 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RobotObservation.msg"
   "msg/WorldState.msg"
   "msg/RobotSensors.msg"
+  "msg/Obstacle.msg"
+  "msg/RobotObstacles.msg"
   "msg/VirtualSensors.msg"
   "msg/RobotStatus.msg"
   "msg/Pose2D.msg"
   "msg/RobotPlan.msg"
   "msg/FleetPlan.msg"
   "srv/GetWorld.srv"
+  "srv/CorridorFree.srv"
   DEPENDENCIES builtin_interfaces std_msgs geometry_msgs
 )
 
