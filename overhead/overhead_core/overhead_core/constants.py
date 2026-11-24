@@ -206,3 +206,6 @@ ARENA_ASPECT_TOLERANCE_RATIO: float = 0.15
 # Camera state machine timing defaults
 NO_FRAME_TIMEOUT_S: float = 0.5
 CAMERA_RETRY_S: float = 1.0
+
+# Lost robot hold timing default
+ROBOT_HOLD_S: float = 0.5
