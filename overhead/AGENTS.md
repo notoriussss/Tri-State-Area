@@ -185,7 +185,7 @@ consecutive poses, smoothed (exponential, factor as a constant), robust to a ski
 
 **O9. Obstacles with safety circles (core).** `overhead_core/obstacles.py`: build the list from
 tracked cubes, robots and the arena. Safety radii as constants: `RED_CUBE_SAFETY_M = 0.128` (robot half width + cube half diagonal + pose error margin),
-`ROBOT_SAFETY_M = 0.17`, `CUBE_SAFETY_M = 0.05`, `CARRY_EXTENSION_M = 0.025` (added in front
+`ROBOT_SAFETY_M = 0.16` (scoop reach + half the pose error margin), `CUBE_SAFETY_M = 0.05`, `CARRY_EXTENSION_M = 0.025` (added in front
 of a robot carrying a cube). Arena walls from the arena size. The zone becomes an obstacle for
 every robot except the one named in `/zone/occupant`.
 **Status:** Done — implemented and tested in `overhead_core/obstacles.py` and `overhead_core/world_safety.py`.

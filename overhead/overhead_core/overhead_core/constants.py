@@ -262,7 +262,10 @@ ROBOT_HALF_WIDTH_M: float = 0.0805
 CUBE_HALF_DIAGONAL_M: float = 0.0177
 POSE_ERROR_MARGIN_M: float = 0.03
 RED_CUBE_SAFETY_M: float = ROBOT_HALF_WIDTH_M + CUBE_HALF_DIAGONAL_M + POSE_ERROR_MARGIN_M
-ROBOT_SAFETY_M: float = 0.17
+# Robot keep-out radius against other robots: the scoop reaches 0.145 m ahead of the centre
+# (measured from the photos) plus half of the pose error margin, since both robots carry it.
+ROBOT_SCOOP_REACH_M: float = 0.145
+ROBOT_SAFETY_M: float = ROBOT_SCOOP_REACH_M + POSE_ERROR_MARGIN_M / 2
 CUBE_SAFETY_M: float = 0.05
 CARRY_EXTENSION_M: float = 0.025
 
