@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from overhead_core.constants import (
     CollisionLevel,
     ObstacleKind,
+    RelayDestination,
 )
 
 
@@ -101,3 +102,21 @@ class CollisionAssessment:
     nearest_kind: ObstacleKind | None
     nearest_dist_m: float
     nearest_bearing_rad: float
+
+
+@dataclass(frozen=True)
+class CorridorResult:
+    """Result of querying whether a straight corridor is free of red obstacles."""
+
+    is_free: bool
+    blocking_ids: tuple[int, ...]
+
+
+@dataclass(frozen=True)
+class RelayDecision:
+    """Routing decision produced by the manipulator relay rules."""
+
+    is_accepted: bool
+    is_fresh: bool
+    destinations: tuple[RelayDestination, ...]
+    target_robots: tuple[str, ...]

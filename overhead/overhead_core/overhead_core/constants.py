@@ -256,3 +256,27 @@ class CollisionLevel(StrEnum):
     CLEAR = "CLEAR"
     SLOW = "SLOW"
     STOP = "STOP"
+
+
+# Manipulator relay timeouts and routing categories
+PERRY_HEARTBEAT_TIMEOUT_S: float = 2.0
+PERRY_CALL_TIMEOUT_S: float = 5.0
+
+
+class RelayMessageKind(StrEnum):
+    """Message kinds routed by the manipulator relay."""
+
+    ZONE_OCCUPANT = "ZONE_OCCUPANT"
+    PERRY_STATE = "PERRY_STATE"
+    ZONE_REQUEST_RESPONSE = "ZONE_REQUEST_RESPONSE"
+    ZONE_RELEASE_RESPONSE = "ZONE_RELEASE_RESPONSE"
+    ROBOT_ZONE_REQUEST = "ROBOT_ZONE_REQUEST"
+    ROBOT_ZONE_RELEASE = "ROBOT_ZONE_RELEASE"
+
+
+class RelayDestination(StrEnum):
+    """Target destinations for messages routed by the manipulator relay."""
+
+    US = "US"
+    ROBOT = "ROBOT"
+    PERRY = "PERRY"
