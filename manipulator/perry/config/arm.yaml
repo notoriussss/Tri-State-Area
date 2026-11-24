@@ -40,7 +40,10 @@ joints:
 # se cierra (1700 = cierre firme). Con 750 abría 2,4 cm: sobre un cubo de 1,9 quedaban 2,5 mm por lado
 # y un dedo caía sobre la cara de arriba. closed: 2000 (Cristian, 05-11); si zumba al llevar el cubo, 1700.
 # push_closed: para EMPUJAR, puntas juntas (~2 mm entre ellas, medido 28-10 sin zumbido)
-gripper: {channel: 10, open: 1000, closed: 2000, push_closed: 2350, min: 500, max: 2500}   # open 1000 = 3,2 cm (05-11)
+gripper: {channel: 10, open: 1300, closed: 2450, push_closed: 2350, min: 500, max: 2500}   # open 1000 = 3,2 cm (05-11)
+# 24-11: open 1000 midió 2,5 cm y 1100-1350 ~3-3,5 cm: se subió a 1300.
+# 24-11: closed 2000 dejaba 2,7 cm entre las puntas (cubo de 1,9 cm: no lo apretaba); 2200 = 2,1 cm; 2350 = 1,6 cm.
+# Con closed 2450 el amarillo se agarra (más fuerza de agarre); el tiempo de espera al cerrar no era la causa.
 
 # Cámara cenital. Si la mueven: py calibrate_camera.py (vuelve a marcar las 4 esquinas).
 camera:
@@ -55,7 +58,7 @@ camera:
   # la cámara: solo cambian corners_px (las esquinas del azul en la imagen nueva).
   # 05-11: la base se corrió 1,8 cm hacia la zona (los cubos que dejan los carros en el borde lejano
   # quedaban fuera de alcance): a cada X se le restó 1,8. Antes: [[21.47, 7.90], [21.19, -8.40], ...].
-  corners_px: [[245.0, 137.0], [406.0, 128.0], [409.0, 223.0], [251.0, 232.0]]
+  corners_px: [[247.6, 126.7], [411.6, 119.4], [413.4, 220.0], [252.8, 226.9]]
   corners_cm: [[19.67, 7.90], [19.39, -8.40], [9.68, -8.02], [9.97, 8.13]]
   zone: {x_min: 8.2, x_max: 20.5, y_abs: 9.5}    # solo se buscan cubos aquí (el azul más un margen)
   height_cm: 70.0          # altura del lente sobre la mesa: corrige la paralaje (la cámara ve la cara
