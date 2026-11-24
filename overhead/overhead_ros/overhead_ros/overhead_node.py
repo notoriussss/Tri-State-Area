@@ -6,6 +6,7 @@ from typing import Any
 import cv2
 import numpy as np
 import rclpy
+from multirobot_interfaces.msg import RobotState
 from overhead_core import virtual_sensors
 from overhead_core.calibration import validate_arena_quad
 from overhead_core.constants import (
@@ -51,8 +52,10 @@ from overhead_core.constants import (
     ROBOT_HOLD_S,
     WARN_THROTTLE_PERIOD_S,
     CubeColor,
+    ObstacleKind,
     RobotName,
 )
+from overhead_core.corridor import corridor_free
 from overhead_core.frame_source import (
     FrameSource,
     make_frame_source,
@@ -70,25 +73,39 @@ from overhead_core.state_machine import (
     next_state,
 )
 from overhead_core.tracker import CubeTracker
-from overhead_core.types import RobotPose
+from overhead_core.types import (
+    Obstacle,
+    RobotPose,
+    SafetyResult,
+)
+from overhead_core.velocity import VelocityEstimator
 from overhead_core.world_frame import (
     WorldFrameConfig,
     detect_robot_poses,
     process_cubes,
 )
+from overhead_core.world_safety import compute_safety
 from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage
-from std_msgs.msg import Header
+from std_msgs.msg import (
+    Header,
+    String,
+)
 from std_srvs.srv import Trigger
 from tsa_interfaces.msg import (
     VirtualSensors,
     WorldState,
 )
-from tsa_interfaces.srv import GetWorld
+from tsa_interfaces.srv import (
+    CorridorFree,
+    GetWorld,
+)
 
 from overhead_ros.conversions import (
     to_cube_observation_msg,
+    to_obstacle_msg,
     to_robot_observation_msg,
+    to_robot_obstacles_msg,
     to_robot_sensors_msg,
     to_virtual_sensors_msg,
     to_world_state_msg,
@@ -119,13 +136,19 @@ from overhead_ros.ros_names import (
     PARAM_VIDEO_SOURCE,
     PARAM_WIDTH,
     PARAM_ZONE_RECT,
+    PERRY_STATE_QOS,
+    PERRY_STATE_TOPIC,
     SENSOR_QOS,
     STATE_QOS,
+    WORLD_CORRIDOR_FREE_SERVICE,
     WORLD_GET_SERVICE,
     WORLD_IMAGE_TOPIC,
     WORLD_SENSORS_TOPIC,
     WORLD_STATE_TOPIC,
+    ZONE_OCCUPANT_QOS,
+    ZONE_OCCUPANT_TOPIC,
 )
+from overhead_ros.safety_inputs import SafetyInputs
 
 
 def _hsv_param_default(
@@ -164,6 +187,13 @@ class OverheadNode(Node):
             self._robots,
             hold_s=ROBOT_HOLD_S,
         )
+        self._velocity_estimator = VelocityEstimator()
+        self._safety_inputs = SafetyInputs(
+            arena_width_m=self._arena_width_m,
+            arena_height_m=self._arena_height_m,
+            zone_rect=self._zone_rect,
+        )
+        self._latest_red_obstacles: list[Obstacle] = []
 
         self._last_frame_s: float | None = None
         self._last_camera_retry_s: float = -CAMERA_RETRY_S
@@ -208,6 +238,24 @@ class OverheadNode(Node):
             GetWorld,
             WORLD_GET_SERVICE,
             self._on_get_world,
+        )
+        self._srv_corridor_free = self.create_service(
+            CorridorFree,
+            WORLD_CORRIDOR_FREE_SERVICE,
+            self._on_corridor_free,
+        )
+
+        self._sub_zone_occupant = self.create_subscription(
+            String,
+            ZONE_OCCUPANT_TOPIC,
+            self._safety_inputs.on_zone_occupant,
+            ZONE_OCCUPANT_QOS,
+        )
+        self._sub_perry_state = self.create_subscription(
+            RobotState,
+            PERRY_STATE_TOPIC,
+            self._safety_inputs.on_perry_state,
+            PERRY_STATE_QOS,
         )
 
         main_timer_period_s = 1.0 / max(
@@ -512,6 +560,22 @@ class OverheadNode(Node):
         response.sensors = self._latest_sensors
         return response
 
+    def _on_corridor_free(
+        self,
+        request: CorridorFree.Request,
+        response: CorridorFree.Response,
+    ) -> CorridorFree.Response:
+        """Checks whether a straight corridor is free of the latest red-cube circles."""
+        result = corridor_free(
+            (request.ax, request.ay),
+            (request.gx, request.gy),
+            width_m=request.width,
+            obstacles=self._latest_red_obstacles,
+        )
+        response.free = result.is_free
+        response.blocking_ids = list(result.blocking_ids)
+        return response
+
     def _handle_starting_state(
         self,
         now_s: float,
@@ -583,6 +647,7 @@ class OverheadNode(Node):
         *,
         robot_poses: list[RobotPose],
         vs_result: dict[str, Any],
+        safety_result: SafetyResult,
     ) -> None:
         """Constructs and publishes WorldState and VirtualSensors messages."""
         header = Header()
@@ -626,11 +691,21 @@ class OverheadNode(Node):
             )
             for rname, rinfo in vs_result["per_robot"].items()
         ]
+        obstacle_msgs = [to_obstacle_msg(circle) for circle in safety_result.circles]
+        per_robot_obstacle_msgs = [
+            to_robot_obstacles_msg(
+                robot_name,
+                robot_safety,
+            )
+            for robot_name, robot_safety in safety_result.per_robot.items()
+        ]
         virtual_sensors_msg = to_virtual_sensors_msg(
             header,
             vs_result["robot_distance"],
             vs_result["robots_in_zone"],
             per_robot=per_robot_msgs,
+            obstacles=obstacle_msgs,
+            per_robot_obstacles=per_robot_obstacle_msgs,
         )
         self._pub_sensors.publish(virtual_sensors_msg)
         self._latest_sensors = virtual_sensors_msg
@@ -676,10 +751,31 @@ class OverheadNode(Node):
         )
         self._prev_in_zone = vs_result["in_zone"]
 
+        seen_positions = {name: (pose.x, pose.y) for name, pose in seen_robots.items()}
+        velocities = self._velocity_estimator.update(
+            seen_positions,
+            now_s,
+        )
+        # TODO(overhead): populate carrying_robots once the robots' own state topics are subscribed.
+        safety_config = self._safety_inputs.build_config(
+            now_s,
+            carrying_robots=frozenset(),
+        )
+        safety_result = compute_safety(
+            hold_result.poses,
+            tracked_cubes,
+            velocities=velocities,
+            config=safety_config,
+        )
+        self._latest_red_obstacles = [
+            circle for circle in safety_result.circles if circle.kind == ObstacleKind.RED_CUBE
+        ]
+
         self._publish_state_and_sensors(
             tracked_cubes,
             robot_poses=hold_result.poses,
             vs_result=vs_result,
+            safety_result=safety_result,
         )
 
     def _on_main_timer(self) -> None:

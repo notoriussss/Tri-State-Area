@@ -1,9 +1,17 @@
 """Conversions between overhead_core domain types and tsa_interfaces ROS messages."""
 
+from overhead_core.constants import (
+    NO_OBSTACLE_KIND,
+    ObstacleKind,
+)
+from overhead_core.types import Obstacle as CoreObstacle
+from overhead_core.types import RobotSafety
 from std_msgs.msg import Header
 from tsa_interfaces.msg import (
     CubeObservation,
+    Obstacle,
     RobotObservation,
+    RobotObstacles,
     RobotSensors,
     VirtualSensors,
     WorldState,
@@ -122,6 +130,8 @@ def to_virtual_sensors_msg(
     robots_in_zone: list[str],
     *,
     per_robot: list[RobotSensors],
+    obstacles: list[Obstacle] | None = None,
+    per_robot_obstacles: list[RobotObstacles] | None = None,
 ) -> VirtualSensors:
     """Assembles all virtual sensor readings into a VirtualSensors message.
 
@@ -130,6 +140,8 @@ def to_virtual_sensors_msg(
         robot_distance: Euclidean distance between robots in meters (-1.0 if < 2).
         robots_in_zone: List of robot names currently within the delivery zone.
         per_robot: List of RobotSensors messages for each observed robot.
+        obstacles: Arena-wide safety circle obstacles (cubes and robots).
+        per_robot_obstacles: Radar and collision assessments for each robot.
 
     Returns:
         Populated VirtualSensors message.
@@ -139,4 +151,58 @@ def to_virtual_sensors_msg(
     msg.robot_distance = float(robot_distance)
     msg.robots_in_zone = robots_in_zone
     msg.per_robot = per_robot
+    msg.obstacles = obstacles if obstacles is not None else []
+    msg.per_robot_obstacles = per_robot_obstacles if per_robot_obstacles is not None else []
+    return msg
+
+
+def to_obstacle_msg(obstacle: CoreObstacle) -> Obstacle:
+    """Converts a pure core Obstacle into a tsa_interfaces Obstacle message.
+
+    Args:
+        obstacle: Circular safety obstacle in the arena frame.
+
+    Returns:
+        Populated Obstacle ROS message.
+    """
+    msg = Obstacle()
+    kind_str = (
+        obstacle.kind.value if isinstance(obstacle.kind, ObstacleKind) else str(obstacle.kind)
+    )
+    msg.kind = str(kind_str)
+    msg.id = int(obstacle.obstacle_id)
+    msg.x = float(obstacle.x_m)
+    msg.y = float(obstacle.y_m)
+    msg.radius = float(obstacle.radius_m)
+    msg.vx = float(obstacle.vx_mps)
+    msg.vy = float(obstacle.vy_mps)
+    return msg
+
+
+def to_robot_obstacles_msg(
+    name: str,
+    safety: RobotSafety,
+) -> RobotObstacles:
+    """Converts per-robot safety outputs into a RobotObstacles message.
+
+    Args:
+        name: Robot name ("phineas" or "ferb").
+        safety: Radar sector distances and collision assessment for the robot.
+
+    Returns:
+        Populated RobotObstacles ROS message.
+    """
+    assessment = safety.assessment
+    msg = RobotObstacles()
+    msg.name = str(name)
+    msg.sectors = [float(dist_m) for dist_m in safety.sectors]
+    msg.level = str(assessment.level.value)
+    msg.time_to_collision = float(assessment.time_to_collision_s)
+    msg.nearest_kind = (
+        str(assessment.nearest_kind.value)
+        if assessment.nearest_kind is not None
+        else NO_OBSTACLE_KIND
+    )
+    msg.nearest_dist = float(assessment.nearest_dist_m)
+    msg.nearest_bearing = float(assessment.nearest_bearing_rad)
     return msg

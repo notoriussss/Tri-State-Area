@@ -15,9 +15,12 @@ WORLD_STATE_TOPIC: str = "/world/state"
 WORLD_SENSORS_TOPIC: str = "/world/sensors"
 WORLD_IMAGE_TOPIC: str = "/world/image"
 FLEET_PLAN_TOPIC: str = "/fleet/plan"
+ZONE_OCCUPANT_TOPIC: str = "/zone/occupant"
+PERRY_STATE_TOPIC: str = "/perry/state"
 
 # Service names
 WORLD_GET_SERVICE: str = "/world/get"
+WORLD_CORRIDOR_FREE_SERVICE: str = "/world/corridor_free"
 OVERHEAD_RECALIBRATE_SERVICE: str = "/overhead/recalibrate"
 
 # QoS profiles matching contract specifications
@@ -45,6 +48,20 @@ IMAGE_QOS: QoSProfile = QoSProfile(
 PLAN_QOS: QoSProfile = QoSProfile(
     history=QoSHistoryPolicy.KEEP_LAST,
     depth=1,
+    reliability=QoSReliabilityPolicy.RELIABLE,
+    durability=QoSDurabilityPolicy.VOLATILE,
+)
+
+ZONE_OCCUPANT_QOS: QoSProfile = QoSProfile(
+    history=QoSHistoryPolicy.KEEP_LAST,
+    depth=1,
+    reliability=QoSReliabilityPolicy.RELIABLE,
+    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
+)
+
+PERRY_STATE_QOS: QoSProfile = QoSProfile(
+    history=QoSHistoryPolicy.KEEP_LAST,
+    depth=5,
     reliability=QoSReliabilityPolicy.RELIABLE,
     durability=QoSDurabilityPolicy.VOLATILE,
 )

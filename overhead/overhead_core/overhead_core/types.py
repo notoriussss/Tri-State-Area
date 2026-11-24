@@ -120,3 +120,19 @@ class RelayDecision:
     is_fresh: bool
     destinations: tuple[RelayDestination, ...]
     target_robots: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class RobotSafety:
+    """Radar distances and collision assessment for a single robot."""
+
+    sectors: list[float]
+    assessment: CollisionAssessment
+
+
+@dataclass(frozen=True)
+class SafetyResult:
+    """Arena-wide obstacle circles and per-robot safety outputs."""
+
+    circles: list[Obstacle]
+    per_robot: dict[str, RobotSafety]

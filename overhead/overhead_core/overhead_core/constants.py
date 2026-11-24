@@ -313,3 +313,7 @@ MSG_RECALIBRATE_FAILED: str = "Overhead camera recalibration failed."
 MSG_RECALIBRATE_UNAVAILABLE: str = "Frame source unavailable for recalibration."
 
 HSV_CHANNEL_COUNT: int = 3
+
+# Empty string sentinels for optional safety and zone fields
+NO_OBSTACLE_KIND: str = ""
+NO_ZONE_OCCUPANT: str = ""
