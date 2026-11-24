@@ -280,3 +280,36 @@ class RelayDestination(StrEnum):
     US = "US"
     ROBOT = "ROBOT"
     PERRY = "PERRY"
+
+
+# Overhead node defaults and calibration timing
+DEFAULT_VIDEO_SOURCE: str = ""
+CALIBRATION_RETRY_S: float = 1.0
+DEFAULT_RATE_HZ: float = 20.0
+DEFAULT_IMAGE_RATE_HZ: float = 5.0
+MIN_MAIN_TIMER_RATE_HZ: float = 1.0
+MIN_IMAGE_TIMER_RATE_HZ: float = 0.5
+DEFAULT_ROBOT_NAMES: tuple[str, ...] = (
+    RobotName.PHINEAS.value,
+    RobotName.FERB.value,
+)
+DEFAULT_DETECTION_CONFIDENCE: float = 1.0
+DEFAULT_IMAGE_JPEG_QUALITY: int = 80
+IMAGE_COMPRESSION_FORMAT: str = "jpeg"
+WARN_THROTTLE_PERIOD_S: float = 5.0
+
+# Overhead node log and service response messages
+LOG_NODE_INITIALIZED: str = "Overhead node initialized."
+LOG_STATE_TRANSITION_FMT: str = "Overhead state transition: {} -> {} (event={})."
+LOG_CAMERA_OPENED: str = "Frame source opened."
+LOG_CAMERA_OPEN_RETRY: str = "Frame source unavailable; retrying reopen."
+LOG_CALIBRATION_SUCCESS: str = "Arena homography calibration succeeded."
+LOG_CALIBRATION_FAILED_FMT: str = "Arena calibration failed: {}"
+LOG_CALIBRATION_INVALID_QUAD: str = "Detected arena quad failed geometry validation."
+LOG_NO_FRAME_DURING_CALIBRATION: str = "No frame available during calibration."
+LOG_IMAGE_ENCODE_FAILED: str = "Failed to JPEG-encode rectified arena image."
+MSG_RECALIBRATE_SUCCESS: str = "Overhead camera recalibrated successfully."
+MSG_RECALIBRATE_FAILED: str = "Overhead camera recalibration failed."
+MSG_RECALIBRATE_UNAVAILABLE: str = "Frame source unavailable for recalibration."
+
+HSV_CHANNEL_COUNT: int = 3
