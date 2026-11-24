@@ -183,7 +183,7 @@ VIEWER_TEXT_CALIBRATION_HINT: str = "Arena corners not detected"
 
 # Standalone web viewer server and CLI defaults
 DEFAULT_WEB_HOST: str = "0.0.0.0"
-DEFAULT_WEB_PORT: int = 8080
+DEFAULT_WEB_PORT: int = 8082
 DEFAULT_CAMERA_INDEX: int = 0
 DEFAULT_CAPTURE_WIDTH_PX: int = 1280
 DEFAULT_CAPTURE_HEIGHT_PX: int = 720
