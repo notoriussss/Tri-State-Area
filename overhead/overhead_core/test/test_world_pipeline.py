@@ -40,29 +40,29 @@ def _make_arena_scene(
         phineas_pts = np.array(
             [
                 [340, 300],
-                [270, 270],
-                [270, 330],
+                [255, 265],
+                [255, 335],
             ],
             dtype=np.int32,
         )
         cv2.fillPoly(
             frame,
             [phineas_pts],
-            (0, 255, 0),
+            (0, 0, 255),
         )
     if include_ferb:
         ferb_pts = np.array(
             [
                 [640, 300],
-                [570, 270],
-                [570, 330],
+                [555, 265],
+                [555, 335],
             ],
             dtype=np.int32,
         )
         cv2.fillPoly(
             frame,
             [ferb_pts],
-            (255, 0, 255),
+            (0, 75, 255),
         )
     if include_red_cube:
         cv2.rectangle(

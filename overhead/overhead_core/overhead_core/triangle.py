@@ -5,14 +5,20 @@ import math
 import cv2
 import numpy as np
 
-from overhead_core.constants import TRIANGLE_VERTEX_COUNT
-from overhead_core.geometry import image_to_world
+from overhead_core.constants import (
+    DEFAULT_ROBOT_MIN_AREA_PX,
+    TRIANGLE_VERTEX_COUNT,
+)
+from overhead_core.geometry import (
+    image_to_world,
+    wrap_angle_rad,
+)
 
 
 def triangle_pose(
     mask: np.ndarray,
     *,
-    min_area_px: int = 50,
+    min_area_px: int = DEFAULT_ROBOT_MIN_AREA_PX,
 ) -> tuple[float, float, float] | None:
     """Estimates the position and image heading of a triangle marker.
 
@@ -159,9 +165,4 @@ def heading_to_world(
         dy,
         dx,
     )
-
-    normalized = (world_theta + math.pi) % (2.0 * math.pi) - math.pi
-    if normalized <= -math.pi:
-        normalized += 2.0 * math.pi
-
-    return float(normalized)
+    return wrap_angle_rad(world_theta)

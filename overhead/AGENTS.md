@@ -48,7 +48,7 @@ command a robot, decide who yields or grant the zone, it is out of scope.
 | Camera state machine (`STARTING`, `CALIBRATING`, `RUNNING`, `DEGRADED`, `NO_IMAGE`) | `overhead_core/state_machine.py` | Done, tested |
 | Parallax correction | `overhead_core/parallax.py` | Done, tested |
 | Cube detection by HSV | `overhead_core/cubes.py` | Done, tested on synthetic images and real arena photo |
-| Triangle pose (centroid + tip heading) | `overhead_core/triangle.py` | Done, tested on synthetic images (see Open defects for provisional red marker) |
+| Triangle pose (centroid + tip heading) | `overhead_core/triangle.py` | Done, tested on synthetic images and two-robot photo (heading and centre offsets pending calibration) |
 | ArUco robot marker detector | `overhead_core/aruco_robots.py` | Done, tested on synthetic images (not yet glued on a robot) |
 | Cube tracker with stable ids and occlusion grace | `overhead_core/tracker.py` | Done, tested |
 | Lost robot hold filter with confidence decay | `overhead_core/robot_hold.py` | Done, tested |
@@ -88,8 +88,8 @@ real robot, real Perry, or the Raspberry Pi.
 
 ### Open defects
 
-1. **Provisional red triangle heading and color overlap:** the provisional red triangle marker gives
-   a wrong heading (about `-112` degrees instead of `0`) and shares its color with red cubes.
+1. **Provisional triangle markers pending calibration:** both robots now detected by red and
+   orange provisional triangles; heading and centre offsets pending calibration.
 2. **ArUco marker not yet mounted:** the ArUco marker has not yet been glued onto a physical robot.
 3. **Raspberry Pi performance unmeasured:** tracker stability and publish rates have not yet been
    measured on the Raspberry Pi.

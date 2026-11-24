@@ -1,5 +1,6 @@
 """Pure world-frame vision pipeline extracting tracked cubes and robot poses."""
 
+import math
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -19,17 +20,23 @@ from overhead_core.constants import (
     DEFAULT_CUBE_HSV_RANGES,
     DEFAULT_DETECTION_CONFIDENCE,
     DEFAULT_MIN_AREA_PX,
+    DEFAULT_ROBOT_HEADING_OFFSETS_RAD,
     DEFAULT_ROBOT_HSV_RANGES,
     DEFAULT_ROBOT_MIN_AREA_PX,
     DEFAULT_ROBOT_NAMES,
+    DEFAULT_ROBOT_POSITION_OFFSETS_M,
     ERR_UNKNOWN_ROBOT_DETECTOR_FMT,
     HEADING_STEP_PX,
     MAX_CUBE_AREA_PX,
+    ROBOT_HULL_DILATION_PX,
     ROBOT_MARKER_HEIGHT_M,
     RobotDetector,
 )
 from overhead_core.cubes import detect_cubes
-from overhead_core.geometry import image_to_world
+from overhead_core.geometry import (
+    image_to_world,
+    wrap_angle_rad,
+)
 from overhead_core.parallax import correct_parallax
 from overhead_core.tracker import CubeTracker
 from overhead_core.triangle import heading_to_world, triangle_pose
@@ -58,6 +65,12 @@ class WorldFrameConfig:
     max_area_px: int = MAX_CUBE_AREA_PX
     robot_detector: RobotDetector = RobotDetector.TRIANGLE
     aruco: ArucoRobotConfig | None = None
+    robot_heading_offsets_rad: dict[str, float] = field(
+        default_factory=lambda: dict(DEFAULT_ROBOT_HEADING_OFFSETS_RAD),
+    )
+    robot_position_offsets_m: dict[str, tuple[float, float]] = field(
+        default_factory=lambda: dict(DEFAULT_ROBOT_POSITION_OFFSETS_M),
+    )
 
 
 def _build_hsv_mask(
@@ -87,6 +100,60 @@ def _build_hsv_mask(
         )
 
     return mask
+
+
+def _detect_robot_triangle_hulls(
+    frame: np.ndarray,
+    config: WorldFrameConfig,
+) -> list[np.ndarray]:
+    """Returns convex hulls of detected robot triangles meeting robot_min_area_px."""
+    if frame is None or frame.size == 0:
+        return []
+
+    hsv_frame = cv2.cvtColor(
+        frame,
+        cv2.COLOR_BGR2HSV,
+    )
+    hulls: list[np.ndarray] = []
+    for robot_name in config.robot_names:
+        ranges = config.robot_hsv_ranges.get(robot_name)
+        if not ranges:
+            continue
+
+        robot_mask = _build_hsv_mask(
+            hsv_frame,
+            ranges,
+        )
+        contours, _ = cv2.findContours(
+            robot_mask,
+            cv2.RETR_EXTERNAL,
+            cv2.CHAIN_APPROX_SIMPLE,
+        )
+        if not contours:
+            continue
+
+        largest = max(
+            contours,
+            key=cv2.contourArea,
+        )
+        if cv2.contourArea(largest) < config.robot_min_area_px:
+            continue
+
+        hulls.append(cv2.convexHull(largest))
+
+    return hulls
+
+
+def _is_inside_any_hull(
+    u_px: float,
+    v_px: float,
+    hulls: list[np.ndarray],
+    *,
+    dilation_px: int,
+) -> bool:
+    """Returns True when (u_px, v_px) lies within dilation_px of any convex hull."""
+    margin = -float(dilation_px)
+    return any(cv2.pointPolygonTest(hull, (u_px, v_px), True) >= margin for hull in hulls)
 
 
 def process_cubes(
@@ -121,9 +188,26 @@ def process_cubes(
         min_area_px=cfg.min_area_px,
         max_area_px=cfg.max_area_px,
     )
+    robot_hulls = (
+        _detect_robot_triangle_hulls(
+            frame,
+            cfg,
+        )
+        if cfg.robot_detector == RobotDetector.TRIANGLE
+        else []
+    )
 
     floor_dets: list[tuple[str, float, float, float]] = []
     for color, u_px, v_px, _area in raw_dets:
+        # Discard spurious color blobs on the robot roof marker (cubes cannot sit under it).
+        if _is_inside_any_hull(
+            u_px,
+            v_px,
+            robot_hulls,
+            dilation_px=ROBOT_HULL_DILATION_PX,
+        ):
+            continue
+
         seen_world = image_to_world(
             homography,
             [[u_px, v_px]],
@@ -147,6 +231,24 @@ def process_cubes(
         floor_dets,
         now_s,
     )
+
+
+def _apply_robot_pose_offset(
+    x_m: float,
+    y_m: float,
+    theta_rad: float,
+    *,
+    heading_offset_rad: float,
+    position_offset_m: tuple[float, float],
+) -> tuple[float, float, float]:
+    """Applies per-robot heading and (forward_m, left_m) calibration offsets."""
+    final_theta = wrap_angle_rad(theta_rad + heading_offset_rad)
+    forward_m, left_m = position_offset_m
+    cos_theta = math.cos(final_theta)
+    sin_theta = math.sin(final_theta)
+    world_x = x_m + (forward_m * cos_theta - left_m * sin_theta)
+    world_y = y_m + (forward_m * sin_theta + left_m * cos_theta)
+    return world_x, world_y, final_theta
 
 
 def _detect_triangle_robot_poses(
@@ -200,11 +302,24 @@ def _detect_triangle_robot_poses(
             theta_img=theta_img,
             step_px=HEADING_STEP_PX,
         )
+        world_x, world_y, final_theta = _apply_robot_pose_offset(
+            float(corrected_floor[0, 0]),
+            float(corrected_floor[0, 1]),
+            theta_world,
+            heading_offset_rad=config.robot_heading_offsets_rad.get(
+                robot_name,
+                0.0,
+            ),
+            position_offset_m=config.robot_position_offsets_m.get(
+                robot_name,
+                (0.0, 0.0),
+            ),
+        )
         poses[robot_name] = RobotPose(
             name=robot_name,
-            x=float(corrected_floor[0, 0]),
-            y=float(corrected_floor[0, 1]),
-            theta=theta_world,
+            x=world_x,
+            y=world_y,
+            theta=final_theta,
             confidence=DEFAULT_DETECTION_CONFIDENCE,
         )
 

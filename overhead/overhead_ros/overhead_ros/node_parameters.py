@@ -20,8 +20,10 @@ from overhead_core.constants import (
     DEFAULT_IMAGE_RATE_HZ,
     DEFAULT_MIN_AREA_PX,
     DEFAULT_RATE_HZ,
+    DEFAULT_ROBOT_HEADING_OFFSETS_RAD,
     DEFAULT_ROBOT_HSV_RANGES,
     DEFAULT_ROBOT_NAMES,
+    DEFAULT_ROBOT_POSITION_OFFSETS_M,
     DEFAULT_VIDEO_SOURCE,
     DEFAULT_ZONE_RECT,
     HSV_CHANNEL_COUNT,
@@ -49,7 +51,8 @@ from overhead_ros.ros_names import (
     PARAM_HSV_RED_1,
     PARAM_HSV_RED_2,
     PARAM_HSV_ROBOT_FERB,
-    PARAM_HSV_ROBOT_PHINEAS,
+    PARAM_HSV_ROBOT_PHINEAS_1,
+    PARAM_HSV_ROBOT_PHINEAS_2,
     PARAM_HSV_YELLOW,
     PARAM_IMAGE_RATE_HZ,
     PARAM_MAX_AREA_PX,
@@ -57,6 +60,10 @@ from overhead_ros.ros_names import (
     PARAM_NEAR_RED_M,
     PARAM_RATE_HZ,
     PARAM_ROBOT_DETECTOR,
+    PARAM_ROBOT_HEADING_OFFSET_RAD_FERB,
+    PARAM_ROBOT_HEADING_OFFSET_RAD_PHINEAS,
+    PARAM_ROBOT_POSITION_OFFSET_M_FERB,
+    PARAM_ROBOT_POSITION_OFFSET_M_PHINEAS,
     PARAM_ROBOTS,
     PARAM_VIDEO_SOURCE,
     PARAM_WIDTH,
@@ -105,6 +112,18 @@ def _read_hsv_pair(
     return (
         tuple(raw[:HSV_CHANNEL_COUNT]),
         tuple(raw[HSV_CHANNEL_COUNT:]),
+    )
+
+
+def _read_position_offset_m(
+    node: Node,
+    param_name: str,
+) -> tuple[float, float]:
+    """Reads a 2-element [forward_m, left_m] ROS parameter as a float tuple."""
+    raw = node.get_parameter(param_name).value
+    return (
+        float(raw[0]),
+        float(raw[1]),
     )
 
 
@@ -164,8 +183,29 @@ def _build_world_config(
         ],
     }
     robot_hsv_ranges: dict[str, list[tuple[Any, Any]]] = {
-        RobotName.PHINEAS.value: [_read_hsv_pair(node, PARAM_HSV_ROBOT_PHINEAS)],
+        RobotName.PHINEAS.value: [
+            _read_hsv_pair(node, PARAM_HSV_ROBOT_PHINEAS_1),
+            _read_hsv_pair(node, PARAM_HSV_ROBOT_PHINEAS_2),
+        ],
         RobotName.FERB.value: [_read_hsv_pair(node, PARAM_HSV_ROBOT_FERB)],
+    }
+    robot_heading_offsets_rad: dict[str, float] = {
+        RobotName.PHINEAS.value: float(
+            node.get_parameter(PARAM_ROBOT_HEADING_OFFSET_RAD_PHINEAS).value,
+        ),
+        RobotName.FERB.value: float(
+            node.get_parameter(PARAM_ROBOT_HEADING_OFFSET_RAD_FERB).value,
+        ),
+    }
+    robot_position_offsets_m: dict[str, tuple[float, float]] = {
+        RobotName.PHINEAS.value: _read_position_offset_m(
+            node,
+            PARAM_ROBOT_POSITION_OFFSET_M_PHINEAS,
+        ),
+        RobotName.FERB.value: _read_position_offset_m(
+            node,
+            PARAM_ROBOT_POSITION_OFFSET_M_FERB,
+        ),
     }
 
     return WorldFrameConfig(
@@ -180,6 +220,8 @@ def _build_world_config(
         max_area_px=max_area_px,
         robot_detector=robot_detector,
         aruco=aruco_config,
+        robot_heading_offsets_rad=robot_heading_offsets_rad,
+        robot_position_offsets_m=robot_position_offsets_m,
     )
 
 
@@ -227,12 +269,32 @@ def declare_overhead_parameters(node: Node) -> None:
             _hsv_param_default(DEFAULT_CUBE_HSV_RANGES[CubeColor.RED.value][1]),
         ),
         (
-            PARAM_HSV_ROBOT_PHINEAS,
+            PARAM_HSV_ROBOT_PHINEAS_1,
             _hsv_param_default(DEFAULT_ROBOT_HSV_RANGES[RobotName.PHINEAS.value][0]),
+        ),
+        (
+            PARAM_HSV_ROBOT_PHINEAS_2,
+            _hsv_param_default(DEFAULT_ROBOT_HSV_RANGES[RobotName.PHINEAS.value][1]),
         ),
         (
             PARAM_HSV_ROBOT_FERB,
             _hsv_param_default(DEFAULT_ROBOT_HSV_RANGES[RobotName.FERB.value][0]),
+        ),
+        (
+            PARAM_ROBOT_HEADING_OFFSET_RAD_PHINEAS,
+            DEFAULT_ROBOT_HEADING_OFFSETS_RAD[RobotName.PHINEAS.value],
+        ),
+        (
+            PARAM_ROBOT_HEADING_OFFSET_RAD_FERB,
+            DEFAULT_ROBOT_HEADING_OFFSETS_RAD[RobotName.FERB.value],
+        ),
+        (
+            PARAM_ROBOT_POSITION_OFFSET_M_PHINEAS,
+            list(DEFAULT_ROBOT_POSITION_OFFSETS_M[RobotName.PHINEAS.value]),
+        ),
+        (
+            PARAM_ROBOT_POSITION_OFFSET_M_FERB,
+            list(DEFAULT_ROBOT_POSITION_OFFSETS_M[RobotName.FERB.value]),
         ),
     )
     for param_name, default_value in parameter_defaults:

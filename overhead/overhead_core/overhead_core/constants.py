@@ -73,7 +73,8 @@ class ViewerView(StrEnum):
 
 # Viewer pipeline geometry and detection defaults
 DEFAULT_DARK_THRESH: int = 70
-DEFAULT_ROBOT_MIN_AREA_PX: int = 50
+DEFAULT_ROBOT_MIN_AREA_PX: int = 2000
+ROBOT_HULL_DILATION_PX: int = 25
 DEFAULT_RECTIFY_PX_PER_M: float = 500.0
 HEADING_STEP_PX: float = 20.0
 METERS_TO_CM: float = 100.0
@@ -93,21 +94,35 @@ DEFAULT_CUBE_HSV_RANGES: dict[
         ((20, 100, 55), (35, 255, 255)),
     ],
     CubeColor.RED.value: [
-        ((0, 120, 55), (10, 255, 255)),
-        ((170, 120, 55), (180, 255, 255)),
+        ((0, 90, 55), (10, 255, 255)),
+        ((170, 90, 55), (180, 255, 255)),
     ],
 }
 
+# Provisional name-to-color mapping until the team confirms which robot wears which triangle.
 DEFAULT_ROBOT_HSV_RANGES: dict[
     str,
     list[tuple[tuple[int, int, int], tuple[int, int, int]]],
 ] = {
     RobotName.PHINEAS.value: [
-        ((40, 100, 100), (80, 255, 255)),
+        ((0, 100, 100), (4, 255, 255)),
+        ((170, 100, 100), (180, 255, 255)),
     ],
     RobotName.FERB.value: [
-        ((140, 100, 100), (165, 255, 255)),
+        ((6, 150, 100), (14, 255, 255)),
     ],
+}
+
+# Per-robot triangle marker calibration offsets (0.0 until measured on physical robots).
+DEFAULT_ROBOT_HEADING_OFFSETS_RAD: dict[str, float] = {
+    RobotName.PHINEAS.value: 0.0,
+    RobotName.FERB.value: 0.0,
+}
+
+# Robot-frame (forward_m, left_m) position offsets applied after heading offset.
+DEFAULT_ROBOT_POSITION_OFFSETS_M: dict[str, tuple[float, float]] = {
+    RobotName.PHINEAS.value: (0.0, 0.0),
+    RobotName.FERB.value: (0.0, 0.0),
 }
 
 # Viewer drawing colors (BGR) and styles

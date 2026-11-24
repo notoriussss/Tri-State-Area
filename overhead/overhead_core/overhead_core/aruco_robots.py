@@ -21,7 +21,10 @@ from overhead_core.constants import (
     ROBOT_MARKER_HEIGHT_M,
     RobotName,
 )
-from overhead_core.geometry import image_to_world
+from overhead_core.geometry import (
+    image_to_world,
+    wrap_angle_rad,
+)
 from overhead_core.parallax import correct_parallax
 from overhead_core.triangle import heading_to_world
 from overhead_core.types import RobotPose
@@ -63,14 +66,6 @@ def _get_aruco_dictionary(dictionary_name: str) -> cv2.aruco.Dictionary:
         )
 
     return cv2.aruco.getPredefinedDictionary(dict_id)
-
-
-def _wrap_angle_rad(angle_rad: float) -> float:
-    """Wraps an angle in radians to the half-open interval (-pi, pi]."""
-    normalized = (angle_rad + math.pi) % (2.0 * math.pi) - math.pi
-    if normalized <= -math.pi:
-        normalized += 2.0 * math.pi
-    return float(normalized)
 
 
 def _pose_from_marker_corners(
@@ -125,7 +120,7 @@ def _pose_from_marker_corners(
         name=robot_name,
         x=float(corrected_floor[0, 0]),
         y=float(corrected_floor[0, 1]),
-        theta=_wrap_angle_rad(theta_world + config.heading_offset_rad),
+        theta=wrap_angle_rad(theta_world + config.heading_offset_rad),
         confidence=DEFAULT_DETECTION_CONFIDENCE,
     )
 

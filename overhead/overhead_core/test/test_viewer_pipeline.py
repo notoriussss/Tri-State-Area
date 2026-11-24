@@ -62,19 +62,19 @@ def _make_synthetic_arena_image() -> np.ndarray:
         (0, 0, 255),
         -1,
     )
-    # Green Phineas triangle pointing right
+    # Red Phineas triangle pointing right (> MAX_CUBE_AREA_PX so excluded from cubes)
     triangle_pts = np.array(
         [
-            [680, 300],
-            [610, 270],
-            [610, 330],
+            [690, 300],
+            [610, 265],
+            [610, 335],
         ],
         dtype=np.int32,
     )
     cv2.fillPoly(
         img,
         [triangle_pts],
-        (0, 255, 0),
+        (0, 0, 255),
     )
     return img
 

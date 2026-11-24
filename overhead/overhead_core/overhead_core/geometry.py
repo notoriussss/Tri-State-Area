@@ -103,6 +103,21 @@ def world_to_image(
     return uv.reshape(-1, 2).astype(np.float64)
 
 
+def wrap_angle_rad(angle_rad: float) -> float:
+    """Wraps an angle in radians to the half-open interval (-pi, pi].
+
+    Args:
+        angle_rad: Angle in radians.
+
+    Returns:
+        Equivalent angle in radians within (-pi, pi].
+    """
+    normalized = (angle_rad + math.pi) % (2.0 * math.pi) - math.pi
+    if normalized <= -math.pi:
+        normalized += 2.0 * math.pi
+    return float(normalized)
+
+
 def world_to_robot(
     robot_pose: tuple[float, float, float],
     point_xy: tuple[float, float],
