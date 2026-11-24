@@ -197,3 +197,12 @@ CONTENT_TYPE_JPEG: str = "image/jpeg"
 CONTENT_TYPE_JSON: str = "application/json; charset=utf-8"
 CONTENT_TYPE_MJPEG: str = f"multipart/x-mixed-replace; boundary={MJPEG_BOUNDARY}"
 CACHE_CONTROL_NO_CACHE: str = "no-cache, no-store, must-revalidate"
+
+# Arena calibration validation thresholds
+QUAD_POINT_DIMS: int = 2
+MIN_ARENA_AREA_FRACTION: float = 0.25
+ARENA_ASPECT_TOLERANCE_RATIO: float = 0.15
+
+# Camera state machine timing defaults
+NO_FRAME_TIMEOUT_S: float = 0.5
+CAMERA_RETRY_S: float = 1.0

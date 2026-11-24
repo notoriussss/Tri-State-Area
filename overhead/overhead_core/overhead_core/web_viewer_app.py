@@ -122,15 +122,19 @@ class CameraViewerState:
             return self._latest_snapshot
 
     def _ensure_initial_calibration_locked(self, frame_bgr: np.ndarray) -> None:
-        """Runs one-shot initial calibration on the first received frame."""
-        if self._has_attempted_initial_cal:
+        """Attempts arena calibration on incoming frames until valid corners are found."""
+        if self._homography is not None:
             return
-        self._has_attempted_initial_cal = True
+
         self._homography, self._corners_px = calibrate_frame(frame_bgr)
         if self._homography is not None:
+            self._has_attempted_initial_cal = True
             LOGGER.info("Initial arena calibration succeeded.")
-        else:
-            LOGGER.warning("Initial arena calibration failed; arena corners not found.")
+            return
+
+        if not self._has_attempted_initial_cal:
+            self._has_attempted_initial_cal = True
+            LOGGER.warning("Initial arena calibration failed; retrying.")
 
     def _update_fps_locked(self, now_s: float) -> float:
         """Updates exponentially smoothed capture FPS using monotonic timestamps."""
