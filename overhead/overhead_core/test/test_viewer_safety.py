@@ -30,18 +30,18 @@ def _pose(
     )
 
 
-def test_should_report_stop_for_both_when_two_robots_face_each_other_half_meter_apart() -> None:
+def test_should_report_stop_for_both_when_two_robots_face_each_other_quarter_meter_apart() -> None:
     now_s = 1.0
     holder = ViewerSafety(clock=lambda: now_s)
     phineas = _pose(
         RobotName.PHINEAS.value,
-        0.30,
+        0.40,
         0.35,
         theta_rad=0.0,
     )
     ferb = _pose(
         RobotName.FERB.value,
-        0.80,
+        0.65,
         0.35,
         theta_rad=math.pi,
     )

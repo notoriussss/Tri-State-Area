@@ -3,6 +3,7 @@
 import math
 
 from overhead_core.constants import (
+    COLLISION_STOP_DIST_M,
     RADAR_SECTOR_COUNT,
     RED_CUBE_SAFETY_M,
     CollisionLevel,
@@ -115,10 +116,15 @@ def test_should_lower_sector_zero_when_red_cube_is_straight_ahead() -> None:
 
 
 def test_should_block_zone_for_non_occupant_but_allow_occupant_when_gate_open() -> None:
-    robot_poses = [
-        _pose(RobotName.PHINEAS, 0.60, 1.00),
-    ]
     zone_rect = (0.85, 0.90, 1.10, 1.10)
+    robot_x_m = zone_rect[0] - (COLLISION_STOP_DIST_M / 2.0)
+    robot_poses = [
+        _pose(
+            RobotName.PHINEAS,
+            robot_x_m,
+            1.00,
+        ),
+    ]
     occupant_config = SafetyConfig(
         arena_width_m=2.0,
         arena_height_m=2.0,
@@ -155,13 +161,19 @@ def test_should_block_zone_for_non_occupant_but_allow_occupant_when_gate_open() 
 
 
 def test_should_block_zone_even_for_occupant_when_gate_is_closed() -> None:
+    zone_rect = (0.85, 0.90, 1.10, 1.10)
+    robot_x_m = zone_rect[0] - (COLLISION_STOP_DIST_M / 2.0)
     robot_poses = [
-        _pose(RobotName.PHINEAS, 0.60, 1.00),
+        _pose(
+            RobotName.PHINEAS,
+            robot_x_m,
+            1.00,
+        ),
     ]
     config = SafetyConfig(
         arena_width_m=2.0,
         arena_height_m=2.0,
-        zone_rect=(0.85, 0.90, 1.10, 1.10),
+        zone_rect=zone_rect,
         zone_occupant=RobotName.PHINEAS,
         is_gate_closed=True,
     )

@@ -202,9 +202,9 @@ the cone of ±60° around the scoop:
 
 | Level | Free distance in the cone | or time to collision |
 |---|---|---|
-| CLEAR | more than 0.60 m | more than 2 s |
-| SLOW | 0.40 to 0.60 m | 1 to 2 s |
-| STOP | less than 0.40 m | less than 1 s |
+| CLEAR | more than 0.30 m | more than 1.2 s |
+| SLOW | 0.15 to 0.30 m | 0.6 to 1.2 s |
+| STOP | less than 0.15 m | less than 0.6 s |
 
 All thresholds are constants. Tests: head-on robots → STOP, diverging robots → CLEAR,
 obstacle behind the robot does not raise the level.

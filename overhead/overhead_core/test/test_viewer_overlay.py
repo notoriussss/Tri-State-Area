@@ -6,6 +6,7 @@ import numpy as np
 from overhead_core.constants import (
     ARENA_HEIGHT_M,
     ARENA_WIDTH_M,
+    COLLISION_STOP_DIST_M,
     DEFAULT_RECTIFY_PX_PER_M,
     RECTIFY_MARGIN_M,
     RED_CUBE_SAFETY_M,
@@ -103,9 +104,10 @@ def test_should_draw_red_dominant_ring_when_robot_is_stop() -> None:
         0.35,
         theta_rad=0.0,
     )
+    free_gap_m = COLLISION_STOP_DIST_M / 2.0
     ferb = _pose(
         RobotName.FERB.value,
-        0.90,
+        phineas.x + ROBOT_SAFETY_M + free_gap_m,
         0.35,
         theta_rad=math.pi,
     )

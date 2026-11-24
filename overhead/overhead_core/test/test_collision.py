@@ -7,6 +7,11 @@ from overhead_core.collision import (
     closest_approach_time_s,
 )
 from overhead_core.constants import (
+    COLLISION_SLOW_DIST_M,
+    COLLISION_SLOW_TTC_S,
+    COLLISION_STOP_DIST_M,
+    COLLISION_STOP_TTC_S,
+    RED_CUBE_SAFETY_M,
     ROBOT_SAFETY_M,
     CollisionLevel,
     ObstacleKind,
@@ -106,15 +111,22 @@ def test_should_return_none_when_circles_are_moving_apart() -> None:
     assert ttc_s is None
 
 
-def test_should_return_stop_when_head_on_robots_reach_under_one_second() -> None:
-    pose = _pose(0.0, 0.35, 0.0)
+def test_should_return_stop_when_head_on_robots_reach_under_stop_ttc() -> None:
+    free_dist_m = COLLISION_SLOW_DIST_M + COLLISION_STOP_DIST_M
+    target_ttc_s = COLLISION_STOP_TTC_S / 2.0
+    half_speed_mps = (free_dist_m / target_ttc_s) / 2.0
+    pose = _pose(
+        0.0,
+        0.35,
+        0.0,
+    )
     obstacles = ObstacleSet(
         circles=[
             _obstacle(
-                1.0,
+                free_dist_m + ROBOT_SAFETY_M,
                 0.35,
                 ROBOT_SAFETY_M,
-                vx_mps=-0.5,
+                vx_mps=-half_speed_mps,
             ),
         ],
         walls=[],
@@ -122,33 +134,40 @@ def test_should_return_stop_when_head_on_robots_reach_under_one_second() -> None
 
     assessment = assess_collision(
         pose,
-        (0.5, 0.0),
+        (half_speed_mps, 0.0),
         obstacles,
     )
 
     assert assessment.level == CollisionLevel.STOP
     assert math.isclose(
         assessment.time_to_collision_s,
-        1.0 - ROBOT_SAFETY_M,
+        target_ttc_s,
         abs_tol=1e-6,
     )
     assert assessment.nearest_kind == ObstacleKind.ROBOT
     assert math.isclose(
         assessment.nearest_dist_m,
-        1.0 - ROBOT_SAFETY_M,
+        free_dist_m,
         abs_tol=1e-6,
     )
 
 
 def test_should_return_slow_when_head_on_robots_approach_at_moderate_speed() -> None:
-    pose = _pose(0.0, 0.35, 0.0)
+    free_dist_m = COLLISION_SLOW_DIST_M + COLLISION_STOP_DIST_M
+    target_ttc_s = (COLLISION_STOP_TTC_S + COLLISION_SLOW_TTC_S) / 2.0
+    half_speed_mps = (free_dist_m / target_ttc_s) / 2.0
+    pose = _pose(
+        0.0,
+        0.35,
+        0.0,
+    )
     obstacles = ObstacleSet(
         circles=[
             _obstacle(
-                1.0,
+                free_dist_m + ROBOT_SAFETY_M,
                 0.35,
                 ROBOT_SAFETY_M,
-                vx_mps=-0.3,
+                vx_mps=-half_speed_mps,
             ),
         ],
         walls=[],
@@ -156,14 +175,14 @@ def test_should_return_slow_when_head_on_robots_approach_at_moderate_speed() -> 
 
     assessment = assess_collision(
         pose,
-        (0.3, 0.0),
+        (half_speed_mps, 0.0),
         obstacles,
     )
 
     assert assessment.level == CollisionLevel.SLOW
     assert math.isclose(
         assessment.time_to_collision_s,
-        (1.0 - ROBOT_SAFETY_M) / 0.6,
+        target_ttc_s,
         abs_tol=1e-6,
     )
 
@@ -246,14 +265,19 @@ def test_should_ignore_obstacle_when_located_seventy_degrees_to_the_side() -> No
     assert assessment.nearest_dist_m == -1.0
 
 
-def test_should_return_slow_when_static_obstacle_is_half_meter_ahead() -> None:
-    pose = _pose(0.0, 0.35, 0.0)
+def test_should_return_slow_when_static_obstacle_is_twenty_five_cm_ahead() -> None:
+    free_dist_m = 0.25
+    pose = _pose(
+        0.0,
+        0.35,
+        0.0,
+    )
     obstacles = ObstacleSet(
         circles=[
             _obstacle(
-                0.67,
+                free_dist_m + RED_CUBE_SAFETY_M,
                 0.35,
-                0.17,
+                RED_CUBE_SAFETY_M,
                 kind=ObstacleKind.RED_CUBE,
             ),
         ],
@@ -271,7 +295,7 @@ def test_should_return_slow_when_static_obstacle_is_half_meter_ahead() -> None:
     assert assessment.nearest_kind == ObstacleKind.RED_CUBE
     assert math.isclose(
         assessment.nearest_dist_m,
-        0.50,
+        free_dist_m,
         abs_tol=1e-6,
     )
     assert math.isclose(
@@ -281,14 +305,19 @@ def test_should_return_slow_when_static_obstacle_is_half_meter_ahead() -> None:
     )
 
 
-def test_should_return_stop_when_static_obstacle_is_thirty_cm_ahead() -> None:
-    pose = _pose(0.0, 0.35, 0.0)
+def test_should_return_stop_when_static_obstacle_is_ten_cm_ahead() -> None:
+    free_dist_m = 0.10
+    pose = _pose(
+        0.0,
+        0.35,
+        0.0,
+    )
     obstacles = ObstacleSet(
         circles=[
             _obstacle(
-                0.47,
+                free_dist_m + RED_CUBE_SAFETY_M,
                 0.35,
-                0.17,
+                RED_CUBE_SAFETY_M,
                 kind=ObstacleKind.RED_CUBE,
             ),
         ],
@@ -306,11 +335,67 @@ def test_should_return_stop_when_static_obstacle_is_thirty_cm_ahead() -> None:
     assert assessment.nearest_kind == ObstacleKind.RED_CUBE
     assert math.isclose(
         assessment.nearest_dist_m,
-        0.30,
+        free_dist_m,
         abs_tol=1e-6,
     )
     assert math.isclose(
         assessment.nearest_bearing_rad,
         0.0,
+        abs_tol=1e-6,
+    )
+
+
+def test_should_return_slow_or_clear_when_red_cube_gap_is_twenty_or_thirty_five_cm() -> None:
+    pose = _pose(
+        0.0,
+        0.35,
+        0.0,
+    )
+    slow_gap_m = 0.20
+    clear_gap_m = 0.35
+    slow_obstacles = ObstacleSet(
+        circles=[
+            _obstacle(
+                slow_gap_m + RED_CUBE_SAFETY_M,
+                0.35,
+                RED_CUBE_SAFETY_M,
+                kind=ObstacleKind.RED_CUBE,
+            ),
+        ],
+        walls=[],
+    )
+    clear_obstacles = ObstacleSet(
+        circles=[
+            _obstacle(
+                clear_gap_m + RED_CUBE_SAFETY_M,
+                0.35,
+                RED_CUBE_SAFETY_M,
+                kind=ObstacleKind.RED_CUBE,
+            ),
+        ],
+        walls=[],
+    )
+
+    slow_assessment = assess_collision(
+        pose,
+        (0.0, 0.0),
+        slow_obstacles,
+    )
+    clear_assessment = assess_collision(
+        pose,
+        (0.0, 0.0),
+        clear_obstacles,
+    )
+
+    assert slow_assessment.level == CollisionLevel.SLOW
+    assert math.isclose(
+        slow_assessment.nearest_dist_m,
+        slow_gap_m,
+        abs_tol=1e-6,
+    )
+    assert clear_assessment.level == CollisionLevel.CLEAR
+    assert math.isclose(
+        clear_assessment.nearest_dist_m,
+        clear_gap_m,
         abs_tol=1e-6,
     )
