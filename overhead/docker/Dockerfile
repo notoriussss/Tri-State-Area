@@ -19,7 +19,8 @@ WORKDIR /ws
 
 COPY entrypoint.sh /entrypoint.sh
 COPY colcon-build.sh /usr/local/bin/colcon-build
-RUN chmod +x /entrypoint.sh /usr/local/bin/colcon-build
+COPY run-tests.sh /usr/local/bin/run-tests
+RUN chmod +x /entrypoint.sh /usr/local/bin/colcon-build /usr/local/bin/run-tests
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
