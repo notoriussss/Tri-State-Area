@@ -7,6 +7,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from overhead_core.aruco_robots import ArucoRobotConfig
 from overhead_core.calibration import validate_arena_quad
 from overhead_core.constants import (
     ARENA_HEIGHT_M,
@@ -28,21 +29,23 @@ from overhead_core.constants import (
     DEFAULT_CAMERA_CENTER_WORLD,
     DEFAULT_CUBE_HSV_RANGES,
     DEFAULT_DARK_THRESH,
+    DEFAULT_DETECTION_CONFIDENCE,
     DEFAULT_MIN_AREA_PX,
     DEFAULT_RECTIFY_PX_PER_M,
     DEFAULT_ROBOT_HSV_RANGES,
     DEFAULT_ROBOT_MIN_AREA_PX,
+    DEFAULT_ZONE_RECT,
     DRAW_LINE_THICKNESS_PX,
     EMPTY_DARK_PIXEL_MIN_COUNT,
     FONT_SCALE_BANNER,
     FONT_SCALE_HINT,
     FONT_SCALE_LABEL,
-    HEADING_STEP_PX,
     LABEL_OFFSET_X_PX,
     LABEL_OFFSET_Y_PX,
     LABEL_OUTLINE_THICKNESS_PX,
     MASK_BG_DIM_ALPHA,
     MASK_OVERLAY_ALPHA,
+    MAX_CUBE_AREA_PX,
     METERS_TO_CM,
     MIN_CORNER_BOUND_MARGIN_PX,
     PLACEHOLDER_HINT_Y_PX,
@@ -53,13 +56,13 @@ from overhead_core.constants import (
     ROBOT_ARROW_LEN_PX,
     ROBOT_ARROW_TIP_RATIO,
     ROBOT_COLOR_BGR,
-    ROBOT_MARKER_HEIGHT_M,
     ROBOT_TRIANGLE_HALF_BASE_PX,
     ROBOT_TRIANGLE_LENGTH_PX,
     ROBOT_TRIANGLE_REAR_RATIO,
     VIEWER_CORNER_LABELS,
     VIEWER_TEXT_CALIBRATION_HINT,
     VIEWER_TEXT_NOT_CALIBRATED,
+    RobotDetector,
     ViewerView,
 )
 from overhead_core.cubes import detect_cubes
@@ -71,7 +74,20 @@ from overhead_core.geometry import (
     world_to_image,
 )
 from overhead_core.parallax import correct_parallax
-from overhead_core.triangle import heading_to_world, triangle_pose
+from overhead_core.types import (
+    RobotPose,
+    ViewerSafetyResult,
+)
+from overhead_core.viewer_overlay import (
+    SafetyOverlayConfig,
+    draw_safety_overlay,
+    world_to_rectified_px,
+)
+from overhead_core.viewer_safety import ViewerSafety
+from overhead_core.world_frame import (
+    WorldFrameConfig,
+    detect_robot_poses,
+)
 
 HsvBoundsMap = dict[str, list[tuple[Any, Any]]]
 
@@ -100,6 +116,9 @@ class ViewerPipelineConfig:
     margin_m: float = RECTIFY_MARGIN_M
     min_area_px: int = DEFAULT_MIN_AREA_PX
     robot_min_area_px: int = DEFAULT_ROBOT_MIN_AREA_PX
+    max_area_px: int = MAX_CUBE_AREA_PX
+    robot_detector: RobotDetector = RobotDetector.TRIANGLE
+    aruco: ArucoRobotConfig | None = None
 
 
 @dataclass(frozen=True)
@@ -131,6 +150,7 @@ class PipelineOutput:
     robots: list[ViewerRobotResult]
     is_calibrated: bool
     corners_px: np.ndarray | None
+    safety: ViewerSafetyResult | None = None
 
 
 def _normalize_hsv_config(
@@ -288,6 +308,7 @@ def _detect_world_cubes(
         None,
         hsv_config.cube_ranges,
         min_area_px=pipeline_config.min_area_px,
+        max_area_px=pipeline_config.max_area_px,
     )
     camera_center_arr = np.asarray(
         pipeline_config.camera_center_world,
@@ -316,60 +337,53 @@ def _detect_world_cubes(
     return results
 
 
+def _build_world_frame_config(
+    hsv_config: ViewerHsvConfig,
+    pipeline_config: ViewerPipelineConfig,
+) -> WorldFrameConfig:
+    """Builds a WorldFrameConfig matching the node's detection parameters."""
+    return WorldFrameConfig(
+        hsv_ranges=hsv_config.cube_ranges,
+        robot_hsv_ranges=hsv_config.robot_ranges,
+        min_area_px=pipeline_config.min_area_px,
+        robot_min_area_px=pipeline_config.robot_min_area_px,
+        camera_center_world=pipeline_config.camera_center_world,
+        cam_height_m=pipeline_config.cam_height_m,
+        arena_width_m=pipeline_config.arena_width_m,
+        arena_height_m=pipeline_config.arena_height_m,
+        robot_names=tuple(hsv_config.robot_ranges.keys()),
+        max_area_px=pipeline_config.max_area_px,
+        robot_detector=pipeline_config.robot_detector,
+        aruco=pipeline_config.aruco,
+    )
+
+
 def _detect_world_robots(
-    hsv_image: np.ndarray,
+    frame_bgr: np.ndarray,
     homography: np.ndarray,
     hsv_config: ViewerHsvConfig,
     *,
     pipeline_config: ViewerPipelineConfig,
 ) -> list[ViewerRobotResult]:
-    """Detects robot triangle markers and computes parallax-corrected world poses."""
-    camera_center_arr = np.asarray(
-        pipeline_config.camera_center_world,
-        dtype=np.float64,
+    """Detects robot markers using the shared world_frame robot detector."""
+    world_config = _build_world_frame_config(
+        hsv_config,
+        pipeline_config,
     )
-    results: list[ViewerRobotResult] = []
-    for robot_name, ranges in hsv_config.robot_ranges.items():
-        if not ranges:
-            continue
-        robot_mask = _build_hsv_mask(
-            hsv_image,
-            ranges,
+    poses = detect_robot_poses(
+        frame_bgr,
+        homography=homography,
+        config=world_config,
+    )
+    return [
+        ViewerRobotResult(
+            name=pose.name,
+            x_m=pose.x,
+            y_m=pose.y,
+            theta_rad=pose.theta,
         )
-        pose = triangle_pose(
-            robot_mask,
-            min_area_px=pipeline_config.robot_min_area_px,
-        )
-        if pose is None:
-            continue
-
-        u_px, v_px, theta_img = pose
-        seen_world = image_to_world(
-            homography,
-            [[u_px, v_px]],
-        )
-        floor_xy = correct_parallax(
-            seen_world,
-            camera_center_arr,
-            object_height_m=ROBOT_MARKER_HEIGHT_M,
-            cam_height_m=pipeline_config.cam_height_m,
-        )
-        theta_world = heading_to_world(
-            homography,
-            u_px,
-            v_px,
-            theta_img=theta_img,
-            step_px=HEADING_STEP_PX,
-        )
-        results.append(
-            ViewerRobotResult(
-                name=robot_name,
-                x_m=float(floor_xy[0, 0]),
-                y_m=float(floor_xy[0, 1]),
-                theta_rad=theta_world,
-            )
-        )
-    return results
+        for pose in poses.values()
+    ]
 
 
 def _world_to_rectified_px(
@@ -378,9 +392,13 @@ def _world_to_rectified_px(
     config: ViewerPipelineConfig,
 ) -> tuple[int, int]:
     """Maps world meters (x, y) to rectified image pixel coordinates (u, v)."""
-    u_px = int(round((x_m + config.margin_m) * config.px_per_m))
-    v_px = int(round((config.arena_height_m + config.margin_m - y_m) * config.px_per_m))
-    return u_px, v_px
+    return world_to_rectified_px(
+        x_m,
+        y_m,
+        arena_height_m=config.arena_height_m,
+        px_per_m=config.px_per_m,
+        margin_m=config.margin_m,
+    )
 
 
 def _draw_not_calibrated_banner(image: np.ndarray) -> None:
@@ -571,6 +589,7 @@ def _draw_rectified_view(
     cubes: list[ViewerCubeResult],
     robots: list[ViewerRobotResult],
     config: ViewerPipelineConfig,
+    safety_result: ViewerSafetyResult | None = None,
 ) -> np.ndarray:
     """Renders the top-down rectified view with annotated cubes and robots."""
     out_w = max(
@@ -630,6 +649,19 @@ def _draw_rectified_view(
             rectified,
             robot,
             center_px=center_px,
+        )
+
+    if safety_result is not None:
+        rectified = draw_safety_overlay(
+            rectified,
+            safety_result.safety,
+            safety_result.robot_poses,
+            config=SafetyOverlayConfig(
+                arena_height_m=config.arena_height_m,
+                px_per_m=config.px_per_m,
+                margin_m=config.margin_m,
+                zone_rect=DEFAULT_ZONE_RECT,
+            ),
         )
 
     return rectified
@@ -704,6 +736,8 @@ def process_frame(
     *,
     corners_px: np.ndarray | None = None,
     config: ViewerPipelineConfig | None = None,
+    safety: ViewerSafety | None = None,
+    now_s: float | None = None,
 ) -> PipelineOutput:
     """Runs detection and renders raw, rectified, and mask views for one frame.
 
@@ -716,6 +750,8 @@ def process_frame(
         hsv_config: HSV ranges config or cube HSV dictionary.
         corners_px: Optional 4x2 arena corner pixels for raw view overlay.
         config: Optional geometry, parallax, and rendering configuration.
+        safety: Optional stateful safety holder for velocity, hold, and radar checks.
+        now_s: Optional monotonic timestamp in seconds passed to safety evaluation.
 
     Returns:
         PipelineOutput containing annotated view images and detected world objects.
@@ -743,10 +779,32 @@ def process_frame(
             pipeline_config=pipeline_cfg,
         )
         robots = _detect_world_robots(
-            hsv_image,
+            frame_bgr,
             homography,
             normalized_hsv,
             pipeline_config=pipeline_cfg,
+        )
+
+    safety_result: ViewerSafetyResult | None = None
+    if homography is not None and safety is not None:
+        robot_poses = [
+            RobotPose(
+                name=robot.name,
+                x=robot.x_m,
+                y=robot.y_m,
+                theta=robot.theta_rad,
+                confidence=DEFAULT_DETECTION_CONFIDENCE,
+            )
+            for robot in robots
+        ]
+        cube_tuples = [
+            (idx, cube.color, cube.x_m, cube.y_m, DEFAULT_DETECTION_CONFIDENCE)
+            for idx, cube in enumerate(cubes)
+        ]
+        safety_result = safety.update(
+            robot_poses,
+            cube_tuples,
+            now_s=now_s,
         )
 
     views = {
@@ -760,6 +818,7 @@ def process_frame(
             cubes=cubes,
             robots=robots,
             config=pipeline_cfg,
+            safety_result=safety_result,
         ),
         ViewerView.MASK.value: _draw_mask_view(
             frame_bgr,
@@ -775,6 +834,7 @@ def process_frame(
         robots=robots,
         is_calibrated=is_calibrated,
         corners_px=resolved_corners,
+        safety=safety_result,
     )
 
 

@@ -10,7 +10,13 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from overhead_core.constants import ViewerView
+from overhead_core.constants import (
+    CollisionLevel,
+    ObstacleKind,
+    RobotName,
+    ViewerView,
+)
+from overhead_core.types import RobotSafetyStatus
 from overhead_core.web_viewer import (
     FrameProvider,
     OverheadWebServer,
@@ -48,6 +54,22 @@ def _make_fake_snapshot() -> ViewerSnapshot:
         cube_count=3,
         robot_count=2,
         is_calibrated=True,
+        robots=(
+            RobotSafetyStatus(
+                name=RobotName.FERB.value,
+                level=CollisionLevel.STOP,
+                ttc_s=0.45,
+                nearest_kind=ObstacleKind.ROBOT,
+                nearest_dist_m=0.33,
+            ),
+            RobotSafetyStatus(
+                name=RobotName.PHINEAS.value,
+                level=CollisionLevel.CLEAR,
+                ttc_s=-1.0,
+                nearest_kind=ObstacleKind.WALL,
+                nearest_dist_m=0.815,
+            ),
+        ),
     )
 
 
@@ -165,8 +187,39 @@ def test_should_return_live_status_json_when_get_status():
     assert data == {
         "fps": 18.5,
         "cubes": 3,
-        "robots": 2,
+        "robots": [
+            {
+                "name": RobotName.FERB.value,
+                "level": CollisionLevel.STOP.value,
+                "ttc_s": 0.45,
+                "nearest_kind": ObstacleKind.ROBOT.value,
+                "nearest_dist_m": 0.33,
+            },
+            {
+                "name": RobotName.PHINEAS.value,
+                "level": CollisionLevel.CLEAR.value,
+                "ttc_s": -1.0,
+                "nearest_kind": ObstacleKind.WALL.value,
+                "nearest_dist_m": 0.815,
+            },
+        ],
         "calibrated": True,
+    }
+
+
+def test_should_return_empty_robots_list_in_status_when_none_present():
+    with _running_server(lambda: None) as server:
+        port = server.server_address[1]
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/status") as resp:
+            status = resp.status
+            data = json.loads(resp.read().decode("utf-8"))
+
+    assert status == 200
+    assert data == {
+        "fps": 0.0,
+        "cubes": 0,
+        "robots": [],
+        "calibrated": False,
     }
 
 

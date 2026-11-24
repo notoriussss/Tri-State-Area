@@ -30,12 +30,15 @@ from overhead_core.constants import (
     HTTP_QUERY_VIEW_KEY,
     JPEG_EXTENSION,
     MJPEG_BOUNDARY,
+    NO_OBSTACLE_KIND,
     STATIC_DIR_NAME,
+    STATUS_FLOAT_PRECISION,
     VIEWER_HTML_FILENAME,
     VIEWER_JPEG_QUALITY,
     VIEWER_STREAM_FPS_HZ,
     ViewerView,
 )
+from overhead_core.types import RobotSafetyStatus
 
 LOGGER = logging.getLogger(__name__)
 
@@ -56,6 +59,7 @@ class ViewerSnapshot:
     cube_count: int = 0
     robot_count: int = 0
     is_calibrated: bool = False
+    robots: tuple[RobotSafetyStatus, ...] = ()
 
 
 FrameProvider = Callable[[], ViewerSnapshot | dict[str, np.ndarray] | None]
@@ -185,23 +189,43 @@ class OverheadRequestHandler(BaseHTTPRequestHandler):
         )
 
     def _handle_status(self) -> None:
-        """Serves current FPS, cube count, robot count, and calibration state as JSON."""
+        """Serves current FPS, cube count, per-robot safety, and calibration state as JSON."""
         snap = _normalize_snapshot(self.server.frame_provider())
         if snap is None:
             payload = {
                 "fps": 0.0,
                 "cubes": 0,
-                "robots": 0,
+                "robots": [],
                 "calibrated": False,
             }
         else:
+            robots_payload = [
+                {
+                    "name": robot.name,
+                    "level": robot.level.value,
+                    "ttc_s": round(
+                        robot.ttc_s,
+                        STATUS_FLOAT_PRECISION,
+                    ),
+                    "nearest_kind": (
+                        robot.nearest_kind.value
+                        if robot.nearest_kind is not None
+                        else NO_OBSTACLE_KIND
+                    ),
+                    "nearest_dist_m": round(
+                        robot.nearest_dist_m,
+                        STATUS_FLOAT_PRECISION,
+                    ),
+                }
+                for robot in snap.robots
+            ]
             payload = {
                 "fps": round(
                     snap.fps,
                     1,
                 ),
                 "cubes": snap.cube_count,
-                "robots": snap.robot_count,
+                "robots": robots_payload,
                 "calibrated": snap.is_calibrated,
             }
         self._send_bytes(

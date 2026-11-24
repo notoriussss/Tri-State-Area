@@ -31,8 +31,27 @@
     }
     #stats {
       font-family: monospace;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
       color: #93c5fd;
+    }
+    #robots-status {
+      font-family: monospace;
+      margin-bottom: 10px;
+    }
+    .robot-line {
+      margin-bottom: 2px;
+    }
+    .level-CLEAR {
+      color: #00ff00;
+      font-weight: 600;
+    }
+    .level-SLOW {
+      color: #ffbf00;
+      font-weight: 600;
+    }
+    .level-STOP {
+      color: #ff0000;
+      font-weight: 600;
     }
     #feed {
       max-width: 100%;
@@ -50,6 +69,7 @@
     <button onclick="recalibrate()">Recalibrate</button>
   </div>
   <div id="stats">FPS: -- | Cubes: 0 | Robots: 0 | Calibrated: no</div>
+  <div id="robots-status"></div>
   <img id="feed" src="/stream/raw.mjpg" alt="Overhead stream">
   <script>
     let currentView = "raw";
@@ -85,17 +105,48 @@
       actionNote = data.calibrated ? "Recalibrated OK" : "Calibration failed";
     }
 
+    function renderRobotLines(robots) {
+      const container = document.getElementById("robots-status");
+      const items = Array.isArray(robots) ? robots : [];
+      const nodes = items.map((robot) => {
+        const line = document.createElement("div");
+        line.className = "robot-line";
+
+        const prefix = document.createTextNode(robot.name + ": ");
+        const badge = document.createElement("span");
+        badge.className = "level-" + robot.level;
+        badge.textContent = robot.level;
+
+        const distText = robot.nearest_dist_m >= 0
+          ? (robot.nearest_dist_m * 100).toFixed(0) + "cm"
+          : "--";
+        const kindText = robot.nearest_kind ? " (" + robot.nearest_kind + ")" : "";
+        const ttcText = robot.ttc_s >= 0 ? robot.ttc_s.toFixed(2) + "s" : "--";
+        const suffix = document.createTextNode(
+          " | nearest: " + distText + kindText + " | ttc: " + ttcText
+        );
+
+        line.appendChild(prefix);
+        line.appendChild(badge);
+        line.appendChild(suffix);
+        return line;
+      });
+      container.replaceChildren(...nodes);
+    }
+
     async function pollStatus() {
       try {
         const resp = await fetch("/status");
         const s = await resp.json();
         const cal = s.calibrated ? "yes" : "no";
+        const robotCount = Array.isArray(s.robots) ? s.robots.length : s.robots;
         const suffix = actionNote ? " | " + actionNote : "";
         document.getElementById("stats").textContent =
           "FPS: " + s.fps.toFixed(1) +
           " | Cubes: " + s.cubes +
-          " | Robots: " + s.robots +
+          " | Robots: " + robotCount +
           " | Calibrated: " + cal + suffix;
+        renderRobotLines(s.robots);
       } catch (_err) {}
     }
 

@@ -4,19 +4,30 @@ import math
 
 import cv2
 import numpy as np
+from overhead_core.aruco_robots import ArucoRobotConfig
 from overhead_core.constants import (
     ARENA_HEIGHT_M,
     ARENA_WIDTH_M,
+    ARUCO_ID_PHINEAS,
     BANNER_HEIGHT_PX,
+    DEFAULT_ARUCO_DICTIONARY,
     DEFAULT_RECTIFY_PX_PER_M,
     RECTIFY_MARGIN_M,
     CubeColor,
+    RobotDetector,
     RobotName,
     ViewerView,
 )
 from overhead_core.viewer_pipeline import (
+    ViewerPipelineConfig,
     calibrate_frame,
     process_frame,
+)
+from overhead_core.viewer_safety import ViewerSafety
+from overhead_core.web_viewer_app import (
+    CameraViewerState,
+    build_arg_parser,
+    build_pipeline_config,
 )
 
 
@@ -190,3 +201,126 @@ def test_should_highlight_cube_pixels_when_mask_view_rendered():
 
     assert int(cube_pixel[0]) > int(cube_pixel[2])
     assert int(cube_pixel[0]) > int(floor_pixel[0])
+
+
+def test_should_detect_aruco_robot_in_viewer_when_aruco_detector_configured():
+    image = np.full(
+        (720, 1280, 3),
+        245,
+        dtype=np.uint8,
+    )
+    cv2.rectangle(
+        image,
+        (40, 30),
+        (1240, 690),
+        (0, 0, 0),
+        20,
+    )
+    dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+    marker_gray = cv2.aruco.generateImageMarker(
+        dictionary,
+        ARUCO_ID_PHINEAS,
+        121,
+    )
+    image[180:301, 280:401] = cv2.cvtColor(
+        marker_gray,
+        cv2.COLOR_GRAY2BGR,
+    )
+    homography, corners = calibrate_frame(image)
+    config = ViewerPipelineConfig(
+        robot_detector=RobotDetector.ARUCO,
+        aruco=ArucoRobotConfig(
+            dictionary_name=DEFAULT_ARUCO_DICTIONARY,
+            marker_ids={RobotName.PHINEAS.value: ARUCO_ID_PHINEAS},
+            heading_offset_rad=0.0,
+            marker_height_m=0.0,
+        ),
+    )
+
+    output = process_frame(
+        image,
+        homography,
+        corners_px=corners,
+        config=config,
+    )
+
+    assert len(output.robots) == 1
+    assert output.robots[0].name == RobotName.PHINEAS.value
+    assert math.isclose(
+        output.robots[0].theta_rad,
+        math.pi / 2.0,
+        abs_tol=0.1,
+    )
+
+
+def test_should_build_aruco_pipeline_config_when_cli_flags_provided():
+    parser = build_arg_parser()
+
+    default_args = parser.parse_args([])
+    default_cfg = build_pipeline_config(default_args)
+    custom_args = parser.parse_args(
+        [
+            "--robot-detector",
+            "aruco",
+            "--aruco-dictionary",
+            "DICT_5X5_50",
+            "--aruco-ids",
+            "3,7",
+        ]
+    )
+    custom_cfg = build_pipeline_config(custom_args)
+
+    assert default_cfg.robot_detector == RobotDetector.TRIANGLE
+    assert default_cfg.aruco is not None
+    assert default_cfg.aruco.dictionary_name == DEFAULT_ARUCO_DICTIONARY
+    assert default_cfg.aruco.marker_ids == {
+        RobotName.PHINEAS.value: 0,
+        RobotName.FERB.value: 1,
+    }
+    assert custom_cfg.robot_detector == RobotDetector.ARUCO
+    assert custom_cfg.aruco is not None
+    assert custom_cfg.aruco.dictionary_name == "DICT_5X5_50"
+    assert custom_cfg.aruco.marker_ids == {
+        RobotName.PHINEAS.value: 3,
+        RobotName.FERB.value: 7,
+    }
+
+
+def test_should_populate_safety_and_overlay_when_safety_holder_passed():
+    image = _make_synthetic_arena_image()
+    homography, corners = calibrate_frame(image)
+    safety = ViewerSafety()
+
+    without_safety = process_frame(
+        image,
+        homography,
+        corners_px=corners,
+    )
+    with_safety = process_frame(
+        image,
+        homography,
+        corners_px=corners,
+        safety=safety,
+        now_s=1.0,
+    )
+
+    assert without_safety.safety is None
+    assert with_safety.safety is not None
+    assert RobotName.PHINEAS.value in with_safety.safety.safety.per_robot
+    assert not np.array_equal(
+        without_safety.views[ViewerView.RECTIFIED.value],
+        with_safety.views[ViewerView.RECTIFIED.value],
+    )
+
+
+def test_should_publish_robot_safety_in_snapshot_when_camera_state_updated():
+    image = _make_synthetic_arena_image()
+    state = CameraViewerState()
+
+    state.update_from_frame(image)
+    snapshot = state.get_snapshot()
+
+    assert snapshot is not None
+    assert snapshot.is_calibrated is True
+    assert len(snapshot.robots) == 1
+    assert snapshot.robots[0].name == RobotName.PHINEAS.value

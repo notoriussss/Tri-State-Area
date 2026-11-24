@@ -334,3 +334,50 @@ LOG_RELAY_PERRY_UNAVAILABLE_FMT: str = (
 )
 LOG_RELAY_PERRY_TIMEOUT_FMT: str = "Perry service '{}' timed out after {:.2f}s for robot '{}'."
 LOG_RELAY_PERRY_CALL_FAILED_FMT: str = "Perry service '{}' call failed for robot '{}': {}"
+
+
+class RobotDetector(StrEnum):
+    """Supported robot marker detection backends."""
+
+    TRIANGLE = "triangle"
+    ARUCO = "aruco"
+
+
+# ArUco robot marker detection defaults
+DEFAULT_ROBOT_DETECTOR: RobotDetector = RobotDetector.TRIANGLE
+DEFAULT_ARUCO_DICTIONARY: str = "DICT_4X4_50"
+ARUCO_ID_PHINEAS: int = 0
+ARUCO_ID_FERB: int = 1
+DEFAULT_ARUCO_IDS: tuple[int, ...] = (
+    ARUCO_ID_PHINEAS,
+    ARUCO_ID_FERB,
+)
+DEFAULT_ARUCO_IDS_ARG: str = f"{ARUCO_ID_PHINEAS},{ARUCO_ID_FERB}"
+DEFAULT_ARUCO_HEADING_OFFSET_RAD: float = 0.0
+ARUCO_DICT_PREFIX: str = "DICT_"
+ERR_UNKNOWN_ARUCO_DICTIONARY_FMT: str = "Unknown ArUco dictionary: '{}'."
+ERR_UNKNOWN_ROBOT_DETECTOR_FMT: str = "Unknown robot detector: '{}'."
+
+# Upper area bound rejecting large non-cube blobs such as robot markers
+MAX_CUBE_AREA_PX: int = 1500
+
+# Safety overlay colors, geometry, and blending constants
+COLOR_BGR_AMBER: tuple[int, int, int] = (0, 191, 255)
+COLOR_BGR_GRAY: tuple[int, int, int] = (140, 140, 140)
+COLOR_BGR_ZONE_OUTLINE: tuple[int, int, int] = (255, 180, 0)
+
+COLLISION_LEVEL_COLOR_BGR: dict[CollisionLevel, tuple[int, int, int]] = {
+    CollisionLevel.CLEAR: COLOR_BGR_GREEN,
+    CollisionLevel.SLOW: COLOR_BGR_AMBER,
+    CollisionLevel.STOP: COLOR_BGR_RED,
+}
+
+SAFETY_CIRCLE_ALPHA: float = 0.45
+SAFETY_CIRCLE_RED_THICKNESS_PX: int = 2
+SAFETY_CIRCLE_GRAY_THICKNESS_PX: int = 1
+ROBOT_SAFETY_RING_THICKNESS_PX: int = 3
+RADAR_SPOKE_THICKNESS_PX: int = 2
+RADAR_SPOKE_MAX_LEN_PX: float = 60.0
+ZONE_OUTLINE_THICKNESS_PX: int = 2
+SAFETY_LABEL_OFFSET_Y_PX: int = 18
+STATUS_FLOAT_PRECISION: int = 3

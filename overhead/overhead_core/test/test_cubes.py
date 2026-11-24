@@ -2,6 +2,7 @@
 
 import cv2
 import numpy as np
+from overhead_core.constants import MAX_CUBE_AREA_PX
 from overhead_core.cubes import detect_cubes
 
 HSV_RANGES = {
@@ -105,3 +106,39 @@ def test_should_filter_outside_arena_when_mask_provided():
     )
 
     assert len(detections) == 0
+
+
+def test_should_reject_large_red_blob_and_keep_normal_cube_when_area_exceeds_max():
+    image = np.zeros(
+        (300, 400, 3),
+        dtype=np.uint8,
+    )
+    # Large red robot-marker-sized blob: 100x80 = 8000 px (> MAX_CUBE_AREA_PX)
+    cv2.rectangle(
+        image,
+        (20, 20),
+        (120, 100),
+        (0, 0, 255),
+        -1,
+    )
+    # Normal red cube: 20x20 = 400 px
+    cv2.rectangle(
+        image,
+        (240, 160),
+        (260, 180),
+        (0, 0, 255),
+        -1,
+    )
+
+    detections = detect_cubes(
+        image,
+        arena_mask=None,
+        hsv_ranges=HSV_RANGES,
+        min_area_px=150,
+        max_area_px=MAX_CUBE_AREA_PX,
+    )
+
+    assert len(detections) == 1
+    assert detections[0][0] == "red"
+    assert np.isclose(detections[0][1], 250.0, atol=2.0)
+    assert np.isclose(detections[0][2], 170.0, atol=2.0)

@@ -6,7 +6,15 @@ Thin ROS 2 adapters for the overhead camera vision node (`overhead_node`) and re
 
 ### `overhead_node`
 
-Captures frames from a live camera or a still image (`video_source`), calibrates the arena homography against the black-tape border, tracks cubes and robot triangle markers via `overhead_core`, and publishes `/world/state` and `/world/sensors` only when the state machine is in `RUNNING` or `DEGRADED`.
+Captures frames from a live camera or a still image (`video_source`), calibrates the arena homography against the black-tape border, tracks cubes and robot markers via `overhead_core`, and publishes `/world/state` and `/world/sensors` only when the state machine is in `RUNNING` or `DEGRADED`.
+
+#### Modules
+
+- `overhead_node.py`: Thin ROS 2 adapter wiring publishers, subscribers, services, timers, and state-machine transitions.
+- `node_parameters.py`: Declares all ROS parameters with defaults from `overhead_core.constants` and loads them into `OverheadNodeParameters`.
+- `world_publishers.py`: Builds and publishes `WorldState`, `VirtualSensors`, and rectified `CompressedImage` messages.
+- `safety_inputs.py`: Tracks `/zone/occupant` heartbeat freshness and `/perry/state` gate status on the local monotonic clock.
+- `conversions.py`: Pure conversions between `overhead_core` types and `tsa_interfaces` messages.
 
 #### Parameters
 
@@ -26,7 +34,12 @@ Captures frames from a live camera or a still image (`video_source`), calibrates
 | `robots` | `string[]` | `["phineas", "ferb"]` | Expected robot names tracked by the marker detector and hold filter. |
 | `image_rate_hz` | `double` | `5.0` | Publish rate in Hz for the rectified JPEG stream on `/world/image`. |
 | `min_area_px` | `int` | `150` | Minimum contour area in pixels for cube detection. |
+| `max_area_px` | `int` | `1500` | Maximum contour area in pixels for cube detection; larger blobs are rejected. |
 | `near_red_m` | `double` | `0.17` | Distance threshold in meters for `near:red:<id>` virtual sensor events. |
+| `robot_detector` | `string` | `"triangle"` | Robot marker detector backend (`"triangle"` or `"aruco"`). |
+| `aruco_dictionary` | `string` | `"DICT_4X4_50"` | OpenCV ArUco dictionary name used when `robot_detector` is `"aruco"`. |
+| `aruco_ids` | `int[]` | `[0, 1]` | ArUco marker IDs mapped positionally to the `robots` parameter. |
+| `aruco_heading_offset_rad` | `double` | `0.0` | Angle offset in radians from the ArUco marker up direction to robot forward. |
 | `hsv_blue` | `int[2][3]` | `[[110, 80, 25], [135, 255, 255]]` | Lower and upper HSV bounds for blue cubes. |
 | `hsv_yellow` | `int[2][3]` | `[[20, 100, 55], [35, 255, 255]]` | Lower and upper HSV bounds for yellow cubes. |
 | `hsv_red_1` | `int[2][3]` | `[[0, 120, 55], [10, 255, 255]]` | Lower red HSV hue band. |
