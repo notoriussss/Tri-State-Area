@@ -1,0 +1,20 @@
+services:
+  perry:
+    image: perry_claw:lyrical   # nombre fijo: en la Pi sin internet se carga con docker load (docker/README.md)
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        BASE_IMAGE: ros:lyrical-ros-base   # la misma distribución que Phineas y Ferb (Ubuntu 26.04)
+    container_name: perry_claw
+    network_mode: host
+    privileged: true
+    volumes:
+      - .:/ws
+      - /dev:/dev
+    environment:
+      - PERRY_PORT=/dev/ttyACM0
+      - ROS_DOMAIN_ID=0
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    # sin "command": el ENTRYPOINT ya es /entrypoint.sh (pasarlo también como comando lo corría dos veces)

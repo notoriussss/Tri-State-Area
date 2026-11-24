@@ -1,0 +1,390 @@
+"""Perry clasifica solo: ve los cubos de la zona y los lleva a su contenedor.
+
+  py sort_cubes.py              -> solo mira: lista los cubos y qué haría (no mueve nada)
+  py sort_cubes.py --run        -> ciclo completo hasta vaciar la zona
+  py sort_cubes.py --run --to amarillo   -> todo al mismo contenedor (pruebas)
+También se maneja desde la interfaz web: py audit_web.py (botones Iniciar / Cancelar).
+
+Ciclo por cubo: estacionar (para no tapar la cámara) -> detectar -> decidir (planner.py) ->
+agarrar por arriba con la pinza girada al eje libre, o empujar un grupo bloqueado ->
+verificar contando cubos -> contenedor de su color -> soltar.
+
+Reglas para que funcione sin nadie al lado:
+- un cubo fuera de alcance no se intenta: se avisa y se ignora;
+- si el agarre falla, se reintenta (sort.retries) y luego se ignora ese cubo;
+- todo se registra con hora y foto (incluida la imagen de planificación) en perry/logs/.
+Puerto: variable PERRY_PORT (en Windows, por ejemplo COM5) o el de arm.yaml.
+"""
+import argparse
+import json
+import os
+import sys
+import threading
+import time
+from math import atan2, degrees, hypot
+from pathlib import Path
+
+import yaml
+
+from audit import draw_plan
+from grasp import GraspCfg, grab_succeeded
+from maestro import Maestro
+from planner import decide, reachable, sortable
+from replay import cube_dict
+from reach import interp_reach, pulses_at, move_via_top, lower_shoulder, push, OutOfTable, ensure_parked
+from vision import TopCamera, save_image
+from zone_arbiter import PerryState, ZoneArbiter
+
+HERE = Path(__file__).parent
+
+
+class Cancelled(Exception):
+    pass
+
+
+class Log:
+    """Registro en archivo + pantalla. sink(línea) e image_sink(nombre, img) son opcionales (web)."""
+
+    def __init__(self, cfg, sink=None, image_sink=None):
+        self.dir = HERE / cfg["sort"]["log_dir"] / time.strftime("%Y-%m-%d_%H-%M-%S")
+        self.dir.mkdir(parents=True, exist_ok=True)
+        self.file = open(self.dir / "registro.txt", "a", encoding="utf-8")
+        self.sink, self.image_sink = sink, image_sink
+
+    def __call__(self, msg):
+        line = f"[{time.strftime('%H:%M:%S')}] {msg}"
+        print(line)
+        self.file.write(line + "\n"); self.file.flush()
+        if self.sink:
+            self.sink(line)
+
+    def record(self, data):
+        """Una línea JSON por evento en ciclos.jsonl (se repite con replay.py)."""
+        data = {"t": time.strftime("%H:%M:%S"), **data}
+        with open(self.dir / "ciclos.jsonl", "a", encoding="utf-8") as f:
+            f.write(json.dumps(data, ensure_ascii=False) + "\n")
+
+    def image(self, name, img):
+        if not save_image(self.dir / f"{time.strftime('%H-%M-%S')}_{name}.jpg", img):
+            self(f"[aviso] no se pudo guardar la foto {name}")
+        if self.image_sink:
+            self.image_sink(name, img)
+
+
+def open_arm(cfg):
+    if os.environ.get("PERRY_MOCK_ARM") == "1":
+        from unittest.mock import MagicMock
+        m = MagicMock()
+        m.is_moving.return_value = False
+        m.get_us.side_effect = lambda ch: (
+            cfg["travel"]["hombro"] if ch == cfg["joints"]["hombro"]["channel"] else
+            cfg["travel"]["codo"] if ch == cfg["joints"]["codo"]["channel"] else
+            cfg["travel"]["muneca"] if ch == cfg["joints"]["muneca"]["channel"] else
+            cfg["poses"]["vista"]["base"] if ch == cfg["joints"]["base"]["channel"] else
+            1447
+        )
+        return m
+    limits = {j["channel"]: (j["min"], j["max"]) for j in cfg["joints"].values()}
+    g = cfg["gripper"]
+    limits[g["channel"]] = (g["min"], g["max"])
+    port = os.environ.get("PERRY_PORT", cfg["port"])
+    if sys.platform == "win32" and str(port).startswith("/dev/"):
+        port = "COM5"
+    m = Maestro(port, limits=limits)
+    for ch in limits:
+        m.set_speed(ch, cfg["speed"]); m.set_acceleration(ch, cfg["acceleration"])
+    return m
+
+
+def go_up(cfg, m):
+    for j, us in cfg["travel"].items():
+        m.set_us(cfg["joints"][j]["channel"], us); m.wait()
+
+
+def park_pose(cfg, m):
+    """La pose de estacionamiento (vista o vista_izq) más cercana a donde está la base: después de
+    soltar en la caja izquierda no cruza toda la mesa para mirar."""
+    here = m.get_us(cfg["joints"]["base"]["channel"])
+    poses = [cfg["poses"][k] for k in ("vista", "vista_izq") if k in cfg["poses"]]
+    return min(poses, key=lambda p: abs(p["base"] - here))
+
+
+def look(cfg, m, cam, log, tag):
+    """Estaciona el brazo fuera de la vista y devuelve los cubos de la zona (y la imagen)."""
+    move_via_top(m, cfg, park_pose(cfg, m), precise_base=False)
+    # foto recién cuando la escena está quieta (la webcam tiene retraso: el brazo podía salir cruzando)
+    cubes, img = cam.find_cubes(cam.still_frame())
+    if not getattr(cam, "last_still", True):
+        log("[aviso] la imagen no se quedó quieta (¿algo moviéndose en la zona?): uso la última")
+    log.image(tag, img)
+    return cubes, img
+
+
+def pick(cfg, m, cube, grasp_dir, check):
+    """Agarra el cubo cerrando en `grasp_dir` y lo deja arriba, en la pose de traslado."""
+    g = cfg["gripper"]
+    high = pulses_at(cfg, cube.x, cube.y, level="approach", grasp_dir=grasp_dir)
+    low = pulses_at(cfg, cube.x, cube.y, level="grip", grasp_dir=grasp_dir)
+    m.set_us(g["channel"], g["open"]); m.wait(); check()
+    move_via_top(m, cfg, high); check()            # por arriba, base precisa, pinza girada
+    lower_shoulder(m, cfg, low["hombro"])           # baja lento
+    m.set_us(g["channel"], g["closed"]); m.wait(); time.sleep(0.3)
+    go_up(cfg, m)                                   # sube en vertical primero con el hombro
+
+
+def count_waiting(cfg, cubes, to=None, colors=None):
+    """Cubos alcanzables que esperan ser clasificados (para «zona llena»). Los rojos no cuentan."""
+    return sum(reachable(cfg, k) and sortable(cfg, k, to, colors) for k in cubes)
+
+
+_discard_next = 0   # próximo lugar del descarte (sigue mientras corre el panel, de una corrida a otra)
+
+
+def discard_pose(cfg, slot):
+    """Pose para apoyar un cubo descartado en el lugar `slot` (rotan: sort.discard_rs).
+
+    Base de poses.descarte y la postura de agarre de la tabla enseñada a esa distancia, con el hombro
+    sort.discard_lift_us más alto: el cubo queda apoyado, no tirado.
+    """
+    s = cfg["sort"]
+    pose = dict(interp_reach(cfg, s["discard_rs"][slot % len(s["discard_rs"])], "grip"))
+    pose["hombro"] += s["discard_lift_us"]
+    pose.update(cfg["poses"]["descarte"])
+    return pose
+
+
+def drop(cfg, m, container):
+    global _discard_next
+    g = cfg["gripper"]
+    if container == "descarte":
+        target = discard_pose(cfg, _discard_next)
+        _discard_next += 1
+    else:
+        target = cfg["poses"][container]
+    move_via_top(m, cfg, target, precise_base=False)
+    m.set_us(g["channel"], g["open"]); m.wait(); time.sleep(0.3)
+    go_up(cfg, m)
+
+
+def scene_changed(cfg, before, after):
+    """¿Cambió la zona? Si aparece o falta un cubo, o alguno se movió más de sort.same_cube_cm.
+
+    Solo cuentan los cubos que el brazo alcanza con margen: uno en el borde lejano aparece y desaparece entre
+    fotos (06-11: un azul a 20 cm hacía rechazar un paso bueno a los 3 s)."""
+    same, r_max = cfg["sort"]["same_cube_cm"], cfg["reach"]["max_r"] - 0.5
+    near = lambda cubes: [c for c in cubes if hypot(c.x, c.y) <= r_max]  # noqa: E731
+    missing = lambda a, b: any(not any(k.color == c.color and hypot(k.x - c.x, k.y - c.y) <= same for k in b)  # noqa: E731
+                               for c in near(a))
+    return missing(before, after) or missing(after, before)
+
+
+def sort_loop(cfg, m, cam, log, run=True, to=None, stop=None, status=None, approve=None, arbiter=None,
+              colors=None):
+    """El ciclo completo. stop: threading.Event para cancelar; status(texto): estado actual.
+    approve(texto): si se da, se llama antes de cada acción y bloquea hasta que el usuario la
+    apruebe (modo paso a paso); si mientras tanto se cancela, el ciclo termina.
+    arbiter: instancia opcional de ZoneArbiter para coordinar el estado de Perry y la zona.
+    colors: si se da (por ejemplo ["azul"]), solo se clasifican esos colores; el resto queda en la mesa.
+    """
+    s = cfg["sort"]
+    gcfg = GraspCfg(**cfg["grasp"])
+    stop = stop or threading.Event()
+    say = status or (lambda t: None)
+
+    # 1. Antes de iniciar el bucle: verificar que no haya un carro con lease activo
+    if arbiter is not None and arbiter.state == PerryState.RECEIVING:
+        log("Hay un carro recolector en la zona (RECEIVING). No se puede iniciar el ciclo.")
+        say("Zona ocupada por carro")
+        return 0
+
+    # Verificar que el brazo esté energizado y estacionado en reposo
+    parked = ensure_parked(m, cfg) if run else True
+    if not parked:
+        log("[ERROR] El brazo no está energizado o falló al estacionarse en reposo (vista).")
+        say("Error: reposo no verificado")
+        if arbiter:
+            arbiter.set_state(PerryState.STOP, carrying=False, parked_ok=False)
+        return 0
+
+    if arbiter:
+        arbiter.set_parked_ok(True)
+
+    def check():
+        if stop.is_set():
+            raise Cancelled()
+
+    ignored, tries, done, pushes, fails_in_a_row = [], {}, 0, 0, 0
+    was_cancelled = False
+    yielded = False       # Perry soltó la zona antes de terminar para que entre un carro
+    last_cubes = []
+    warned_others = False   # el aviso de cubos sin caja (rojos) se da una vez por corrida
+
+    def approved_same(cubes):
+        """Paso a paso: espera la aprobación y vuelve a mirar. Si mientras tanto la escena cambió, el plan ya
+        no vale (06-11: se aprobó 3,5 min después y bajó a agarrar donde no había nada)."""
+        say(f"ESPERANDO TU APROBACION: {dec.message}"); approve(); check()
+        fresh, _ = cam.find_cubes(cam.still_frame())
+        if scene_changed(cfg, cubes, fresh):
+            log("La escena cambió mientras esperaba la aprobación: no ejecuto ese paso, vuelvo a mirar y planificar.")
+            return False
+        return True
+
+    try:
+        for cycle in range(1, s["max_cycles"] + 1):
+            check()
+            if arbiter:
+                arbiter.set_state(PerryState.SCANNING, carrying=False)
+            say(f"Ciclo {cycle}: mirando la zona")
+            cubes, img = look(cfg, m, cam, log, f"vista{cycle}")   # TODOS: también son obstáculos
+            last_cubes = cubes
+            if arbiter:
+                arbiter.set_zone_cubes(count_waiting(cfg, cubes, to, colors))
+            others = sorted({k.color for k in cubes if not sortable(cfg, k, to, colors)} - set(colors or ()))
+            if others and not warned_others:
+                warned_others = True
+                log(f"[AVISO] Hay cubos sin caja en la zona ({', '.join(others)}): los saca al descarte (primero los que tapan un objetivo).")
+            dec = decide(cfg, cubes, ignored, to, colors)
+            log.image(f"plan{cycle}", draw_plan(img, cam, cfg, cubes, dec))   # para auditar
+            rec = {"cycle": cycle, "event": "decision", "kind": dec.kind, "to": to, "message": dec.message,
+                   "cubes": [cube_dict(c) for c in cubes]}
+            if dec.kind == "grab":
+                rec.update(target=cube_dict(dec.cube), grasp_dir=round(dec.grasp_dir, 1))
+            elif dec.kind == "push":
+                rec.update(target=cube_dict(dec.cube), push_start=[round(v, 2) for v in dec.plan.start],
+                           push_end=[round(v, 2) for v in dec.plan.end])
+            log.record(rec)
+            for c in dec.unreachable:
+                log(f"Cubo {c.color} en ({c.x:.1f}, {c.y:.1f}) está FUERA DE ALCANCE "
+                    f"(r = {hypot(c.x, c.y):.1f} cm). Lo ignoro.")
+                ignored.append((c.x, c.y))
+            if dec.kind == "none":
+                log(f"{dec.message} Clasificados: {done}. Ignorados: {len(ignored)}.")
+                break
+            check()
+            if dec.kind == "push":
+                if pushes >= s["max_pushes"]:
+                    log(f"Empujé {pushes} veces seguidas sin poder agarrar nada: ZONA BLOQUEADA. Me detengo.")
+                    break
+                plan = dec.plan
+                dx, dy = plan.direction
+                log(f"Ciclo {cycle}: ningún cubo tiene un eje libre (bloque). Empujo el cubo en "
+                    f"({plan.cube.x:.1f}, {plan.cube.y:.1f}) {plan.length:.1f} cm hacia ({dx:+.2f}, {dy:+.2f}).")
+                if not run:
+                    log("Modo prueba: no se mueve nada."); break
+                if approve and not approved_same(cubes):
+                    continue
+                say(f"Ciclo {cycle}: empujando un grupo")
+                if arbiter:
+                    arbiter.set_state(PerryState.PICKING, carrying=False)
+                push(m, cfg, plan.start, plan.end, degrees(atan2(dy, dx)))
+                pushes += 1
+                continue
+            c, grasp_dir = dec.cube, dec.grasp_dir
+            container = dec.box or to or cfg["containers"][c.color]
+            log(f"Ciclo {cycle}: cubo {c.color} en ({c.x:.1f}, {c.y:.1f}) girado {c.angle:+.0f}°, "
+                f"cierro a {grasp_dir % 180:.0f}° -> {container}")
+            if not run:
+                log("Modo prueba: no se mueve nada."); break
+            if approve and not approved_same(cubes):
+                continue
+            say(f"Ciclo {cycle}: agarrando cubo {c.color} en ({c.x:.1f}, {c.y:.1f})")
+            if arbiter:
+                arbiter.set_state(PerryState.PICKING, carrying=False)
+            try:
+                pick(cfg, m, c, grasp_dir, check)
+            except OutOfTable as e:
+                log(f"No se puede llegar: {e}. Lo ignoro."); ignored.append((c.x, c.y)); continue
+            # directo a la caja (antes se estacionaba para verificar: viaje de más sobre la caja verde)
+            check()
+            say(f"Ciclo {cycle}: llevando el cubo {c.color} a {container}")
+            if arbiter:
+                arbiter.set_state(PerryState.DROPPING, carrying=True)
+            drop(cfg, m, container)
+            if arbiter:
+                arbiter.set_carrying(False)
+            # verificar CONTANDO con la cámara: el agarre salió si hay un cubo menos de ese color
+            say(f"Ciclo {cycle}: verificando el agarre")
+            after, _ = look(cfg, m, cam, log, f"verificacion{cycle}")
+            ok = grab_succeeded(cubes, after, c)
+            last_cubes = after  # los cubos que quedan en la mesa
+            log.record({"cycle": cycle, "event": "result", "ok": ok, "after": [cube_dict(d) for d in after]})
+            if not ok:
+                # el mismo cubo = el intento anterior más cercano (un agarre fallido lo corre unos mm)
+                key = next((k for k in tries if hypot(k[0] - c.x, k[1] - c.y) < 2 * s["same_cube_cm"]), (c.x, c.y))
+                tries[key] = tries.get(key, 0) + 1
+                near = min(after, key=lambda d: hypot(d.x - c.x, d.y - c.y), default=None)
+                where = f" (el más cercano quedó en ({near.x:.1f}, {near.y:.1f}))" if near else ""
+                log(f"El agarre falló (intento {tries[key]}): sigue habiendo "
+                    f"{sum(d.color == c.color for d in after)} cubo(s) {c.color}{where}.")
+                if tries[key] > s["retries"]:
+                    log("Lo doy por perdido."); ignored.append((c.x, c.y))
+                fails_in_a_row += 1
+                if fails_in_a_row >= s["max_fails_in_a_row"]:
+                    log(f"{fails_in_a_row} agarres fallados SEGUIDOS: POSIBLE DESAJUSTE (un golpe puede correr un "
+                        "engranaje, o se movió la cámara o una caja). Me detengo: correr la Prueba de precisión.")
+                    break
+                continue
+            fails_in_a_row = 0
+            pushes = 0   # el límite de empujes es por atasco: si se agarró algo, la situación cambió
+            if container == "descarte":
+                log(f"Cubo {c.color} descartado (fuera de la zona). Clasificados: {done}.")
+            else:
+                done += 1
+                if arbiter:
+                    arbiter.increment_sorted()
+                log(f"Cubo {c.color} soltado en {container}. Llevo {done}.")
+            if arbiter:
+                left = count_waiting(cfg, after, to, colors)
+                arbiter.set_zone_cubes(left)
+                # turnos: un carro espera y en la mesa quedan pocos cubos -> que entre a entregar
+                if left < arbiter.full_cubes and arbiter.cars_waiting():
+                    log(f"Un carro espera la zona y quedan {left} cubo(s): cedo la zona y sigo después.")
+                    yielded = True
+                    break
+    except Cancelled:
+        was_cancelled = True
+        log("CANCELADO por el usuario: subo y estaciono el brazo.")
+        go_up(cfg, m)
+    except Exception as e:
+        log(f"[ERROR en sort_loop] {e}")
+        if arbiter:
+            arbiter.set_state(PerryState.STOP, carrying=False, parked_ok=False)
+        raise
+    finally:
+        # 3. Al salir del bucle: estacionar y definir estado final del árbitro
+        parked = ensure_parked(m, cfg) if run else True
+        if arbiter:
+            arbiter.set_carrying(False)
+            if was_cancelled or not parked:
+                arbiter.set_state(PerryState.STOP, carrying=False, parked_ok=parked)
+            elif yielded:
+                arbiter.set_state(PerryState.FREE, carrying=False, parked_ok=parked)
+            elif any(sortable(cfg, k, to, colors) for k in last_cubes):
+                # quedan cubos que había que clasificar (fuera de alcance o sin agarre): zona trabada.
+                # Los de otros colores, si el operador eligió uno, quedan por elección: no la traban.
+                arbiter.set_state(PerryState.BLOCKED, carrying=False, parked_ok=parked)
+            else:
+                arbiter.set_state(PerryState.FREE, carrying=False, parked_ok=parked)
+
+    say("Detenido")
+    log(f"Fin. Clasificados: {done}. Registro y fotos en {log.dir}")
+    return done
+
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--run", action="store_true", help="mover el brazo (sin esto solo mira)")
+    ap.add_argument("--to", help="mandar todos los cubos a este contenedor (pruebas)")
+    a = ap.parse_args()
+    cfg = yaml.safe_load((HERE / "config" / "arm.yaml").read_text(encoding="utf-8"))
+    m = open_arm(cfg)
+    try:
+        with TopCamera(cfg) as cam:
+            sort_loop(cfg, m, cam, Log(cfg), run=a.run, to=a.to)
+    finally:
+        m.close()
+
+
+if __name__ == "__main__":
+    main()
