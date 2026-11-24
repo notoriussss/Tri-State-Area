@@ -9,7 +9,7 @@ overhead_node:
     arena_width_m: 1.165
     arena_height_m: 0.70
     cam_height_m: 1.0
-    # TODO(overhead): confirm the camera is mounted directly above the red dot
+    # Confirmed on 2026-11-24 by the overhead group: the camera is directly above the red dot.
     camera_center_world: [0.5825, 0.35]
     # TODO(overhead): measure delivery zone dimensions accurately
     zone_rect: [1.165, 0.27, 1.30, 0.44]

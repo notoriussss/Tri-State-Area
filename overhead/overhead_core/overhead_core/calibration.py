@@ -8,6 +8,7 @@ from overhead_core.constants import (
     ARENA_HEIGHT_M,
     ARENA_WIDTH_M,
     MIN_ARENA_AREA_FRACTION,
+    MIN_CORNER_BOUND_MARGIN_PX,
     QUAD_POINT_DIMS,
     QUAD_VERTEX_COUNT,
 )
@@ -64,6 +65,26 @@ def _has_valid_aspect_ratio(
     return relative_error <= ARENA_ASPECT_TOLERANCE_RATIO
 
 
+def _are_corners_on_image_bounds(
+    pts: np.ndarray,
+    *,
+    image_width_px: int,
+    image_height_px: int,
+) -> bool:
+    """Checks whether all four corners sit on the image perimeter.
+
+    This is what the corner detector returns on a blank or black frame, so it is never a real
+    arena border.
+    """
+    on_x_edge = (pts[:, 0] <= MIN_CORNER_BOUND_MARGIN_PX) | (
+        pts[:, 0] >= image_width_px - 1 - MIN_CORNER_BOUND_MARGIN_PX
+    )
+    on_y_edge = (pts[:, 1] <= MIN_CORNER_BOUND_MARGIN_PX) | (
+        pts[:, 1] >= image_height_px - 1 - MIN_CORNER_BOUND_MARGIN_PX
+    )
+    return bool(np.all(on_x_edge & on_y_edge))
+
+
 def validate_arena_quad(
     corners: np.ndarray | list[list[float]],
     *,
@@ -82,13 +103,14 @@ def validate_arena_quad(
         arena_height_m: Physical arena height along world +y in meters.
 
     Returns:
-        True if the quad is convex in [BL, BR, TR, TL] order, covers at least
-        MIN_ARENA_AREA_FRACTION of the image, and matches the physical aspect ratio
+        True if the quad is convex in [BL, BR, TR, TL] order, is not the image perimeter itself,
+        covers at least MIN_ARENA_AREA_FRACTION of the image, and matches the physical aspect ratio
         within ARENA_ASPECT_TOLERANCE_RATIO.
     """
-    if image_width_px <= 0 or image_height_px <= 0:
-        return False
-    if arena_width_m <= 0.0 or arena_height_m <= 0.0:
+    has_invalid_size = (
+        image_width_px <= 0 or image_height_px <= 0 or arena_width_m <= 0.0 or arena_height_m <= 0.0
+    )
+    if has_invalid_size:
         return False
 
     pts = np.asarray(
@@ -103,6 +125,14 @@ def validate_arena_quad(
         return False
 
     if not _has_valid_quad_order(pts):
+        return False
+
+    is_image_bounds = _are_corners_on_image_bounds(
+        pts,
+        image_width_px=image_width_px,
+        image_height_px=image_height_px,
+    )
+    if is_image_bounds:
         return False
 
     quad_area_px = float(cv2.contourArea(pts))

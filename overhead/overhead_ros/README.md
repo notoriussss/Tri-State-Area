@@ -6,7 +6,15 @@ Thin ROS 2 adapters for the overhead camera vision node (`overhead_node`) and re
 
 ### `overhead_node`
 
-Captures frames from a live camera or a still image (`video_source`), calibrates the arena homography against the black-tape border, tracks cubes and robot triangle markers via `overhead_core`, and publishes `/world/state` and `/world/sensors` only when the state machine is in `RUNNING` or `DEGRADED`.
+Captures frames from a live camera or a still image (`video_source`), calibrates the arena homography against the black-tape border, tracks cubes and robot markers via `overhead_core`, and publishes `/world/state` and `/world/sensors` only when the state machine is in `RUNNING` or `DEGRADED`.
+
+#### Modules
+
+- `overhead_node.py`: Thin ROS 2 adapter wiring publishers, subscribers, services, timers, and state-machine transitions.
+- `node_parameters.py`: Declares all ROS parameters with defaults from `overhead_core.constants` and loads them into `OverheadNodeParameters`.
+- `world_publishers.py`: Builds and publishes `WorldState`, `VirtualSensors`, and rectified `CompressedImage` messages.
+- `safety_inputs.py`: Tracks `/zone/occupant` heartbeat freshness and `/perry/state` gate status on the local monotonic clock.
+- `conversions.py`: Pure conversions between `overhead_core` types and `tsa_interfaces` messages.
 
 #### Parameters
 
