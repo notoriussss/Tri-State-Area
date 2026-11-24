@@ -1,0 +1,30 @@
+# Usage (from overhead/docker):
+#   docker compose build
+#   docker compose run --rm overhead colcon-build
+#   docker compose run --rm overhead ros2 launch overhead_ros overhead.launch.py
+#
+# The repository is bind-mounted, so edits on the host are visible inside the container.
+# On the Raspberry Pi, uncomment the devices block to expose the camera.
+services:
+  overhead:
+    build:
+      context: .
+    image: tri-state-area/overhead:lyrical
+    working_dir: /ws
+    network_mode: host
+    environment:
+      ROS_DOMAIN_ID: "0"
+    volumes:
+      - ../..:/ws/src/tri-state-area
+      - ws_build:/ws/build
+      - ws_install:/ws/install
+      - ws_log:/ws/log
+    # devices:
+    #   - /dev/video0:/dev/video0
+    stdin_open: true
+    tty: true
+
+volumes:
+  ws_build:
+  ws_install:
+  ws_log:

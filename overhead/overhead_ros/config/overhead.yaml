@@ -1,9 +1,11 @@
 overhead_node:
   ros__parameters:
     camera_index: 0
+    video_source: ""
     width: 1280
     height: 720
     rate_hz: 20.0
+    calibration_retry_s: 1.0
     arena_width_m: 1.165
     arena_height_m: 0.70
     cam_height_m: 1.0
@@ -15,14 +17,21 @@ overhead_node:
     image_rate_hz: 5.0
     min_area_px: 150
     near_red_m: 0.17
-    # Cube HSV ranges [H, S, V] (OpenCV ranges: H 0-180, S 0-255, V 0-255)
+    # Cube HSV ranges [H_lo, S_lo, V_lo, H_hi, S_hi, V_hi] (OpenCV ranges: H 0-180, S 0-255, V 0-255)
     # Red uses two hue bands spanning 0 and 180
     # Lower hue 110 excludes the blue delivery-zone background (~101); cubes are 118-125
-    hsv_blue: [[110, 80, 25], [135, 255, 255]]
-    hsv_yellow: [[20, 100, 55], [35, 255, 255]]
-    hsv_red_1: [[0, 120, 55], [10, 255, 255]]
-    hsv_red_2: [[170, 120, 55], [180, 255, 255]]
+    hsv_blue: [110, 80, 25, 135, 255, 255]
+    hsv_yellow: [20, 100, 55, 35, 255, 255]
+    hsv_red_1: [0, 120, 55, 10, 255, 255]
+    hsv_red_2: [170, 120, 55, 180, 255, 255]
     # Triangle marker HSV ranges per robot
     # TODO(overhead): calibrate robot triangle marker colors with physical cardstock
-    hsv_robot_phineas: [[40, 100, 100], [80, 255, 255]]
-    hsv_robot_ferb: [[140, 100, 100], [165, 255, 255]]
+    hsv_robot_phineas: [40, 100, 100, 80, 255, 255]
+    hsv_robot_ferb: [140, 100, 100, 165, 255, 255]
+
+manipulator_relay_node:
+  ros__parameters:
+    robots: ["phineas", "ferb"]
+    perry_call_timeout_s: 5.0
+    heartbeat_timeout_s: 2.0
+    republish_rate_hz: 2.0

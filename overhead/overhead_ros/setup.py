@@ -44,6 +44,7 @@ setup(
         "console_scripts": [
             "overhead_node = overhead_ros.overhead_node:main",
             "viewer_node = overhead_ros.viewer_node:main",
+            "manipulator_relay_node = overhead_ros.manipulator_relay_node:main",
         ],
     },
 )

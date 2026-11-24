@@ -7,6 +7,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from overhead_core.calibration import validate_arena_quad
 from overhead_core.constants import (
     ARENA_HEIGHT_M,
     ARENA_WIDTH_M,
@@ -197,12 +198,19 @@ def calibrate_frame(
         return None, None
 
     height_px, width_px = frame_bgr.shape[:2]
-    is_invalid_quad = cv2.contourArea(corners) <= 0.0 or _are_corners_image_bounds(
+    is_valid_quad = validate_arena_quad(
+        corners,
+        image_width_px=width_px,
+        image_height_px=height_px,
+        arena_width_m=arena_width_m,
+        arena_height_m=arena_height_m,
+    )
+    is_image_bounds = _are_corners_image_bounds(
         corners,
         width_px,
         height_px,
     )
-    if is_invalid_quad:
+    if not is_valid_quad or is_image_bounds:
         return None, None
 
     homography = compute_homography(

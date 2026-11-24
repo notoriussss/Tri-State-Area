@@ -1,5 +1,6 @@
 """Package constants and enums for overhead_core."""
 
+import math
 from enum import StrEnum
 
 # Camera and arena geometry constants
@@ -197,3 +198,139 @@ CONTENT_TYPE_JPEG: str = "image/jpeg"
 CONTENT_TYPE_JSON: str = "application/json; charset=utf-8"
 CONTENT_TYPE_MJPEG: str = f"multipart/x-mixed-replace; boundary={MJPEG_BOUNDARY}"
 CACHE_CONTROL_NO_CACHE: str = "no-cache, no-store, must-revalidate"
+
+# Arena calibration validation thresholds
+QUAD_POINT_DIMS: int = 2
+MIN_ARENA_AREA_FRACTION: float = 0.25
+ARENA_ASPECT_TOLERANCE_RATIO: float = 0.15
+
+# Camera state machine timing defaults
+NO_FRAME_TIMEOUT_S: float = 0.5
+CAMERA_RETRY_S: float = 1.0
+
+# Lost robot hold timing default
+ROBOT_HOLD_S: float = 0.5
+
+# Velocity estimation defaults
+VELOCITY_SMOOTHING_ALPHA: float = 0.5
+MIN_VELOCITY_DT_S: float = 0.005
+VELOCITY_MAX_GAP_S: float = 0.5
+
+# Obstacle safety radii
+RED_CUBE_SAFETY_M: float = 0.17
+ROBOT_SAFETY_M: float = 0.17
+CUBE_SAFETY_M: float = 0.05
+CARRY_EXTENSION_M: float = 0.025
+
+
+class ObstacleKind(StrEnum):
+    """Categories of obstacles in the arena safety representation."""
+
+    RED_CUBE = "RED_CUBE"
+    ROBOT = "ROBOT"
+    CUBE = "CUBE"
+    WALL = "WALL"
+    ZONE = "ZONE"
+
+
+# Radar sensing defaults
+RADAR_SECTOR_COUNT: int = 8
+RADAR_RAYS_PER_SECTOR: int = 5
+RADAR_MAX_RANGE_M: float = 2.0
+RAY_PARALLEL_EPSILON: float = 1e-12
+RAY_ENDPOINT_TOLERANCE: float = 1e-9
+
+# Collision assessment thresholds and defaults
+COLLISION_CONE_HALF_ANGLE_RAD: float = math.pi / 3.0
+COLLISION_CONE_RAY_COUNT: int = 13
+COLLISION_SLOW_DIST_M: float = 0.60
+COLLISION_STOP_DIST_M: float = 0.40
+COLLISION_SLOW_TTC_S: float = 2.0
+COLLISION_STOP_TTC_S: float = 1.0
+VELOCITY_ZERO_EPSILON: float = 1e-12
+
+
+class CollisionLevel(StrEnum):
+    """Collision severity levels reported for each robot."""
+
+    CLEAR = "CLEAR"
+    SLOW = "SLOW"
+    STOP = "STOP"
+
+
+# Manipulator relay timeouts and routing categories
+PERRY_HEARTBEAT_TIMEOUT_S: float = 2.0
+PERRY_CALL_TIMEOUT_S: float = 5.0
+
+
+class RelayMessageKind(StrEnum):
+    """Message kinds routed by the manipulator relay."""
+
+    ZONE_OCCUPANT = "ZONE_OCCUPANT"
+    PERRY_STATE = "PERRY_STATE"
+    ZONE_REQUEST_RESPONSE = "ZONE_REQUEST_RESPONSE"
+    ZONE_RELEASE_RESPONSE = "ZONE_RELEASE_RESPONSE"
+    ROBOT_ZONE_REQUEST = "ROBOT_ZONE_REQUEST"
+    ROBOT_ZONE_RELEASE = "ROBOT_ZONE_RELEASE"
+
+
+class RelayDestination(StrEnum):
+    """Target destinations for messages routed by the manipulator relay."""
+
+    US = "US"
+    ROBOT = "ROBOT"
+    PERRY = "PERRY"
+
+
+# Overhead node defaults and calibration timing
+DEFAULT_VIDEO_SOURCE: str = ""
+CALIBRATION_RETRY_S: float = 1.0
+DEFAULT_RATE_HZ: float = 20.0
+DEFAULT_IMAGE_RATE_HZ: float = 5.0
+MIN_MAIN_TIMER_RATE_HZ: float = 1.0
+MIN_IMAGE_TIMER_RATE_HZ: float = 0.5
+DEFAULT_ROBOT_NAMES: tuple[str, ...] = (
+    RobotName.PHINEAS.value,
+    RobotName.FERB.value,
+)
+DEFAULT_DETECTION_CONFIDENCE: float = 1.0
+DEFAULT_IMAGE_JPEG_QUALITY: int = 80
+IMAGE_COMPRESSION_FORMAT: str = "jpeg"
+WARN_THROTTLE_PERIOD_S: float = 5.0
+
+# Overhead node log and service response messages
+LOG_NODE_INITIALIZED: str = "Overhead node initialized."
+LOG_STATE_TRANSITION_FMT: str = "Overhead state transition: {} -> {} (event={})."
+LOG_CAMERA_OPENED: str = "Frame source opened."
+LOG_CAMERA_OPEN_RETRY: str = "Frame source unavailable; retrying reopen."
+LOG_CALIBRATION_SUCCESS: str = "Arena homography calibration succeeded."
+LOG_CALIBRATION_FAILED_FMT: str = "Arena calibration failed: {}"
+LOG_CALIBRATION_INVALID_QUAD: str = "Detected arena quad failed geometry validation."
+LOG_NO_FRAME_DURING_CALIBRATION: str = "No frame available during calibration."
+LOG_IMAGE_ENCODE_FAILED: str = "Failed to JPEG-encode rectified arena image."
+MSG_RECALIBRATE_SUCCESS: str = "Overhead camera recalibrated successfully."
+MSG_RECALIBRATE_FAILED: str = "Overhead camera recalibration failed."
+MSG_RECALIBRATE_UNAVAILABLE: str = "Frame source unavailable for recalibration."
+
+HSV_CHANNEL_COUNT: int = 3
+
+# Empty string sentinels for optional safety and zone fields
+NO_OBSTACLE_KIND: str = ""
+NO_ZONE_OCCUPANT: str = ""
+
+# Manipulator relay node defaults and log messages
+DEFAULT_RELAY_REPUBLISH_RATE_HZ: float = 2.0
+MIN_RELAY_REPUBLISH_RATE_HZ: float = 0.1
+DEFAULT_LEASE_SECONDS: float = 0.0
+DEFAULT_DELIVERED_TOTAL: int = 0
+LOG_RELAY_INITIALIZED_FMT: str = "Manipulator relay node initialized for robots: {}."
+LOG_RELAY_HEARTBEAT_STALE_FMT: str = (
+    "Perry /zone/occupant heartbeat became stale (age={:.2f}s > {:.2f}s); stopping republish."
+)
+LOG_RELAY_HEARTBEAT_RECOVERED: str = "Perry /zone/occupant heartbeat recovered; resuming republish."
+LOG_RELAY_REJECTED_FMT: str = "Rejected {} for unknown or unconfigured robot '{}'."
+LOG_RELAY_PERRY_UNAVAILABLE_FMT: str = (
+    "Perry service '{}' is not ready for robot '{}'; returning failure."
+)
+LOG_RELAY_PERRY_TIMEOUT_FMT: str = "Perry service '{}' timed out after {:.2f}s for robot '{}'."
+LOG_RELAY_PERRY_CALL_FAILED_FMT: str = "Perry service '{}' call failed for robot '{}': {}"
