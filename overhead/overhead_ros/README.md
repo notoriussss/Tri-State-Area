@@ -6,7 +6,7 @@ Thin ROS 2 adapters for the overhead camera vision node (`overhead_node`) and re
 
 ### `overhead_node`
 
-Captures frames from a live camera or a still image (`video_source`), calibrates the arena homography against the black-tape border, tracks cubes and robot markers via `overhead_core`, and publishes `/world/state` and `/world/sensors` only when the state machine is in `RUNNING` or `DEGRADED`.
+Captures frames from a live camera, an HTTP(S) JPEG endpoint, or a still image (`video_source`), calibrates the arena homography against the black-tape border, tracks cubes and robot markers via `overhead_core`, and publishes `/world/state` and `/world/sensors` only when the state machine is in `RUNNING` or `DEGRADED`.
 
 #### Modules
 
@@ -21,7 +21,7 @@ Captures frames from a live camera or a still image (`video_source`), calibrates
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `camera_index` | `int` | `0` | OpenCV camera device index used when `video_source` is empty. |
-| `video_source` | `string` | `""` | Path to a still image file for offline testing; empty string opens the live camera. |
+| `video_source` | `string` | `""` | Still image file path or HTTP(S) frame URL (`http://host:port/frame.jpg`, e.g. `http://localhost:8082/frame.jpg`); empty string opens the live camera. Also exposed as the `video_source` launch argument in `overhead.launch.py`. |
 | `width` | `int` | `1280` | Requested camera capture width in pixels. |
 | `height` | `int` | `720` | Requested camera capture height in pixels. |
 | `rate_hz` | `double` | `20.0` | Main vision processing and state-machine loop rate in Hz. |

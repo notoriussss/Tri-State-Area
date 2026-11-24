@@ -8,9 +8,11 @@ from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
+import cv2
 import numpy as np
 import pytest
 from overhead_core.constants import (
+    MSG_NO_FRAME_AVAILABLE,
     CollisionLevel,
     ObstacleKind,
     RobotName,
@@ -241,6 +243,15 @@ def test_should_stream_mjpeg_multipart_when_get_stream():
     assert b"\xff\xd8" in chunk
 
 
+def _count_bright_green_pixels(image_bgr: np.ndarray) -> int:
+    """Counts bright calibration-overlay green pixels in a BGR image."""
+    is_low_blue = image_bgr[:, :, 0] < 30
+    is_high_green = image_bgr[:, :, 1] > 220
+    is_low_red = image_bgr[:, :, 2] < 30
+    is_green = is_low_blue & is_high_green & is_low_red
+    return int(np.count_nonzero(is_green))
+
+
 def test_should_save_raw_jpeg_file_when_snapshot_saved(tmp_path: Path):
     state = CameraViewerState(captures_dir=tmp_path)
     snapshot = _make_fake_snapshot()
@@ -252,3 +263,57 @@ def test_should_save_raw_jpeg_file_when_snapshot_saved(tmp_path: Path):
     assert saved_path.suffix == ".jpg"
     raw_bytes = saved_path.read_bytes()
     assert raw_bytes[:2] == b"\xff\xd8"
+
+
+def test_should_return_clean_fixture_jpeg_without_green_calibration_when_get_frame(
+    tmp_path: Path,
+):
+    fixture_path = Path(__file__).resolve().parent / "fixtures" / "arena_two_robots_2026-11-24.jpg"
+    raw_bytes = np.frombuffer(
+        fixture_path.read_bytes(),
+        dtype=np.uint8,
+    )
+    clean_frame = cv2.imdecode(
+        raw_bytes,
+        cv2.IMREAD_COLOR,
+    )
+    assert clean_frame is not None
+    state = CameraViewerState(captures_dir=tmp_path)
+    state.update_from_frame(clean_frame)
+    snapshot = state.get_snapshot()
+    assert snapshot is not None
+    assert snapshot.is_calibrated is True
+    assert _count_bright_green_pixels(snapshot.views[ViewerView.RAW.value]) > 0
+
+    with _running_server(state.get_snapshot) as server:
+        port = server.server_address[1]
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/frame.jpg") as resp:
+            status = resp.status
+            content_type = resp.headers.get("Content-Type", "")
+            payload = resp.read()
+
+    decoded = cv2.imdecode(
+        np.frombuffer(
+            payload,
+            dtype=np.uint8,
+        ),
+        cv2.IMREAD_COLOR,
+    )
+    assert status == 200
+    assert "image/jpeg" in content_type
+    assert payload[:2] == b"\xff\xd8"
+    assert payload[-2:] == b"\xff\xd9"
+    assert decoded is not None
+    assert decoded.shape == (720, 1280, 3)
+    assert _count_bright_green_pixels(decoded) == 0
+
+
+def test_should_return_service_unavailable_when_get_frame_before_capture():
+    with _running_server(lambda: None) as server:
+        port = server.server_address[1]
+        url = f"http://127.0.0.1:{port}/frame.jpg"
+        with pytest.raises(urllib.error.HTTPError) as exc_info:
+            urllib.request.urlopen(url)
+
+    assert exc_info.value.code == 503
+    assert MSG_NO_FRAME_AVAILABLE in exc_info.value.reason

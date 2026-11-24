@@ -21,6 +21,7 @@ from overhead_core.constants import (
     CONTENT_TYPE_MJPEG,
     DEFAULT_WEB_HOST,
     DEFAULT_WEB_PORT,
+    HTTP_PATH_FRAME,
     HTTP_PATH_INDEX,
     HTTP_PATH_RECALIBRATE,
     HTTP_PATH_SNAPSHOT,
@@ -30,6 +31,7 @@ from overhead_core.constants import (
     HTTP_QUERY_VIEW_KEY,
     JPEG_EXTENSION,
     MJPEG_BOUNDARY,
+    MSG_NO_FRAME_AVAILABLE,
     NO_OBSTACLE_KIND,
     STATIC_DIR_NAME,
     STATUS_FLOAT_PRECISION,
@@ -112,7 +114,7 @@ def _extract_stream_view(path: str) -> str | None:
 
 
 class OverheadRequestHandler(BaseHTTPRequestHandler):
-    """HTTP request handler serving HTML UI, MJPEG streams, snapshots, and recalibration."""
+    """HTTP request handler serving HTML UI, streams, snapshots, raw frames, and calibration."""
 
     server: "OverheadWebServer"
 
@@ -128,7 +130,7 @@ class OverheadRequestHandler(BaseHTTPRequestHandler):
         )
 
     def do_GET(self) -> None:  # noqa: N802
-        """Handles GET requests for index HTML, status JSON, snapshots, and MJPEG streams."""
+        """Handles GET requests for HTML UI, status JSON, snapshots, raw frames, and streams."""
         parsed = urlparse(self.path)
         path = parsed.path
 
@@ -140,6 +142,9 @@ class OverheadRequestHandler(BaseHTTPRequestHandler):
             return
         if path == HTTP_PATH_SNAPSHOT:
             self._handle_snapshot(parsed.query)
+            return
+        if path == HTTP_PATH_FRAME:
+            self._handle_frame()
             return
 
         stream_view = _extract_stream_view(path)
@@ -234,6 +239,37 @@ class OverheadRequestHandler(BaseHTTPRequestHandler):
             json.dumps(payload).encode("utf-8"),
         )
 
+    def _send_jpeg_frame(
+        self,
+        image_bgr: np.ndarray,
+    ) -> None:
+        """Encodes a BGR frame as JPEG and writes a 200 OK response."""
+        jpeg_bytes = _encode_jpeg(
+            image_bgr,
+            self.server.jpeg_quality,
+        )
+        if jpeg_bytes is None:
+            self.send_error(HTTPStatus.INTERNAL_SERVER_ERROR)
+            return
+
+        self._send_bytes(
+            HTTPStatus.OK,
+            CONTENT_TYPE_JPEG,
+            jpeg_bytes,
+        )
+
+    def _handle_frame(self) -> None:
+        """Serves the latest clean camera frame as JPEG without viewer overlays."""
+        snap = _normalize_snapshot(self.server.frame_provider())
+        if snap is None or snap.raw_frame is None:
+            self.send_error(
+                HTTPStatus.SERVICE_UNAVAILABLE,
+                MSG_NO_FRAME_AVAILABLE,
+            )
+            return
+
+        self._send_jpeg_frame(snap.raw_frame)
+
     def _handle_snapshot(self, query: str) -> None:
         """Serves a single JPEG frame for the requested view and invokes snapshot hook."""
         params = parse_qs(query)
@@ -260,19 +296,7 @@ class OverheadRequestHandler(BaseHTTPRequestHandler):
                     exc,
                 )
 
-        jpeg_bytes = _encode_jpeg(
-            snap.views[view_name],
-            self.server.jpeg_quality,
-        )
-        if jpeg_bytes is None:
-            self.send_error(HTTPStatus.INTERNAL_SERVER_ERROR)
-            return
-
-        self._send_bytes(
-            HTTPStatus.OK,
-            CONTENT_TYPE_JPEG,
-            jpeg_bytes,
-        )
+        self._send_jpeg_frame(snap.views[view_name])
 
     def _handle_recalibrate(self) -> None:
         """Triggers the recalibration callback and returns calibration status as JSON."""

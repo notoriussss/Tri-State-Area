@@ -62,6 +62,24 @@ Using a dedicated WSL2 distro (`tsa-ros`, imported from `tri-state-area/overhead
    .\setup-wsl.ps1 -Run ""
    ```
 
+## Live camera from Windows
+
+WSL2 cannot open the USB camera directly, so the standalone web viewer owns the camera on Windows and serves clean raw frames at `/frame.jpg`. Because WSL2 `networkingMode=mirrored` shares `localhost` between Windows and `tsa-ros`, `overhead_node` reads frames directly from `http://localhost:8082/frame.jpg` via the `video_source` launch argument exposed by `overhead.launch.py`.
+
+1. **On Windows** (from the repo root, start the web viewer owning the USB camera):
+
+   ```bash
+   PYTHONPATH=overhead/overhead_core python -m overhead_core.web_viewer_app --camera-index 1 --port 8082
+   ```
+
+2. **In WSL** (`tsa-ros`, launch the ROS nodes reading frames from the Windows viewer):
+
+   ```bash
+   ros2 launch overhead_ros overhead.launch.py video_source:=http://localhost:8082/frame.jpg
+   ```
+
+   From Windows PowerShell, you can also run step 2 via `.\setup-wsl.ps1 -Run "ros2 launch overhead_ros overhead.launch.py video_source:=http://localhost:8082/frame.jpg"`.
+
 ## Troubleshooting
 
 ### Robots are discovered but no messages arrive

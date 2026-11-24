@@ -8,6 +8,7 @@ from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description() -> LaunchDescription:
@@ -37,11 +38,28 @@ def generate_launch_description() -> LaunchDescription:
         description="Path to overhead configuration YAML file.",
     )
 
+    video_source_arg = DeclareLaunchArgument(
+        "video_source",
+        default_value="",
+        description=(
+            "Still image path or HTTP(S) frame URL (e.g. http://localhost:8082/frame.jpg); "
+            "empty opens the live camera."
+        ),
+    )
+
     overhead_node = Node(
         package="overhead_ros",
         executable="overhead_node",
         name="overhead_node",
-        parameters=[LaunchConfiguration("config_path")],
+        parameters=[
+            LaunchConfiguration("config_path"),
+            {
+                "video_source": ParameterValue(
+                    LaunchConfiguration("video_source"),
+                    value_type=str,
+                ),
+            },
+        ],
         output="screen",
     )
 
@@ -67,6 +85,7 @@ def generate_launch_description() -> LaunchDescription:
             use_viewer_arg,
             use_relay_arg,
             config_path_arg,
+            video_source_arg,
             overhead_node,
             viewer_node,
             manipulator_relay_node,

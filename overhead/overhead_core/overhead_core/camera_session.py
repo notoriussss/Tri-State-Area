@@ -50,7 +50,7 @@ class CameraSession:
         """Initializes camera session state around an abstract FrameSource.
 
         Args:
-            frame_source: Live camera or still-image frame provider.
+            frame_source: Live camera, HTTP frame source, or still-image frame provider.
             arena_width_m: Physical arena width along world +x in meters.
             arena_height_m: Physical arena height along world +y in meters.
             calibration_retry_s: Interval in seconds between calibration retries.

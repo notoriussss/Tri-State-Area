@@ -203,9 +203,29 @@ HTTP_PATH_INDEX: str = "/"
 HTTP_PATH_STREAM_PREFIX: str = "/stream/"
 HTTP_PATH_STREAM_SUFFIX: str = ".mjpg"
 HTTP_PATH_SNAPSHOT: str = "/snapshot.jpg"
+HTTP_PATH_FRAME: str = "/frame.jpg"
 HTTP_PATH_RECALIBRATE: str = "/recalibrate"
 HTTP_PATH_STATUS: str = "/status"
 HTTP_QUERY_VIEW_KEY: str = "view"
+MSG_NO_FRAME_AVAILABLE: str = "No frame captured yet"
+
+# HTTP frame source defaults and logging
+HTTP_URL_PREFIX: str = "http://"
+HTTPS_URL_PREFIX: str = "https://"
+HTTP_URL_PREFIXES: tuple[str, str] = (
+    HTTP_URL_PREFIX,
+    HTTPS_URL_PREFIX,
+)
+HTTP_FRAME_TIMEOUT_S: float = 1.0
+HTTP_ERROR_KEY_PREFIX: str = "http"
+URL_ERROR_KEY_PREFIX: str = "url"
+IO_ERROR_KEY_PREFIX: str = "io"
+HTTP_FRAME_EMPTY_ERROR_KEY: str = "empty"
+HTTP_FRAME_DECODE_ERROR_KEY: str = "decode"
+LOG_HTTP_FRAME_FETCH_FAILED_FMT: str = "Failed to fetch HTTP frame from %s: %s"
+LOG_HTTP_FRAME_EMPTY_FMT: str = "Received empty HTTP frame payload from %s."
+LOG_HTTP_FRAME_DECODE_FAILED_FMT: str = "Failed to decode HTTP JPEG frame from %s."
+LOG_HTTP_FRAME_RECOVERED_FMT: str = "Recovered HTTP frame stream from %s."
 
 MJPEG_BOUNDARY: str = "frame"
 CONTENT_TYPE_HTML: str = "text/html; charset=utf-8"
