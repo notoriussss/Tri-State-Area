@@ -5,4 +5,4 @@ robot_link_check_node:
     robot_names: ["phineas", "ferb"]
     robot_hosts: ["10.217.177.13", "10.217.177.198"]
     robot_web_port: 8081
-    listen_s: 6.0
+    listen_s: 15.0

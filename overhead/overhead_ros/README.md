@@ -88,7 +88,7 @@ One-shot diagnostic CLI (`robot_link_check_node`) that checks end-to-end communi
 | `robot_names` | `string[]` | `["phineas", "ferb"]` | Configured robot names to verify. |
 | `robot_hosts` | `string[]` | `["10.217.177.13", "10.217.177.198"]` | Site Wi-Fi IP/host addresses aligned positionally with `robot_names`. |
 | `robot_web_port` | `int` | `8081` | HTTP port of each robot controller's `/api/status` endpoint. |
-| `listen_s` | `double` | `6.0` | Duration in seconds to listen for ROS topics before evaluating link health. |
+| `listen_s` | `double` | `15.0` | Duration in seconds to listen for ROS topics before evaluating link health. |
 
 ## Tests
 

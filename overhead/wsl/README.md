@@ -64,6 +64,18 @@ Using a dedicated WSL2 distro (`tsa-ros`, imported from `tri-state-area/overhead
 
 ## Troubleshooting
 
+### Robots are discovered but no messages arrive
+
+Symptom (seen on 2026-11-24): `ros2 topic list` shows `/phineas/status` and `/ferb/status`, but
+`robot_link_check` reports `NO_PLAN_TOPIC` and `NO_STATUS_TOPIC`, and `ros2 topic info -v` shows
+`_NODE_NAME_UNKNOWN_`. Cause: with Fast DDS builtin transports (shared memory plus UDP over every
+interface) the robots never send data to the WSL participant. `wsl-entrypoint.sh` therefore exports
+`FASTDDS_DEFAULT_PROFILES_FILE=overhead/wsl/fastdds_udp_only.xml` (UDPv4 only). Discovery needs
+several seconds over Wi-Fi, so give any check at least 15 s. `ros2 topic echo` without an explicit
+message type gives up after about 1 s; pass the type, for example
+`ros2 topic echo --once --spin-time 15 /ferb/status tsa_interfaces/msg/RobotStatus`.
+
+
 - **`ros2 node list` does not show `collector_node` for both robots:**
   - Verify inside WSL that `collector_node` appears for both robots (`.\setup-wsl.ps1 -Run "ros2 node list"`).
   - Confirm both PC and robots are on the same Wi-Fi subnet (`10.217.177.0/24`) and ping `10.217.177.13` and `10.217.177.198`.

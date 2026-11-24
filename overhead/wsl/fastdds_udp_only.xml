@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  Fast DDS profile for the overhead PC running in WSL2 (mirrored network).
+  Shared memory is disabled and only UDPv4 is used. With the builtin transports (shared memory
+  plus UDP over every interface) the robots discovered our endpoints but never sent us data;
+  with UDP only, Phineas and Ferb status messages arrive (verified 2026-11-24).
+-->
+<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+  <transport_descriptors>
+    <transport_descriptor>
+      <transport_id>udp_only</transport_id>
+      <type>UDPv4</type>
+    </transport_descriptor>
+  </transport_descriptors>
+  <participant profile_name="udp_only" is_default_profile="true">
+    <rtps>
+      <useBuiltinTransports>false</useBuiltinTransports>
+      <userTransports>
+        <transport_id>udp_only</transport_id>
+      </userTransports>
+    </rtps>
+  </participant>
+</profiles>

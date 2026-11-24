@@ -20,6 +20,9 @@ if [ -f "$ENV_FILE" ]; then
     source <(sed 's/\r$//' "$ENV_FILE")
 fi
 
+# UDP-only transport: with shared memory enabled the robots never sent us data (see the XML).
+export FASTDDS_DEFAULT_PROFILES_FILE="${FASTDDS_DEFAULT_PROFILES_FILE:-$SCRIPT_DIR/fastdds_udp_only.xml}"
+
 mkdir -p "$WS_DIR"
 colcon \
     --log-base "$WS_DIR/log" \
