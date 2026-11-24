@@ -17,10 +17,11 @@ overhead_node:
     near_red_m: 0.17
     # Cube HSV ranges [H, S, V] (OpenCV ranges: H 0-180, S 0-255, V 0-255)
     # Red uses two hue bands spanning 0 and 180
-    hsv_blue: [[100, 120, 70], [130, 255, 255]]
-    hsv_yellow: [[20, 100, 100], [35, 255, 255]]
-    hsv_red_1: [[0, 120, 70], [10, 255, 255]]
-    hsv_red_2: [[170, 120, 70], [180, 255, 255]]
+    # Lower hue 110 excludes the blue delivery-zone background (~101); cubes are 118-125
+    hsv_blue: [[110, 80, 25], [135, 255, 255]]
+    hsv_yellow: [[20, 100, 55], [35, 255, 255]]
+    hsv_red_1: [[0, 120, 55], [10, 255, 255]]
+    hsv_red_2: [[170, 120, 55], [180, 255, 255]]
     # Triangle marker HSV ranges per robot
     # TODO(overhead): calibrate robot triangle marker colors with physical cardstock
     hsv_robot_phineas: [[40, 100, 100], [80, 255, 255]]

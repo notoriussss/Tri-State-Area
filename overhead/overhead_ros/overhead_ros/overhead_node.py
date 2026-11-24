@@ -194,21 +194,22 @@ class OverheadNode(Node):
         )
 
         # Default HSV ranges
+        # Lower hue 110 excludes the blue delivery-zone background (~101); cubes are 118-125
         self.declare_parameter(
             "hsv_blue",
-            [[100, 120, 70], [130, 255, 255]],
+            [[110, 80, 25], [135, 255, 255]],
         )
         self.declare_parameter(
             "hsv_yellow",
-            [[20, 100, 100], [35, 255, 255]],
+            [[20, 100, 55], [35, 255, 255]],
         )
         self.declare_parameter(
             "hsv_red_1",
-            [[0, 120, 70], [10, 255, 255]],
+            [[0, 120, 55], [10, 255, 255]],
         )
         self.declare_parameter(
             "hsv_red_2",
-            [[170, 120, 70], [180, 255, 255]],
+            [[170, 120, 55], [180, 255, 255]],
         )
         self.declare_parameter(
             "hsv_robot_phineas",
