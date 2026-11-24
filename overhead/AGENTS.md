@@ -60,7 +60,9 @@ command a robot, decide who yields or grant the zone, it is out of scope.
 | Overhead node: `/world/state`, `/world/sensors`, `/world/get`, `/world/corridor_free`, `/world/image`, `/overhead/recalibrate` | `overhead_ros/overhead_node.py`, `overhead_ros/node_parameters.py`, `overhead_ros/world_publishers.py`, `overhead_ros/safety_inputs.py`, `overhead_ros/conversions.py` | Verified on ROS 2 Lyrical in container (still photos); **never run with a real robot or on the Raspberry Pi** |
 | Manipulator relay node: `/<robot>/zone/request`, `/<robot>/zone/release`, `/<robot>/zone/occupant` | `overhead_ros/manipulator_relay_node.py` | Verified on ROS 2 Lyrical in container (`FakePerry`); **never run with real Perry/robots or on the Raspberry Pi** |
 | Viewer node: world, robots and fleet plans drawn over the image | `overhead_ros/viewer_node.py` | Written, never run on hardware display |
+| Robot link check (pure core + one-shot ROS CLI) | `overhead_core/robot_link.py`, `overhead_ros/robot_link_check_node.py`, `overhead_ros/config/robots.yaml` | Done, core tested; ROS CLI pending field test |
 | Multi-arch Docker image & test runner (ROS 2 Lyrical) | `overhead/docker/` (`Dockerfile`, `compose.yaml`, `run-tests.sh`) | Done, verified on PC |
+| Windows/WSL2 mirrored DDS link setup | `overhead/wsl/` (`robots.env`, `setup-wsl.ps1`, `wsl-entrypoint.sh`, `README.md`) | Done, pending Windows + Wi-Fi field test |
 | Messages | `interfaces/tsa_interfaces/` | Contract v0 + O7/O20 proposals (pending approval) |
 
 Development machines may be Windows without ROS. Pure tests (`python -m pytest
@@ -320,3 +322,6 @@ note the question in the PR.
   `ReentrantCallbackGroup` under `MultiThreadedExecutor`).
 - FastDDS discovery under Docker Desktop requires running multi-process checks inside the same
   container (with `network_mode: host` and an isolated `ROS_DOMAIN_ID` per test run).
+- Live Wi-Fi robot runs from Windows 11 must run inside the `tsa-ros` WSL2 distro with
+  `networkingMode=mirrored`, `ROS_STATIC_PEERS` (`overhead/wsl/robots.env`), and the
+  Windows/Hyper-V firewall rules (`overhead/wsl/setup-wsl.ps1`).

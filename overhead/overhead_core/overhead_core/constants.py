@@ -396,3 +396,69 @@ RADAR_SPOKE_MAX_LEN_PX: float = 60.0
 ZONE_OUTLINE_THICKNESS_PX: int = 2
 SAFETY_LABEL_OFFSET_Y_PX: int = 18
 STATUS_FLOAT_PRECISION: int = 3
+
+# Robot link check defaults, web status schema keys, and diagnostic messages
+DEFAULT_ROBOT_HOSTS: tuple[str, ...] = (
+    "10.217.177.13",
+    "10.217.177.198",
+)
+DEFAULT_ROBOT_WEB_PORT: int = 8081
+DEFAULT_ROBOT_LINK_LISTEN_S: float = 6.0
+ROBOT_LINK_MAX_AGE_S: float = 2.0
+ROBOT_WEB_REQUEST_TIMEOUT_S: float = 2.0
+ROBOT_WEB_STATUS_PATH: str = "/api/status"
+ROBOT_WEB_URL_FMT: str = "http://{}:{}{}"
+ROBOT_WEB_NO_CAMERA_TEXT: str = "no camera"
+ROBOT_WEB_NO_AGE_TEXT: str = "none"
+ROBOT_WEB_AGE_UNIT_SUFFIX: str = "s"
+MIN_PORT_NUMBER: int = 1
+MAX_PORT_NUMBER: int = 65535
+ROBOT_LINK_POLL_PERIOD_S: float = 0.05
+ROBOT_LINK_THREAD_JOIN_TIMEOUT_S: float = 0.5
+ROBOT_LINK_PROBLEM_SEPARATOR: str = ", "
+ROBOT_LINK_STATUS_OK: str = "OK"
+
+ROBOT_WEB_KEY_ROBOT_NAME: str = "robot_name"
+ROBOT_WEB_KEY_AUTO_ENABLED: str = "auto_enabled"
+ROBOT_WEB_KEY_HAL_MODE: str = "hal_mode"
+ROBOT_WEB_KEY_FSM_STATE: str = "fsm_state"
+ROBOT_WEB_KEY_LINE_DETECTED: str = "line_detected"
+ROBOT_WEB_KEY_POSE_TEXT: str = "pose_text"
+ROBOT_WEB_KEY_CAMERA_AGE_TEXT: str = "camera_age_text"
+ROBOT_WEB_KEY_TARGET_CUBE_ID: str = "target_cube_id"
+
+ROBOT_WEB_REQUIRED_KEYS: tuple[str, ...] = (
+    ROBOT_WEB_KEY_ROBOT_NAME,
+    ROBOT_WEB_KEY_AUTO_ENABLED,
+    ROBOT_WEB_KEY_HAL_MODE,
+    ROBOT_WEB_KEY_FSM_STATE,
+    ROBOT_WEB_KEY_LINE_DETECTED,
+    ROBOT_WEB_KEY_POSE_TEXT,
+    ROBOT_WEB_KEY_CAMERA_AGE_TEXT,
+    ROBOT_WEB_KEY_TARGET_CUBE_ID,
+)
+
+ERR_ROBOT_WEB_PAYLOAD_TYPE_FMT: str = "Expected robot web status mapping, got {}."
+ERR_ROBOT_WEB_MISSING_KEY_FMT: str = "Missing required robot web status key: '{}'."
+ERR_ROBOT_WEB_INVALID_FIELD_FMT: str = "Invalid robot web status field '{}': {!r}."
+ERR_ROBOT_WEB_CAMERA_AGE_FMT: str = "Invalid robot camera age text: '{}'."
+ERR_ROBOT_LINK_HOST_MISMATCH_FMT: str = (
+    "Parameters robot_names ({}) and robot_hosts ({}) must have the same length."
+)
+ERR_ROBOT_LINK_EMPTY_ROBOTS: str = "Parameter robot_names must not be empty."
+ERR_ROBOT_LINK_INVALID_LISTEN_S_FMT: str = "Parameter listen_s must be positive, got {}."
+ERR_ROBOT_LINK_INVALID_PORT_FMT: str = "Parameter robot_web_port must be in {}..{}, got {}."
+
+LOG_ROBOT_LINK_START_FMT: str = "Checking robot links for {} over {:.1f}s..."
+LOG_ROBOT_LINK_RESULT_FMT: str = "{}: {}"
+LOG_ROBOT_LINK_WEB_FETCH_FAILED_FMT: str = "Failed to fetch web status for '{}' from {}: {}"
+
+
+class RobotLinkProblem(StrEnum):
+    """Diagnostic failure codes reported when checking a robot link."""
+
+    WEB_UNREACHABLE = "WEB_UNREACHABLE"
+    NO_PLAN_TOPIC = "NO_PLAN_TOPIC"
+    NO_STATUS_TOPIC = "NO_STATUS_TOPIC"
+    ROBOT_WITHOUT_WORLD = "ROBOT_WITHOUT_WORLD"
+    ROBOT_NOT_LOCATED = "ROBOT_NOT_LOCATED"

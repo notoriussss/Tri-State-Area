@@ -45,6 +45,7 @@ setup(
             "overhead_node = overhead_ros.overhead_node:main",
             "viewer_node = overhead_ros.viewer_node:main",
             "manipulator_relay_node = overhead_ros.manipulator_relay_node:main",
+            "robot_link_check = overhead_ros.robot_link_check_node:main",
         ],
     },
 )

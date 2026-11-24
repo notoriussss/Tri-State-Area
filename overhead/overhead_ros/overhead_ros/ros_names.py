@@ -79,6 +79,18 @@ PERRY_STATE_QOS: QoSProfile = QoSProfile(
 # Node names
 OVERHEAD_NODE_NAME: str = "overhead_node"
 MANIPULATOR_RELAY_NODE_NAME: str = "manipulator_relay_node"
+ROBOT_LINK_CHECK_NODE_NAME: str = "robot_link_check_node"
+
+# Package resource identifiers for config loading
+OVERHEAD_ROS_PACKAGE_NAME: str = "overhead_ros"
+CONFIG_DIR_NAME: str = "config"
+ROBOTS_CONFIG_FILENAME: str = "robots.yaml"
+ROS_PARAMETERS_KEY: str = "ros__parameters"
+UTF8_ENCODING: str = "utf-8"
+
+# Per-robot topic suffixes
+PLAN_TOPIC_SUFFIX: str = "/plan"
+STATUS_TOPIC_SUFFIX: str = "/status"
 
 # Overhead node ROS parameter names
 PARAM_CAMERA_INDEX: str = "camera_index"
@@ -118,6 +130,12 @@ PARAM_PERRY_CALL_TIMEOUT_S: str = "perry_call_timeout_s"
 PARAM_HEARTBEAT_TIMEOUT_S: str = "heartbeat_timeout_s"
 PARAM_REPUBLISH_RATE_HZ: str = "republish_rate_hz"
 
+# Robot link check node ROS parameter names
+PARAM_ROBOT_NAMES: str = "robot_names"
+PARAM_ROBOT_HOSTS: str = "robot_hosts"
+PARAM_ROBOT_WEB_PORT: str = "robot_web_port"
+PARAM_LISTEN_S: str = "listen_s"
+
 
 def zone_request_service(robot: str) -> str:
     """Builds the per-robot zone request service name."""
@@ -135,3 +153,15 @@ def zone_occupant_topic(robot: str) -> str:
     """Builds the per-robot zone occupant topic name."""
     cleaned_robot = robot.strip("/")
     return f"/{cleaned_robot}{ZONE_OCCUPANT_TOPIC}"
+
+
+def robot_plan_topic(robot: str) -> str:
+    """Builds the per-robot plan topic name."""
+    cleaned_robot = robot.strip("/")
+    return f"/{cleaned_robot}{PLAN_TOPIC_SUFFIX}"
+
+
+def robot_status_topic(robot: str) -> str:
+    """Builds the per-robot status topic name."""
+    cleaned_robot = robot.strip("/")
+    return f"/{cleaned_robot}{STATUS_TOPIC_SUFFIX}"

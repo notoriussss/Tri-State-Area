@@ -206,3 +206,15 @@ def to_robot_obstacles_msg(
     msg.nearest_dist = float(assessment.nearest_dist_m)
     msg.nearest_bearing = float(assessment.nearest_bearing_rad)
     return msg
+
+
+def located_robot_names_from_world_state(msg: WorldState) -> frozenset[str]:
+    """Extracts the set of robot names currently present in a WorldState message.
+
+    Args:
+        msg: WorldState message published on /world/state.
+
+    Returns:
+        Frozen set of robot names currently located in the arena.
+    """
+    return frozenset(str(robot.name) for robot in msg.robots)

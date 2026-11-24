@@ -77,6 +77,19 @@ Relays delivery-zone requests, releases, and `/zone/occupant` heartbeats between
 - **Services:** `/<robot>/zone/request` (`multirobot_interfaces/RequestZone`), `/<robot>/zone/release` (`multirobot_interfaces/ReleaseZone`)
 - **Clients:** `/zone/request` (`multirobot_interfaces/RequestZone`), `/zone/release` (`multirobot_interfaces/ReleaseZone`)
 
+### `robot_link_check`
+
+One-shot diagnostic CLI (`robot_link_check_node`) that checks end-to-end communication with each collector robot (`ros2 run overhead_ros robot_link_check`). It loads site defaults from `config/robots.yaml`, listens to `/world/state`, `/<robot>/plan`, and `/<robot>/status` for `listen_s` seconds on its local monotonic clock, queries each robot's `http://<host>:<port>/api/status` endpoint in a background thread (`2.0 s` timeout), logs one summary line per robot (`OK` or problem codes), and exits `0` only if every robot passes.
+
+#### Parameters
+
+| Parameter | Type | Default (`config/robots.yaml`) | Description |
+|---|---|---|---|
+| `robot_names` | `string[]` | `["phineas", "ferb"]` | Configured robot names to verify. |
+| `robot_hosts` | `string[]` | `["10.217.177.13", "10.217.177.198"]` | Site Wi-Fi IP/host addresses aligned positionally with `robot_names`. |
+| `robot_web_port` | `int` | `8081` | HTTP port of each robot controller's `/api/status` endpoint. |
+| `listen_s` | `double` | `6.0` | Duration in seconds to listen for ROS topics before evaluating link health. |
+
 ## Tests
 
 The ROS 2 integration tests in `overhead/overhead_ros/test/` run in-process against still-photo fixtures and a `FakePerry` node using a PID-isolated `ROS_DOMAIN_ID`, so no physical camera or Perry hardware is required.

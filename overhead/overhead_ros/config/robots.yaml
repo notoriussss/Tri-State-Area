@@ -1,0 +1,8 @@
+# Site network configuration for collector robots.
+# Update robot_names, robot_hosts, and robot_web_port if Wi-Fi IPs or web ports change.
+robot_link_check_node:
+  ros__parameters:
+    robot_names: ["phineas", "ferb"]
+    robot_hosts: ["10.217.177.13", "10.217.177.198"]
+    robot_web_port: 8081
+    listen_s: 6.0
