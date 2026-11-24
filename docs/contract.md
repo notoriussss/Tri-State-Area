@@ -68,7 +68,7 @@ geometry_msgs/Twist      in the robot body frame (x forward toward the scoop)
 
 ### `/fleet/plan` · topic · ~5 Hz
 
-Contains, for each robot, its current state (`IDLE`, `GO_TO_APPROACH`, `PUSH`, `REQUEST_ZONE`, `DELIVER`, `LEAVE`, `WAIT`, `STOPPED`, `RECOVER`), `target_cube_id`, `target_pose` (`geometry_msgs/Pose2D`), and `path` (`geometry_msgs/Point[]`). Used by `overhead`'s `viewer_node` and for logging.
+Contains, for each robot, its current state (`IDLE`, `GO_TO_APPROACH`, `PUSH`, `REQUEST_ZONE`, `DELIVER`, `LEAVE`, `WAIT`, `STOPPED`, `RECOVER`), `target_cube_id`, `target_pose` (`tsa_interfaces/Pose2D`, since `geometry_msgs/Pose2D` no longer exists in ROS 2 Lyrical), and `path` (`geometry_msgs/Point[]`). Used by `overhead`'s `viewer_node` and for logging.
 
 ## Robot (Fleet Onboard) Publishes
 
