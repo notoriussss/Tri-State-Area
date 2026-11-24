@@ -25,12 +25,14 @@ from overhead_core.constants import (
     DEFAULT_ROBOT_MIN_AREA_PX,
     DEFAULT_ROBOT_NAMES,
     DEFAULT_ROBOT_POSITION_OFFSETS_M,
+    DEFAULT_TRIANGLE_HEADING_RULE,
     ERR_UNKNOWN_ROBOT_DETECTOR_FMT,
     HEADING_STEP_PX,
     MAX_CUBE_AREA_PX,
     ROBOT_HULL_DILATION_PX,
     ROBOT_MARKER_HEIGHT_M,
     RobotDetector,
+    TriangleHeadingRule,
 )
 from overhead_core.cubes import detect_cubes
 from overhead_core.geometry import (
@@ -71,6 +73,7 @@ class WorldFrameConfig:
     robot_position_offsets_m: dict[str, tuple[float, float]] = field(
         default_factory=lambda: dict(DEFAULT_ROBOT_POSITION_OFFSETS_M),
     )
+    triangle_heading_rule: TriangleHeadingRule = DEFAULT_TRIANGLE_HEADING_RULE
 
 
 def _build_hsv_mask(
@@ -136,10 +139,11 @@ def _detect_robot_triangle_hulls(
             contours,
             key=cv2.contourArea,
         )
-        if cv2.contourArea(largest) < config.robot_min_area_px:
+        hull = cv2.convexHull(largest)
+        if cv2.contourArea(hull) < config.robot_min_area_px:
             continue
 
-        hulls.append(cv2.convexHull(largest))
+        hulls.append(hull)
 
     return hulls
 
@@ -154,6 +158,50 @@ def _is_inside_any_hull(
     """Returns True when (u_px, v_px) lies within dilation_px of any convex hull."""
     margin = -float(dilation_px)
     return any(cv2.pointPolygonTest(hull, (u_px, v_px), True) >= margin for hull in hulls)
+
+
+def detect_filtered_cubes(
+    frame: np.ndarray,
+    *,
+    config: WorldFrameConfig,
+) -> list[tuple[str, float, float, float]]:
+    """Detects cubes in image pixels while discarding blobs inside dilated robot hulls.
+
+    Args:
+        frame: Input BGR camera frame.
+        config: Vision configuration containing cube/robot HSV bounds and area thresholds.
+
+    Returns:
+        List of raw cube detections formatted as (color, u_px, v_px, area_px).
+    """
+    raw_dets = detect_cubes(
+        frame,
+        None,
+        config.hsv_ranges,
+        min_area_px=config.min_area_px,
+        max_area_px=config.max_area_px,
+    )
+    if config.robot_detector != RobotDetector.TRIANGLE:
+        return raw_dets
+
+    robot_hulls = _detect_robot_triangle_hulls(
+        frame,
+        config,
+    )
+    if not robot_hulls:
+        return raw_dets
+
+    # Discard spurious color blobs on the robot roof marker (cubes cannot sit under it).
+    return [
+        det
+        for det in raw_dets
+        if not _is_inside_any_hull(
+            det[1],
+            det[2],
+            robot_hulls,
+            dilation_px=ROBOT_HULL_DILATION_PX,
+        )
+    ]
 
 
 def process_cubes(
@@ -181,33 +229,13 @@ def process_cubes(
         cfg.camera_center_world,
         dtype=np.float64,
     )
-    raw_dets = detect_cubes(
+    raw_dets = detect_filtered_cubes(
         frame,
-        None,
-        cfg.hsv_ranges,
-        min_area_px=cfg.min_area_px,
-        max_area_px=cfg.max_area_px,
-    )
-    robot_hulls = (
-        _detect_robot_triangle_hulls(
-            frame,
-            cfg,
-        )
-        if cfg.robot_detector == RobotDetector.TRIANGLE
-        else []
+        config=cfg,
     )
 
     floor_dets: list[tuple[str, float, float, float]] = []
     for color, u_px, v_px, _area in raw_dets:
-        # Discard spurious color blobs on the robot roof marker (cubes cannot sit under it).
-        if _is_inside_any_hull(
-            u_px,
-            v_px,
-            robot_hulls,
-            dilation_px=ROBOT_HULL_DILATION_PX,
-        ):
-            continue
-
         seen_world = image_to_world(
             homography,
             [[u_px, v_px]],
@@ -280,6 +308,7 @@ def _detect_triangle_robot_poses(
         pose = triangle_pose(
             robot_mask,
             min_area_px=config.robot_min_area_px,
+            heading_rule=config.triangle_heading_rule,
         )
         if pose is None:
             continue

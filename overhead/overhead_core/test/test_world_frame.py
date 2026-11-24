@@ -117,9 +117,9 @@ def test_should_detect_robot_pose_when_synthetic_triangle_present() -> None:
     )
     triangle_pts = np.array(
         [
-            [690, 300],
-            [610, 265],
-            [610, 335],
+            [670, 300],
+            [610, 235],
+            [610, 365],
         ],
         dtype=np.int32,
     )
@@ -205,15 +205,19 @@ def test_should_apply_heading_offset_and_wrap_when_configured() -> None:
     )
     image, homography = _make_two_triangle_arena_image(phineas_pts=phineas_pts)
     heading_offset_rad = 0.75 * math.pi
+    zero_pos_offsets = {
+        RobotName.PHINEAS.value: (0.0, 0.0),
+    }
     base_poses = detect_robot_poses(
         image,
         homography=homography,
-        config=WorldFrameConfig(),
+        config=WorldFrameConfig(robot_position_offsets_m=zero_pos_offsets),
     )
     offset_config = WorldFrameConfig(
         robot_heading_offsets_rad={
             RobotName.PHINEAS.value: heading_offset_rad,
         },
+        robot_position_offsets_m=zero_pos_offsets,
     )
 
     offset_poses = detect_robot_poses(
@@ -267,7 +271,12 @@ def test_should_rotate_position_offset_by_final_heading_when_configured() -> Non
     base_poses = detect_robot_poses(
         image,
         homography=homography,
-        config=WorldFrameConfig(),
+        config=WorldFrameConfig(
+            robot_position_offsets_m={
+                RobotName.PHINEAS.value: (0.0, 0.0),
+                RobotName.FERB.value: (0.08, 0.0),
+            },
+        ),
     )
     heading_offset_rad = math.pi / 2.0
     forward_offset_m = 0.10
@@ -278,6 +287,7 @@ def test_should_rotate_position_offset_by_final_heading_when_configured() -> Non
         },
         robot_position_offsets_m={
             RobotName.PHINEAS.value: (forward_offset_m, left_offset_m),
+            RobotName.FERB.value: (0.08, 0.0),
         },
     )
 

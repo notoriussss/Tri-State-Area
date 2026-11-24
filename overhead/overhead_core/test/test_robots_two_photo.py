@@ -164,7 +164,13 @@ def _mask_out_robots(frame_bgr: np.ndarray) -> np.ndarray:
 def test_should_detect_both_robots_near_centroids_when_two_robots_photo_processed() -> None:
     frame = _load_bgr_image(FIXTURE_PATH)
     homography = _calibrate_homography(frame)
-    pipeline = WorldPipeline(WorldFrameConfig())
+    zero_offset_config = WorldFrameConfig(
+        robot_position_offsets_m={
+            RobotName.PHINEAS.value: (0.0, 0.0),
+            RobotName.FERB.value: (0.0, 0.0),
+        },
+    )
+    pipeline = WorldPipeline(zero_offset_config)
 
     detection = pipeline.detect_and_track(
         frame,

@@ -24,6 +24,7 @@ from overhead_core.constants import (
     DEFAULT_ROBOT_HSV_RANGES,
     DEFAULT_ROBOT_NAMES,
     DEFAULT_ROBOT_POSITION_OFFSETS_M,
+    DEFAULT_TRIANGLE_HEADING_RULE,
     DEFAULT_VIDEO_SOURCE,
     DEFAULT_ZONE_RECT,
     HSV_CHANNEL_COUNT,
@@ -32,6 +33,7 @@ from overhead_core.constants import (
     CubeColor,
     RobotDetector,
     RobotName,
+    TriangleHeadingRule,
 )
 from overhead_core.world_frame import WorldFrameConfig
 from rclpy.node import Node
@@ -65,6 +67,7 @@ from overhead_ros.ros_names import (
     PARAM_ROBOT_POSITION_OFFSET_M_FERB,
     PARAM_ROBOT_POSITION_OFFSET_M_PHINEAS,
     PARAM_ROBOTS,
+    PARAM_TRIANGLE_HEADING_RULE,
     PARAM_VIDEO_SOURCE,
     PARAM_WIDTH,
     PARAM_ZONE_RECT,
@@ -169,6 +172,9 @@ def _build_world_config(
     robot_detector = RobotDetector(
         str(node.get_parameter(PARAM_ROBOT_DETECTOR).value),
     )
+    triangle_heading_rule = TriangleHeadingRule(
+        str(node.get_parameter(PARAM_TRIANGLE_HEADING_RULE).value),
+    )
     aruco_config = _build_aruco_config(
         node,
         robots,
@@ -222,6 +228,7 @@ def _build_world_config(
         aruco=aruco_config,
         robot_heading_offsets_rad=robot_heading_offsets_rad,
         robot_position_offsets_m=robot_position_offsets_m,
+        triangle_heading_rule=triangle_heading_rule,
     )
 
 
@@ -249,6 +256,7 @@ def declare_overhead_parameters(node: Node) -> None:
         (PARAM_MAX_AREA_PX, MAX_CUBE_AREA_PX),
         (PARAM_NEAR_RED_M, NEAR_RED_DISTANCE_M),
         (PARAM_ROBOT_DETECTOR, RobotDetector.TRIANGLE.value),
+        (PARAM_TRIANGLE_HEADING_RULE, DEFAULT_TRIANGLE_HEADING_RULE.value),
         (PARAM_ARUCO_DICTIONARY, DEFAULT_ARUCO_DICTIONARY),
         (PARAM_ARUCO_IDS, list(DEFAULT_ARUCO_IDS)),
         (PARAM_ARUCO_HEADING_OFFSET_RAD, DEFAULT_ARUCO_HEADING_OFFSET_RAD),

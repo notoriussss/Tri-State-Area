@@ -73,7 +73,7 @@ class ViewerView(StrEnum):
 
 # Viewer pipeline geometry and detection defaults
 DEFAULT_DARK_THRESH: int = 70
-DEFAULT_ROBOT_MIN_AREA_PX: int = 2000
+DEFAULT_ROBOT_MIN_AREA_PX: int = 1200
 ROBOT_HULL_DILATION_PX: int = 25
 DEFAULT_RECTIFY_PX_PER_M: float = 500.0
 HEADING_STEP_PX: float = 20.0
@@ -88,7 +88,7 @@ DEFAULT_CUBE_HSV_RANGES: dict[
 ] = {
     # Lower hue 110 excludes the blue delivery-zone background (~101); cubes are 118-125
     CubeColor.BLUE.value: [
-        ((110, 80, 25), (135, 255, 255)),
+        ((110, 45, 25), (135, 255, 255)),
     ],
     CubeColor.YELLOW.value: [
         ((20, 100, 55), (35, 255, 255)),
@@ -109,7 +109,7 @@ DEFAULT_ROBOT_HSV_RANGES: dict[
         ((170, 100, 100), (180, 255, 255)),
     ],
     RobotName.FERB.value: [
-        ((6, 150, 100), (14, 255, 255)),
+        ((6, 150, 60), (20, 255, 255)),
     ],
 }
 
@@ -120,9 +120,10 @@ DEFAULT_ROBOT_HEADING_OFFSETS_RAD: dict[str, float] = {
 }
 
 # Robot-frame (forward_m, left_m) position offsets applied after heading offset.
+# Estimated from photos 2026-11-24, verify with a robot at a known position.
 DEFAULT_ROBOT_POSITION_OFFSETS_M: dict[str, tuple[float, float]] = {
-    RobotName.PHINEAS.value: (0.0, 0.0),
-    RobotName.FERB.value: (0.0, 0.0),
+    RobotName.PHINEAS.value: (0.08, 0.0),
+    RobotName.FERB.value: (0.08, 0.0),
 }
 
 # Viewer drawing colors (BGR) and styles
@@ -378,8 +379,16 @@ class RobotDetector(StrEnum):
     ARUCO = "aruco"
 
 
-# ArUco robot marker detection defaults
+class TriangleHeadingRule(StrEnum):
+    """Rules for computing robot heading from a detected triangle's vertices."""
+
+    LONGEST_SIDE_NORMAL = "longest_side_normal"
+    OPPOSITE_SHORTEST_SIDE = "opposite_shortest_side"
+
+
+# ArUco and triangle robot marker detection defaults
 DEFAULT_ROBOT_DETECTOR: RobotDetector = RobotDetector.TRIANGLE
+DEFAULT_TRIANGLE_HEADING_RULE: TriangleHeadingRule = TriangleHeadingRule.LONGEST_SIDE_NORMAL
 DEFAULT_ARUCO_DICTIONARY: str = "DICT_4X4_50"
 ARUCO_ID_PHINEAS: int = 0
 ARUCO_ID_FERB: int = 1
@@ -392,9 +401,10 @@ DEFAULT_ARUCO_HEADING_OFFSET_RAD: float = 0.0
 ARUCO_DICT_PREFIX: str = "DICT_"
 ERR_UNKNOWN_ARUCO_DICTIONARY_FMT: str = "Unknown ArUco dictionary: '{}'."
 ERR_UNKNOWN_ROBOT_DETECTOR_FMT: str = "Unknown robot detector: '{}'."
+ERR_UNKNOWN_TRIANGLE_HEADING_RULE_FMT: str = "Unknown triangle heading rule: '{}'."
 
 # Upper area bound rejecting large non-cube blobs such as robot markers
-MAX_CUBE_AREA_PX: int = 1500
+MAX_CUBE_AREA_PX: int = 1000
 
 # Safety overlay colors, geometry, and blending constants
 COLOR_BGR_AMBER: tuple[int, int, int] = (0, 191, 255)

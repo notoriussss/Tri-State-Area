@@ -34,6 +34,7 @@ from overhead_core.constants import (
     DEFAULT_RECTIFY_PX_PER_M,
     DEFAULT_ROBOT_HSV_RANGES,
     DEFAULT_ROBOT_MIN_AREA_PX,
+    DEFAULT_TRIANGLE_HEADING_RULE,
     DEFAULT_ZONE_RECT,
     DRAW_LINE_THICKNESS_PX,
     EMPTY_DARK_PIXEL_MIN_COUNT,
@@ -63,9 +64,9 @@ from overhead_core.constants import (
     VIEWER_TEXT_CALIBRATION_HINT,
     VIEWER_TEXT_NOT_CALIBRATED,
     RobotDetector,
+    TriangleHeadingRule,
     ViewerView,
 )
-from overhead_core.cubes import detect_cubes
 from overhead_core.geometry import (
     compute_homography,
     detect_arena_corners,
@@ -86,6 +87,7 @@ from overhead_core.viewer_overlay import (
 from overhead_core.viewer_safety import ViewerSafety
 from overhead_core.world_frame import (
     WorldFrameConfig,
+    detect_filtered_cubes,
     detect_robot_poses,
 )
 
@@ -119,6 +121,7 @@ class ViewerPipelineConfig:
     max_area_px: int = MAX_CUBE_AREA_PX
     robot_detector: RobotDetector = RobotDetector.TRIANGLE
     aruco: ArucoRobotConfig | None = None
+    triangle_heading_rule: TriangleHeadingRule = DEFAULT_TRIANGLE_HEADING_RULE
 
 
 @dataclass(frozen=True)
@@ -302,13 +305,14 @@ def _detect_world_cubes(
     *,
     pipeline_config: ViewerPipelineConfig,
 ) -> list[ViewerCubeResult]:
-    """Detects cubes and transforms their centroids to parallax-corrected world meters."""
-    raw_detections = detect_cubes(
+    """Detects cubes outside robot hulls and projects them to parallax-corrected world meters."""
+    world_config = _build_world_frame_config(
+        hsv_config,
+        pipeline_config,
+    )
+    raw_detections = detect_filtered_cubes(
         frame_bgr,
-        None,
-        hsv_config.cube_ranges,
-        min_area_px=pipeline_config.min_area_px,
-        max_area_px=pipeline_config.max_area_px,
+        config=world_config,
     )
     camera_center_arr = np.asarray(
         pipeline_config.camera_center_world,
@@ -355,6 +359,7 @@ def _build_world_frame_config(
         max_area_px=pipeline_config.max_area_px,
         robot_detector=pipeline_config.robot_detector,
         aruco=pipeline_config.aruco,
+        triangle_heading_rule=pipeline_config.triangle_heading_rule,
     )
 
 

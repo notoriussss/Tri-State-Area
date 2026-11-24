@@ -46,28 +46,28 @@ def _make_synthetic_arena_image() -> np.ndarray:
         (0, 0, 0),
         20,
     )
-    # Yellow cube inside arena
+    # Yellow cube inside arena (20x20 = 400 px < MAX_CUBE_AREA_PX)
     cv2.rectangle(
         img,
-        (200, 200),
-        (230, 230),
+        (205, 205),
+        (225, 225),
         (0, 255, 255),
         -1,
     )
-    # Red cube inside arena
+    # Red cube inside arena (20x20 = 400 px < MAX_CUBE_AREA_PX)
     cv2.rectangle(
         img,
-        (400, 300),
-        (430, 330),
+        (405, 305),
+        (425, 325),
         (0, 0, 255),
         -1,
     )
-    # Red Phineas triangle pointing right (> MAX_CUBE_AREA_PX so excluded from cubes)
+    # Red Phineas triangle pointing right (rear edge 130 px is longest side, area 3900 px)
     triangle_pts = np.array(
         [
-            [690, 300],
-            [610, 265],
-            [610, 335],
+            [670, 300],
+            [610, 235],
+            [610, 365],
         ],
         dtype=np.int32,
     )
@@ -324,3 +324,25 @@ def test_should_publish_robot_safety_in_snapshot_when_camera_state_updated():
     assert snapshot.is_calibrated is True
     assert len(snapshot.robots) == 1
     assert snapshot.robots[0].name == RobotName.PHINEAS.value
+
+
+def test_should_discard_cube_inside_dilated_robot_hull_when_viewer_processes_frame():
+    image = _make_synthetic_arena_image()
+    # Add a small orange-ish/red cube blob right next to the Phineas triangle (inside dilation)
+    cv2.rectangle(
+        image,
+        (680, 292),
+        (696, 308),
+        (0, 0, 255),
+        -1,
+    )
+    homography, corners = calibrate_frame(image)
+
+    output = process_frame(
+        image,
+        homography,
+        corners_px=corners,
+    )
+
+    red_cubes = [c for c in output.cubes if c.color == CubeColor.RED.value]
+    assert len(red_cubes) == 1

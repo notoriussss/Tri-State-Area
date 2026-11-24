@@ -325,3 +325,10 @@ note the question in the PR.
 - Live Wi-Fi robot runs from Windows 11 must run inside the `tsa-ros` WSL2 distro with
   `networkingMode=mirrored`, `ROS_STATIC_PEERS` (`overhead/wsl/robots.env`), and the
   Windows/Hyper-V firewall rules (`overhead/wsl/setup-wsl.ps1`).
+- **Triangle heading rules (`TriangleHeadingRule` / `triangle_heading_rule`):**
+  - `longest_side_normal` (default): finds the longest edge of the detected triangle (which lies
+    along the robot rear edge on the provisional right-ish markers) and takes its unit normal
+    pointing toward the third (opposite) vertex. The marker position remains the triangle
+    centroid before per-robot calibration offsets.
+  - `opposite_shortest_side`: points from the triangle centroid to the vertex opposite the
+    shortest edge (for elongated isosceles markers as originally assumed in `docs/arena.md`).

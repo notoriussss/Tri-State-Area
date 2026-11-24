@@ -16,16 +16,20 @@ overhead_node:
     robots: ["phineas", "ferb"]
     image_rate_hz: 5.0
     min_area_px: 150
-    max_area_px: 1500
+    max_area_px: 800
     near_red_m: 0.17
     robot_detector: "triangle"
+    # Heading rule for triangle markers: "longest_side_normal" (unit normal of the longest rear
+    # edge toward the third vertex, matching the provisional right-ish triangles) or
+    # "opposite_shortest_side" (centroid toward vertex opposite shortest edge, for elongated isosceles)
+    triangle_heading_rule: "longest_side_normal"
     aruco_dictionary: "DICT_4X4_50"
     aruco_ids: [0, 1]
     aruco_heading_offset_rad: 0.0
     # Cube HSV ranges [H_lo, S_lo, V_lo, H_hi, S_hi, V_hi] (OpenCV ranges: H 0-180, S 0-255, V 0-255)
     # Red uses two hue bands spanning 0 and 180
     # Lower hue 110 excludes the blue delivery-zone background (~101); cubes are 118-125
-    hsv_blue: [110, 80, 25, 135, 255, 255]
+    hsv_blue: [110, 45, 25, 135, 255, 255]
     hsv_yellow: [20, 100, 55, 35, 255, 255]
     hsv_red_1: [0, 90, 55, 10, 255, 255]
     hsv_red_2: [170, 90, 55, 180, 255, 255]
@@ -34,14 +38,15 @@ overhead_node:
     # Red uses two hue bands spanning 0 and 180; low band stays tight to avoid orange
     hsv_robot_phineas_1: [0, 100, 100, 4, 255, 255]
     hsv_robot_phineas_2: [170, 100, 100, 180, 255, 255]
-    hsv_robot_ferb: [6, 150, 100, 14, 255, 255]
+    hsv_robot_ferb: [6, 150, 60, 20, 255, 255]
     # Per-robot triangle calibration offsets (0.0 until measured on physical robots)
     # Heading offset (rad) is added to triangle theta and wrapped to (-pi, pi]
     # Position offset [forward_m, left_m] in robot frame is rotated by final heading and added
     robot_heading_offset_rad_phineas: 0.0
     robot_heading_offset_rad_ferb: 0.0
-    robot_position_offset_m_phineas: [0.0, 0.0]
-    robot_position_offset_m_ferb: [0.0, 0.0]
+    # Estimated from photos 2026-11-24, verify with a robot at a known position
+    robot_position_offset_m_phineas: [0.08, 0.0]
+    robot_position_offset_m_ferb: [0.08, 0.0]
 
 manipulator_relay_node:
   ros__parameters:

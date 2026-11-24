@@ -34,23 +34,24 @@ Captures frames from a live camera, an HTTP(S) JPEG endpoint, or a still image (
 | `robots` | `string[]` | `["phineas", "ferb"]` | Expected robot names tracked by the marker detector and hold filter. |
 | `image_rate_hz` | `double` | `5.0` | Publish rate in Hz for the rectified JPEG stream on `/world/image`. |
 | `min_area_px` | `int` | `150` | Minimum contour area in pixels for cube detection. |
-| `max_area_px` | `int` | `1500` | Maximum contour area in pixels for cube detection; larger blobs are rejected. |
+| `max_area_px` | `int` | `800` | Maximum contour area in pixels for cube detection; larger blobs are rejected. |
 | `near_red_m` | `double` | `0.17` | Distance threshold in meters for `near:red:<id>` virtual sensor events. |
 | `robot_detector` | `string` | `"triangle"` | Robot marker detector backend (`"triangle"` or `"aruco"`). |
+| `triangle_heading_rule` | `string` | `"longest_side_normal"` | Triangle heading rule (`"longest_side_normal"` for rear-edge triangles or `"opposite_shortest_side"` for elongated isosceles triangles). |
 | `aruco_dictionary` | `string` | `"DICT_4X4_50"` | OpenCV ArUco dictionary name used when `robot_detector` is `"aruco"`. |
 | `aruco_ids` | `int[]` | `[0, 1]` | ArUco marker IDs mapped positionally to the `robots` parameter. |
 | `aruco_heading_offset_rad` | `double` | `0.0` | Angle offset in radians from the ArUco marker up direction to robot forward. |
-| `hsv_blue` | `int[6]` | `[110, 80, 25, 135, 255, 255]` | Flat `[H_lo, S_lo, V_lo, H_hi, S_hi, V_hi]` HSV bounds for blue cubes. |
+| `hsv_blue` | `int[6]` | `[110, 45, 25, 135, 255, 255]` | Flat `[H_lo, S_lo, V_lo, H_hi, S_hi, V_hi]` HSV bounds for blue cubes. |
 | `hsv_yellow` | `int[6]` | `[20, 100, 55, 35, 255, 255]` | Flat HSV bounds for yellow cubes. |
 | `hsv_red_1` | `int[6]` | `[0, 90, 55, 10, 255, 255]` | Lower red cube HSV hue band. |
 | `hsv_red_2` | `int[6]` | `[170, 90, 55, 180, 255, 255]` | Upper red cube HSV hue band. |
 | `hsv_robot_phineas_1` | `int[6]` | `[0, 100, 100, 4, 255, 255]` | Lower red HSV band for Phineas's provisional triangle marker. |
 | `hsv_robot_phineas_2` | `int[6]` | `[170, 100, 100, 180, 255, 255]` | Upper red HSV band for Phineas's provisional triangle marker. |
-| `hsv_robot_ferb` | `int[6]` | `[6, 150, 100, 14, 255, 255]` | Orange HSV bounds for Ferb's provisional triangle marker. |
+| `hsv_robot_ferb` | `int[6]` | `[6, 150, 60, 20, 255, 255]` | Orange HSV bounds for Ferb's provisional triangle marker. |
 | `robot_heading_offset_rad_phineas` | `double` | `0.0` | Heading offset in radians added to Phineas's triangle heading and wrapped to `(-pi, pi]`. |
 | `robot_heading_offset_rad_ferb` | `double` | `0.0` | Heading offset in radians added to Ferb's triangle heading and wrapped to `(-pi, pi]`. |
-| `robot_position_offset_m_phineas` | `double[2]` | `[0.0, 0.0]` | Phineas robot-frame position offset `[forward_m, left_m]` applied after heading offset. |
-| `robot_position_offset_m_ferb` | `double[2]` | `[0.0, 0.0]` | Ferb robot-frame position offset `[forward_m, left_m]` applied after heading offset. |
+| `robot_position_offset_m_phineas` | `double[2]` | `[0.08, 0.0]` | Phineas robot-frame position offset `[forward_m, left_m]` applied after heading offset (estimated from photos 2026-11-24, verify with a robot at a known position). |
+| `robot_position_offset_m_ferb` | `double[2]` | `[0.08, 0.0]` | Ferb robot-frame position offset `[forward_m, left_m]` applied after heading offset (estimated from photos 2026-11-24, verify with a robot at a known position). |
 
 #### Topics and Services
 

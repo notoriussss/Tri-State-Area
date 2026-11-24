@@ -39,9 +39,9 @@ def _make_arena_scene(
     if include_phineas:
         phineas_pts = np.array(
             [
-                [340, 300],
-                [255, 265],
-                [255, 335],
+                [315, 300],
+                [255, 235],
+                [255, 365],
             ],
             dtype=np.int32,
         )
@@ -53,9 +53,9 @@ def _make_arena_scene(
     if include_ferb:
         ferb_pts = np.array(
             [
-                [640, 300],
-                [555, 265],
-                [555, 335],
+                [615, 300],
+                [555, 235],
+                [555, 365],
             ],
             dtype=np.int32,
         )
@@ -67,8 +67,8 @@ def _make_arena_scene(
     if include_red_cube:
         cv2.rectangle(
             frame,
-            (370, 285),
-            (400, 315),
+            (375, 290),
+            (395, 310),
             (0, 0, 255),
             -1,
         )
