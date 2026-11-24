@@ -60,3 +60,140 @@ class VirtualSensorEvent(StrEnum):
     ENTERED_ZONE = "entered:zone"
     LEFT_ZONE = "left:zone"
     NEAR_RED_PREFIX = "near:red"
+
+
+class ViewerView(StrEnum):
+    """Supported image views served by the overhead web viewer."""
+
+    RAW = "raw"
+    RECTIFIED = "rectified"
+    MASK = "mask"
+
+
+# Viewer pipeline geometry and detection defaults
+DEFAULT_DARK_THRESH: int = 70
+DEFAULT_ROBOT_MIN_AREA_PX: int = 50
+DEFAULT_RECTIFY_PX_PER_M: float = 500.0
+HEADING_STEP_PX: float = 20.0
+METERS_TO_CM: float = 100.0
+EMPTY_DARK_PIXEL_MIN_COUNT: int = 1
+MIN_CORNER_BOUND_MARGIN_PX: float = 1.0
+
+# Default HSV ranges [H, S, V] matching overhead.yaml
+DEFAULT_CUBE_HSV_RANGES: dict[
+    str,
+    list[tuple[tuple[int, int, int], tuple[int, int, int]]],
+] = {
+    # Lower hue 110 excludes the blue delivery-zone background (~101); cubes are 118-125
+    CubeColor.BLUE.value: [
+        ((110, 80, 25), (135, 255, 255)),
+    ],
+    CubeColor.YELLOW.value: [
+        ((20, 100, 55), (35, 255, 255)),
+    ],
+    CubeColor.RED.value: [
+        ((0, 120, 55), (10, 255, 255)),
+        ((170, 120, 55), (180, 255, 255)),
+    ],
+}
+
+DEFAULT_ROBOT_HSV_RANGES: dict[
+    str,
+    list[tuple[tuple[int, int, int], tuple[int, int, int]]],
+] = {
+    RobotName.PHINEAS.value: [
+        ((40, 100, 100), (80, 255, 255)),
+    ],
+    RobotName.FERB.value: [
+        ((140, 100, 100), (165, 255, 255)),
+    ],
+}
+
+# Viewer drawing colors (BGR) and styles
+COLOR_BGR_BLUE: tuple[int, int, int] = (255, 0, 0)
+COLOR_BGR_YELLOW: tuple[int, int, int] = (0, 230, 230)
+COLOR_BGR_RED: tuple[int, int, int] = (0, 0, 255)
+COLOR_BGR_GREEN: tuple[int, int, int] = (0, 255, 0)
+COLOR_BGR_MAGENTA: tuple[int, int, int] = (255, 0, 255)
+COLOR_BGR_CYAN: tuple[int, int, int] = (255, 255, 0)
+COLOR_BGR_WHITE: tuple[int, int, int] = (255, 255, 255)
+COLOR_BGR_BLACK: tuple[int, int, int] = (0, 0, 0)
+COLOR_BGR_BANNER_BG: tuple[int, int, int] = (0, 0, 180)
+COLOR_BGR_UNKNOWN: tuple[int, int, int] = (200, 200, 200)
+
+CUBE_COLOR_BGR: dict[str, tuple[int, int, int]] = {
+    CubeColor.BLUE.value: COLOR_BGR_BLUE,
+    CubeColor.YELLOW.value: COLOR_BGR_YELLOW,
+    CubeColor.RED.value: COLOR_BGR_RED,
+}
+
+ROBOT_COLOR_BGR: dict[str, tuple[int, int, int]] = {
+    RobotName.PHINEAS.value: COLOR_BGR_GREEN,
+    RobotName.FERB.value: COLOR_BGR_MAGENTA,
+}
+
+VIEWER_CORNER_LABELS: tuple[str, str, str, str] = (
+    "BL",
+    "BR",
+    "TR",
+    "TL",
+)
+CORNER_RADIUS_PX: int = 6
+CUBE_MARKER_RADIUS_PX: int = 8
+ROBOT_TRIANGLE_LENGTH_PX: float = 24.0
+ROBOT_TRIANGLE_HALF_BASE_PX: float = 10.0
+ROBOT_TRIANGLE_REAR_RATIO: float = 0.6
+ROBOT_ARROW_LEN_PX: float = 35.0
+ROBOT_ARROW_TIP_RATIO: float = 0.3
+DRAW_LINE_THICKNESS_PX: int = 2
+LABEL_OUTLINE_THICKNESS_PX: int = 1
+LABEL_OFFSET_X_PX: int = 10
+LABEL_OFFSET_Y_PX: int = -8
+CORNER_LABEL_OFFSET_PX: int = 8
+FONT_SCALE_LABEL: float = 0.45
+FONT_SCALE_BANNER: float = 0.8
+FONT_SCALE_HINT: float = 0.55
+BANNER_HEIGHT_PX: int = 44
+BANNER_TEXT_X_PX: int = 16
+BANNER_TEXT_Y_PX: int = 30
+PLACEHOLDER_TEXT_X_PX: int = 140
+PLACEHOLDER_TEXT_Y_PX: int = 180
+PLACEHOLDER_HINT_Y_PX: int = 220
+MASK_BG_DIM_ALPHA: float = 0.35
+MASK_OVERLAY_ALPHA: float = 0.65
+VIEWER_TEXT_NOT_CALIBRATED: str = "NOT CALIBRATED"
+VIEWER_TEXT_CALIBRATION_HINT: str = "Arena corners not detected"
+
+# Standalone web viewer server and CLI defaults
+DEFAULT_WEB_HOST: str = "0.0.0.0"
+DEFAULT_WEB_PORT: int = 8080
+DEFAULT_CAMERA_INDEX: int = 0
+DEFAULT_CAPTURE_WIDTH_PX: int = 1280
+DEFAULT_CAPTURE_HEIGHT_PX: int = 720
+VIEWER_JPEG_QUALITY: int = 85
+VIEWER_STREAM_FPS_HZ: float = 20.0
+CAPTURE_RETRY_SLEEP_S: float = 0.05
+THREAD_JOIN_TIMEOUT_S: float = 2.0
+FPS_SMOOTHING_ALPHA: float = 0.2
+WINDOWS_PLATFORM: str = "win32"
+
+STATIC_DIR_NAME: str = "static"
+VIEWER_HTML_FILENAME: str = "viewer.html"
+CAPTURES_DIR_NAME: str = "captures"
+CAPTURE_TIMESTAMP_FORMAT: str = "%Y%m%d_%H%M%S_%f"
+JPEG_EXTENSION: str = ".jpg"
+
+HTTP_PATH_INDEX: str = "/"
+HTTP_PATH_STREAM_PREFIX: str = "/stream/"
+HTTP_PATH_STREAM_SUFFIX: str = ".mjpg"
+HTTP_PATH_SNAPSHOT: str = "/snapshot.jpg"
+HTTP_PATH_RECALIBRATE: str = "/recalibrate"
+HTTP_PATH_STATUS: str = "/status"
+HTTP_QUERY_VIEW_KEY: str = "view"
+
+MJPEG_BOUNDARY: str = "frame"
+CONTENT_TYPE_HTML: str = "text/html; charset=utf-8"
+CONTENT_TYPE_JPEG: str = "image/jpeg"
+CONTENT_TYPE_JSON: str = "application/json; charset=utf-8"
+CONTENT_TYPE_MJPEG: str = f"multipart/x-mixed-replace; boundary={MJPEG_BOUNDARY}"
+CACHE_CONTROL_NO_CACHE: str = "no-cache, no-store, must-revalidate"
