@@ -1,0 +1,316 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1739.6711452380948 6494.916" width="1739.6711452380948" height="6494.916" style="--bg:#18181B;--fg:#F4F4F5;--line:#71717A;--muted:#A1A1AA;--surface:#27272A;--border:#3F3F46;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<g class="subgraph" data-id="P6" data-label="Pilar 6 - Seguridad y Reflejos Locales">
+  <rect x="391.5650916666664" y="130.9" width="675.9527499999999" height="813.3749999999999" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="391.5650916666664" y="130.9" width="675.9527499999999" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="403.5650916666664" y="144.9" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Pilar 6 - Seguridad y Reflejos Locales</text>
+</g>
+<g class="subgraph" data-id="P1" data-label="Pilar 1 - Mision Distribuida">
+  <rect x="240.3204249999999" y="1072.5749999999998" width="653.4537499999998" height="1190.193" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="240.3204249999999" y="1072.5749999999998" width="653.4537499999998" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="252.3204249999999" y="1086.5749999999998" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Pilar 1 - Mision Distribuida</text>
+</g>
+<g class="subgraph" data-id="P2" data-label="Pilar 2 - Navegacion y Rojos">
+  <rect x="515.5457166666665" y="2379.068" width="1077.8976666666663" height="1257.624" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="515.5457166666665" y="2379.068" width="1077.8976666666663" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="527.5457166666665" y="2393.068" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Pilar 2 - Navegacion y Rojos</text>
+</g>
+<g class="subgraph" data-id="P3" data-label="Pilar 3 - Luces de Navegacion Rojo/Verde">
+  <rect x="51.039999999999964" y="4897.242" width="843.2889999999998" height="1138.674" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="51.039999999999964" y="4897.242" width="843.2889999999998" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="63.039999999999964" y="4911.242" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Pilar 3 - Luces de Navegacion Rojo/Verde</text>
+</g>
+<g class="subgraph" data-id="P4" data-label="Pilar 4 - Entrega Directa con Perry">
+  <rect x="791.8357166666665" y="3764.992" width="852.9219999999998" height="1027.9499999999998" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="791.8357166666665" y="3764.992" width="852.9219999999998" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="803.8357166666665" y="3778.992" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Pilar 4 - Entrega Directa con Perry</text>
+</g>
+<g class="subgraph" data-id="P5" data-label="Pilar 5 - Control Holonomico y HAL Local">
+  <rect x="369.21383928571436" y="6188.216" width="640.0941249999996" height="266.70000000000005" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="369.21383928571436" y="6188.216" width="640.0941249999996" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="381.21383928571436" y="6202.216" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Pilar 5 - Control Holonomico y HAL Local</text>
+</g>
+<polyline class="edge" data-from="IN" data-to="S1" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="648.4665916666663,76.9 648.4665916666664,174.90000000000012" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S3" data-to="M1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="No" points="738.1004249999997,747.0403333333334 738.1004249999997,787.0749999999999 667.3408416666665,787.0749999999999 667.3408416666664,1116.5749999999998" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M1" data-to="N1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Si" points="706.367008333333,1311.7058333333332 706.367008333333,1362.7319999999997 876.7741749999997,1362.7319999999997 876.7741749999997,2280.768 1032.5222999999996,2280.768 1032.5222999999996,2469.8746666666666" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M5" data-to="N1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="No" points="759.8890083333331,2055.406333333333 759.8890083333331,2105.5679999999998 810.3885916666663,2105.5679999999998 810.3885916666665,2292.768 945.7126154761902,2292.768 945.7126154761902,2361.068 938.9089666666664,2361.068 938.9089666666664,2469.874666666667" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M6" data-to="T1" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="633.0660916666665,2246.768 633.0660916666665,2361.068 504.5457166666665,2361.068 504.5457166666665,4879.242 564.885933333333,4879.242 564.8859333333331,4983.7014" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="N2" data-to="T1" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="741.8462166666665,2957.2185000000004 741.8462166666665,4798.942 649.8047333333332,4798.942 649.8047333333332,4983.7014" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="N7" data-to="K1" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1259.6058833333332,3620.692 1259.6058833333332,3746.992 1654.7577166666663,3746.992 1654.7577166666663,6158.216 871.6542499999998,6158.216 871.6542499999998,6232.216" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="N6" data-to="E1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="No" points="1129.3189666666663,3432.6648333333333 1129.3189666666663,3479.492 1068.686383333333,3479.492 1068.6863833333332,3808.992" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="E1" data-to="T1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="No" points="1020.5212166666664,4049.8178333333335 1020.5212166666664,4109.983 807.8357166666665,4109.983 807.8357166666665,4810.942 734.7235333333331,4810.942 734.7235333333331,5068.6202" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="E3" data-to="K1" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="964.6692166666664,4692.042 964.6692166666664,6134.216 750.0005357142857,6134.216 750.0005357142857,6232.216" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="E5" data-to="K1" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1383.6302166666665,4776.942 1383.6302166666662,6146.216 1285.8000380952378,6146.216 1285.8000380952378,6146.216 810.8273928571427,6146.216 810.8273928571427,6232.216" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="T3" data-to="K1" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="687.4094999999998,6019.916 687.4094999999998,6170.216 628.3468214285713,6170.216 628.3468214285714,6232.216" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="T4" data-to="K3" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="273.2649999999999,6019.915999999999 273.2649999999999,6378.016 611.8163392857143,6378.016 611.8163392857143,6402.0160000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="T1" data-to="K1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="No - veo Verde o prioridad" points="678.1109999999998,5295.070333333333 678.1109999999998,5377.836 877.3289999999997,5377.836 877.3289999999997,6077.916 796.8622499999997,6077.916 796.8622499999997,6122.216 689.1736785714285,6122.216 689.1736785714285,6232.216" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M4" data-to="T1" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="413.26892499999985,1997.5329999999997 413.26892499999985,4879.242 360.7412499999999,4879.242 360.7412499999999,4879.242 479.9671333333331,4879.242 479.96713333333315,5068.6202" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S4" data-to="K1" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="864.9293416666665,928.2749999999999 864.9293416666665,1054.5749999999998 1691.6711452380948,1054.5749999999998 1691.6711452380948,6170.215999999999 932.4811071428569,6170.215999999999 932.4811071428569,6232.215999999999" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S2" data-to="K3" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="530.7980916666663,709.4209999999999 530.7980916666663,6378.016 611.8163392857143,6378.016 611.8163392857143,6402.0160000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S1" data-to="S2" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Si" points="595.8554249999997,437.95583333333343 595.8554249999997,502.567 530.7980916666663,502.567 530.7980916666663,672.521" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S1" data-to="S3" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="No" points="701.077758333333,437.9558333333333 701.077758333333,502.567 766.1350916666664,502.567 766.1350916666663,606.8670000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S3" data-to="S4" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Si" points="794.169758333333,747.0403333333335 794.169758333333,787.0749999999999 864.9293416666665,787.0749999999999 864.9293416666663,891.3749999999999" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M1" data-to="M2" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="No" points="628.3146749999997,1311.7058333333332 628.3146749999997,1362.7319999999997 572.0105916666664,1362.7319999999997 572.0105916666664,1467.0319999999997" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M2" data-to="M3" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="572.0105916666664,1503.9319999999998 572.0105916666664,1551.9319999999998" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M3" data-to="M4" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="No" points="539.2829249999998,1715.570333333333 539.2829249999998,1760.2979999999998 413.26892499999985,1760.2979999999998 413.26892499999985,1960.6329999999998" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M3" data-to="M5" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Si" points="604.7382583333331,1715.570333333333 604.7382583333331,1760.2979999999998 721.7273416666665,1760.2979999999998 721.7273416666665,1864.5979999999997" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M5" data-to="M6" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Si" points="683.5656749999998,2055.406333333333 683.5656749999998,2105.5679999999998 633.0660916666665,2105.5679999999998 633.0660916666665,2209.8679999999995" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="N1" data-to="N2" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="No" points="938.9089666666664,2657.1013333333335 938.9089666666664,2715.9080000000004 741.8462166666665,2715.9080000000004 741.8462166666665,2920.3185000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="N1" data-to="N3" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Si" points="1032.5222999999996,2657.101333333334 1032.5222999999996,2715.9080000000004 1164.1461333333332,2715.9080000000004 1164.1461333333332,2820.208" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="N3" data-to="N4" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Si" points="1124.6259666666665,3017.8088333333335 1124.6259666666665,3069.329 972.6348833333332,3069.329 972.634883333333,3173.629" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="N3" data-to="N5" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="No" points="1203.6662999999996,3017.8088333333335 1203.6662999999996,3069.329 1355.657383333333,3069.329 1355.657383333333,3173.629" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="N4" data-to="N6" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="972.634883333333,3210.529 972.634883333333,3234.529 1164.146133333333,3234.529 1164.146133333333,3258.529" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="N5" data-to="N6" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1355.6573833333332,3210.529 1355.6573833333332,3234.529 1164.146133333333,3234.529 1164.146133333333,3258.529" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="N6" data-to="N7" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Si" points="1198.9732999999997,3432.6648333333333 1198.9732999999997,3479.492 1259.6058833333332,3479.492 1259.6058833333332,3583.7920000000004" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="T1" data-to="T2" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Si" points="536.5796666666664,5295.070333333333 536.5796666666664,5377.836 480.3372499999998,5377.836 480.3372499999998,5482.136" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="T2" data-to="T3" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Si - plan seguro" points="544.4339166666664,5802.619333333334 544.4339166666664,5878.716 687.4094999999998,5878.716 687.4094999999998,5983.016" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="T2" data-to="T4" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="No - rojo o borde" points="416.2405833333331,5802.619333333334 416.2405833333331,5878.716 273.2649999999999,5878.716 273.2649999999999,5983.016" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="E1" data-to="E2" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Si" points="1116.8515499999999,4049.8178333333335 1116.8515499999999,4109.983 1174.1497166666663,4109.983 1174.1497166666663,4214.283" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="E2" data-to="E3" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="No" points="1120.0565499999998,4484.748833333334 1120.0565499999998,4550.842000000001 964.6692166666664,4550.842000000001 964.6692166666664,4655.142" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="E2" data-to="E4" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Si" points="1228.242883333333,4484.748833333334 1228.242883333333,4550.842000000001 1383.6302166666665,4550.842000000001 1383.6302166666665,4655.142" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="E4" data-to="E5" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1383.6302166666665,4692.042 1383.6302166666665,4740.042" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="K1" data-to="K2" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="780.4139642857142,6269.116 780.4139642857142,6317.116" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="K2" data-to="K3" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="780.4139642857142,6354.016 780.4139642857142,6378.016 611.8163392857143,6378.016 611.8163392857143,6402.0160000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="edge-label" data-from="S3" data-to="M1" data-label="No">
+  <rect x="651.8408416666664" y="993.2749999999999" width="30.718000000000004" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="667.1998416666664" y="1008.4249999999998" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">No</text>
+</g>
+<g class="edge-label" data-from="M1" data-to="N1" data-label="Si">
+  <rect x="1018.5222999999996" y="2299.768" width="27.154000000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="1032.0992999999996" y="2314.918" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Si</text>
+</g>
+<g class="edge-label" data-from="M5" data-to="N1" data-label="No">
+  <rect x="930.2126154761902" y="2299.768" width="30.718000000000004" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="945.5716154761902" y="2314.918" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">No</text>
+</g>
+<g class="edge-label" data-from="N6" data-to="E1" data-label="No">
+  <rect x="1053.186383333333" y="3685.692" width="30.718000000000004" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="1068.545383333333" y="3700.842" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">No</text>
+</g>
+<g class="edge-label" data-from="E1" data-to="T1" data-label="No">
+  <rect x="719.2235333333331" y="4817.942" width="30.718000000000004" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="734.5825333333331" y="4833.092" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">No</text>
+</g>
+<g class="edge-label" data-from="T1" data-to="K1" data-label="No - veo Verde o prioridad">
+  <rect x="726.3622499999999" y="6084.916" width="140.01400000000004" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="796.36925" y="6100.066" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">No - veo Verde o prioridad</text>
+</g>
+<g class="edge-label" data-from="S1" data-to="S2" data-label="Si">
+  <rect x="516.7980916666663" y="533.567" width="27.154000000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="530.3750916666663" y="548.717" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Si</text>
+</g>
+<g class="edge-label" data-from="S1" data-to="S3" data-label="No">
+  <rect x="750.6350916666664" y="533.567" width="30.718000000000004" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="765.9940916666665" y="548.717" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">No</text>
+</g>
+<g class="edge-label" data-from="S3" data-to="S4" data-label="Si">
+  <rect x="850.9293416666665" y="818.0749999999999" width="27.154000000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="864.5063416666665" y="833.2249999999999" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Si</text>
+</g>
+<g class="edge-label" data-from="M1" data-to="M2" data-label="No">
+  <rect x="556.5105916666664" y="1393.7319999999995" width="30.718000000000004" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="571.8695916666665" y="1408.8819999999996" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">No</text>
+</g>
+<g class="edge-label" data-from="M3" data-to="M4" data-label="No">
+  <rect x="397.7689249999999" y="1791.2979999999998" width="30.718000000000004" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="413.1279249999999" y="1806.4479999999999" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">No</text>
+</g>
+<g class="edge-label" data-from="M3" data-to="M5" data-label="Si">
+  <rect x="707.7273416666665" y="1791.2979999999998" width="27.154000000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="721.3043416666665" y="1806.4479999999999" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Si</text>
+</g>
+<g class="edge-label" data-from="M5" data-to="M6" data-label="Si">
+  <rect x="619.0660916666665" y="2136.5679999999998" width="27.154000000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="632.6430916666665" y="2151.718" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Si</text>
+</g>
+<g class="edge-label" data-from="N1" data-to="N2" data-label="No">
+  <rect x="726.3462166666665" y="2746.908" width="30.718000000000004" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="741.7052166666665" y="2762.058" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">No</text>
+</g>
+<g class="edge-label" data-from="N1" data-to="N3" data-label="Si">
+  <rect x="1150.146133333333" y="2746.908" width="27.154000000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="1163.723133333333" y="2762.058" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Si</text>
+</g>
+<g class="edge-label" data-from="N3" data-to="N4" data-label="Si">
+  <rect x="958.6348833333332" y="3100.329" width="27.154000000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="972.2118833333332" y="3115.4790000000003" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Si</text>
+</g>
+<g class="edge-label" data-from="N3" data-to="N5" data-label="No">
+  <rect x="1340.1573833333332" y="3100.329" width="30.718000000000004" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="1355.5163833333331" y="3115.4790000000003" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">No</text>
+</g>
+<g class="edge-label" data-from="N6" data-to="N7" data-label="Si">
+  <rect x="1245.605883333333" y="3510.492" width="27.154000000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="1259.182883333333" y="3525.6420000000003" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Si</text>
+</g>
+<g class="edge-label" data-from="T1" data-to="T2" data-label="Si">
+  <rect x="466.3372499999998" y="5408.836" width="27.154000000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="479.9142499999998" y="5423.986" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Si</text>
+</g>
+<g class="edge-label" data-from="T2" data-to="T3" data-label="Si - plan seguro">
+  <rect x="641.9094999999998" y="5909.716" width="90.11800000000002" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="686.9684999999997" y="5924.866" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Si - plan seguro</text>
+</g>
+<g class="edge-label" data-from="T2" data-to="T4" data-label="No - rojo o borde">
+  <rect x="225.7649999999999" y="5909.716" width="94.27600000000001" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="272.9029999999999" y="5924.866" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">No - rojo o borde</text>
+</g>
+<g class="edge-label" data-from="E1" data-to="E2" data-label="Si">
+  <rect x="1160.1497166666663" y="4140.983" width="27.154000000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="1173.7267166666663" y="4156.133" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Si</text>
+</g>
+<g class="edge-label" data-from="E2" data-to="E3" data-label="No">
+  <rect x="949.1692166666664" y="4581.842000000001" width="30.718000000000004" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="964.5282166666665" y="4596.992" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">No</text>
+</g>
+<g class="edge-label" data-from="E2" data-to="E4" data-label="Si">
+  <rect x="1369.6302166666662" y="4581.842000000001" width="27.154000000000003" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="1383.2072166666662" y="4596.992" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Si</text>
+</g>
+<g class="node" data-id="IN" data-label="Inicio del ciclo 20 Hz en la Pi 5 - Leer /world/state, /world/sensors, plan del companero, Perry y linea" data-shape="rectangle">
+  <rect x="340.35409166666636" y="40" width="616.2249999999999" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="648.4665916666663" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Inicio del ciclo 20 Hz en la Pi 5 - Leer /world/state, /world/sensors, plan del companero, Perry y linea</text>
+</g>
+<g class="node" data-id="S1" data-label="Camara mayor a 0.5 s o marcador perdido?" data-shape="diamond">
+  <polygon points="648.4665916666663,174.9 806.3000916666663,332.7335 648.4665916666663,490.567 490.63309166666636,332.7335" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="648.4665916666663" y="332.7335" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Camara mayor a 0.5 s o marcador perdido?</text>
+</g>
+<g class="node" data-id="S2" data-label="DETENIDO - Velocidad cero al HAL" data-shape="rectangle">
+  <rect x="407.5650916666664" y="672.521" width="246.46599999999998" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="530.7980916666663" y="690.971" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">DETENIDO - Velocidad cero al HAL</text>
+</g>
+<g class="node" data-id="S3" data-label="Piso cinta negra?" data-shape="diamond">
+  <polygon points="766.1350916666664,606.867 850.2390916666665,690.971 766.1350916666664,775.075 682.0310916666664,690.971" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="766.1350916666664" y="690.971" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Piso cinta negra?</text>
+</g>
+<g class="node" data-id="S4" data-label="HAL frena solo - Pulso corto hacia el centro y replanificar" data-shape="rectangle">
+  <rect x="678.3408416666664" y="891.3749999999999" width="373.17699999999985" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="864.9293416666663" y="909.8249999999999" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">HAL frena solo - Pulso corto hacia el centro y replanificar</text>
+</g>
+<g class="node" data-id="M1" data-label="Tiene cubo asignado valido?" data-shape="diamond">
+  <polygon points="667.3408416666664,1116.5749999999998 784.4193416666664,1233.6535 667.3408416666664,1350.732 550.2623416666664,1233.6535" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="667.3408416666664" y="1233.6535" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Tiene cubo asignado valido?</text>
+</g>
+<g class="node" data-id="M2" data-label="Elegir cubo de su color por costo minimo con histeresis" data-shape="rectangle">
+  <rect x="391.3500916666666" y="1467.0319999999997" width="361.32099999999986" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="572.0105916666665" y="1485.4819999999997" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Elegir cubo de su color por costo minimo con histeresis</text>
+</g>
+<g class="node" data-id="M3" data-label="Hay cubo alcanzable?" data-shape="diamond">
+  <polygon points="572.0105916666664,1551.9319999999998 670.1935916666664,1650.1149999999998 572.0105916666664,1748.2979999999998 473.8275916666664,1650.1149999999998" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="572.0105916666664" y="1650.1149999999998" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Hay cubo alcanzable?</text>
+</g>
+<g class="node" data-id="M4" data-label="ESTACIONADO - Ir a esquina izquierda segura" data-shape="rectangle">
+  <rect x="256.3204249999999" y="1960.6329999999998" width="313.89699999999993" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="413.26892499999985" y="1979.0829999999999" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">ESTACIONADO - Ir a esquina izquierda segura</text>
+</g>
+<g class="node" data-id="M5" data-label="Cubo pegado a cinta negra?" data-shape="diamond">
+  <polygon points="721.7273416666665,1864.5979999999997 836.2123416666665,1979.0829999999996 721.7273416666665,2093.5679999999998 607.2423416666664,1979.0829999999996" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="721.7273416666665" y="1979.0829999999996" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Cubo pegado a cinta negra?</text>
+</g>
+<g class="node" data-id="M6" data-label="Barrido lateral en angulo para despegar del borde" data-shape="rectangle">
+  <rect x="465.74359166666653" y="2209.8679999999995" width="334.6449999999999" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="633.0660916666665" y="2228.3179999999993" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Barrido lateral en angulo para despegar del borde</text>
+</g>
+<g class="node" data-id="N1" data-label="Alineado en punto A detras del cubo?" data-shape="diamond">
+  <polygon points="985.715633333333,2423.068 1126.135633333333,2563.4880000000003 985.715633333333,2703.9080000000004 845.295633333333,2563.4880000000003" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="985.715633333333" y="2563.4880000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Alineado en punto A detras del cubo?</text>
+</g>
+<g class="node" data-id="N2" data-label="Transito hacia A - Rodear rojos inflados a 12 cm dentro del margen" data-shape="rectangle">
+  <rect x="531.5457166666665" y="2920.3185000000003" width="420.6009999999999" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="741.8462166666665" y="2938.7685" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Transito hacia A - Rodear rojos inflados a 12 cm dentro del margen</text>
+</g>
+<g class="node" data-id="N3" data-label="Pasillo de pala libre de rojos?" data-shape="diamond">
+  <polygon points="1164.1461333333332,2820.208 1282.7066333333332,2938.7685 1164.1461333333332,3057.329 1045.5856333333331,2938.7685" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1164.1461333333332" y="2938.7685" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Pasillo de pala libre de rojos?</text>
+</g>
+<g class="node" data-id="N4" data-label="Empuje recto A hacia C hacia pre-zona" data-shape="rectangle">
+  <rect x="839.3983833333331" y="3173.629" width="266.47299999999996" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="972.634883333333" y="3192.0789999999997" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Empuje recto A hacia C hacia pre-zona</text>
+</g>
+<g class="node" data-id="N5" data-label="Empuje en 2 etapas - Quiebre C hacia M despejado y luego a pre-zona" data-shape="rectangle">
+  <rect x="1133.8713833333331" y="3173.629" width="443.5719999999999" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1355.6573833333332" y="3192.0789999999997" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Empuje en 2 etapas - Quiebre C hacia M despejado y luego a pre-zona</text>
+</g>
+<g class="node" data-id="N6" data-label="Cubo se salio de la pala?" data-shape="diamond">
+  <polygon points="1164.146133333333,3258.529 1268.627633333333,3363.0105 1164.146133333333,3467.4919999999997 1059.6646333333329,3363.0105" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1164.146133333333" y="3363.0105" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Cubo se salio de la pala?</text>
+</g>
+<g class="node" data-id="N7" data-label="RECUPERAR - Frenar, retroceder 12 cm y recalcular A" data-shape="rectangle">
+  <rect x="1079.6863833333332" y="3583.7920000000004" width="359.83899999999994" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1259.6058833333332" y="3602.242" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">RECUPERAR - Frenar, retroceder 12 cm y recalcular A</text>
+</g>
+<g class="node" data-id="T1" data-label="Alerta colision menor a 34 cm y debo ceder por Rojo o Frente?" data-shape="diamond">
+  <polygon points="607.3453333333331,4941.242 819.642333333333,5153.539 607.3453333333331,5365.835999999999 395.0483333333331,5153.539" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="607.3453333333331" y="5153.539" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Alerta colision menor a 34 cm y debo ceder por Rojo o Frente?</text>
+</g>
+<g class="node" data-id="T2" data-label="Planificar paso a estribor - libre de rojos 12 cm y borde?" data-shape="diamond">
+  <polygon points="480.3372499999998,5482.136 672.6272499999998,5674.426 480.3372499999998,5866.716 288.04724999999985,5674.426" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="480.3372499999998" y="5674.426" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Planificar paso a estribor - libre de rojos 12 cm y borde?</text>
+</g>
+<g class="node" data-id="T3" data-label="Apartarse a estribor -vy mecanum y re-evaluar a 20 Hz" data-shape="rectangle">
+  <rect x="507.4899999999998" y="5983.016" width="359.83899999999994" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="687.4094999999998" y="6001.465999999999" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Apartarse a estribor -vy mecanum y re-evaluar a 20 Hz</text>
+</g>
+<g class="node" data-id="T4" data-label="ESPERAR freno seguro - si mayor a 3 s evaluar retroceso recto" data-shape="rectangle">
+  <rect x="67.03999999999996" y="5983.016" width="412.4499999999998" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="273.2649999999999" y="6001.465999999999" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">ESPERAR freno seguro - si mayor a 3 s evaluar retroceso recto</text>
+</g>
+<g class="node" data-id="E1" data-label="Cubo llego a linea pre-zona x ~ 0.85 m?" data-shape="diamond">
+  <polygon points="1068.6863833333332,3808.992 1213.1818833333332,3953.4875 1068.6863833333332,4097.983 924.1908833333332,3953.4875" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1068.6863833333332" y="3953.4875" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Cubo llego a linea pre-zona x ~ 0.85 m?</text>
+</g>
+<g class="node" data-id="E2" data-label="Latido Perry ok y /zone/request concedido?" data-shape="diamond">
+  <polygon points="1174.1497166666663,4214.283 1336.4292166666664,4376.5625 1174.1497166666663,4538.842 1011.8702166666664,4376.5625" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1174.1497166666663" y="4376.5625" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Latido Perry ok y /zone/request concedido?</text>
+</g>
+<g class="node" data-id="E3" data-label="Esperar en carril pre-zona sin tapar salida" data-shape="rectangle">
+  <rect x="818.8357166666665" y="4655.142" width="291.667" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="964.6692166666664" y="4673.592" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Esperar en carril pre-zona sin tapar salida</text>
+</g>
+<g class="node" data-id="E4" data-label="Elegir ranura libre min 1.5 cm y empujar pasando linea verde hasta tope x_max" data-shape="rectangle">
+  <rect x="1138.5027166666664" y="4655.142" width="490.2549999999998" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1383.6302166666662" y="4673.592" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Elegir ranura libre min 1.5 cm y empujar pasando linea verde hasta tope x_max</text>
+</g>
+<g class="node" data-id="E5" data-label="Cubo en zona - Retroceder recto -vx sin girar hasta left_zone y /zone/release" data-shape="rectangle">
+  <rect x="1138.8732166666664" y="4740.042" width="489.5139999999998" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1383.6302166666662" y="4758.492" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Cubo en zona - Retroceder recto -vx sin girar hasta left_zone y /zone/release</text>
+</g>
+<g class="node" data-id="K1" data-label="Calcular pose objetivo - Prediccion corta si retardo mayor a 150 ms" data-shape="rectangle">
+  <rect x="567.5199642857143" y="6232.216" width="425.7879999999997" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="780.4139642857142" y="6250.666" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Calcular pose objetivo - Prediccion corta si retardo mayor a 150 ms</text>
+</g>
+<g class="node" data-id="K2" data-label="Control mecanum sat K R -theta e y wz con rampa y zona muerta" data-shape="rectangle">
+  <rect x="578.6349642857142" y="6317.116" width="403.5579999999999" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="780.4139642857142" y="6335.566" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Control mecanum sat K R -theta e y wz con rampa y zona muerta</text>
+</g>
+<g class="node" data-id="K3" data-label="HAL local en la Pi - Motores con watchdog 300 ms y publicar /robot/plan" data-shape="rectangle">
+  <rect x="385.21383928571436" y="6402.0160000000005" width="453.2049999999998" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="611.8163392857143" y="6420.466" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">HAL local en la Pi - Motores con watchdog 300 ms y publicar /robot/plan</text>
+</g>
+</svg>

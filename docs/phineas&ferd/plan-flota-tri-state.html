@@ -1,0 +1,669 @@
+<title>Plan de la flota Tri-State</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a lab-notebook column; each section pairs a short argument with a drawing of the arena, the robot or the data flow. */
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --ink:#17212b; --muted:#5a6672; --line:#d3dae1;
+  --tape:#1c2228; --zone:#2f6fd6; --zone-soft:#dbe7fb; --cube-y:#d9a300; --cube-r:#c4442c;
+  --virtual:#b0359a; --ok:#2e7d4f; --warn:#b86a00;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",Consolas,"Courier New",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10151b; --surface:#171f28; --ink:#e3e8ee; --muted:#9aa5b0; --line:#2b3540;
+  --tape:#d9dfe6; --zone:#5b95f2; --zone-soft:#1c2c46; --cube-y:#f0c02c; --cube-r:#e86a52;
+  --virtual:#e277cf; --ok:#5cc08a; --warn:#e9a23b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10151b; --surface:#171f28; --ink:#e3e8ee; --muted:#9aa5b0; --line:#2b3540;
+  --tape:#d9dfe6; --zone:#5b95f2; --zone-soft:#1c2c46; --cube-y:#f0c02c; --cube-r:#e86a52;
+  --virtual:#e277cf; --ok:#5cc08a; --warn:#e9a23b; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6}
+.wrap{max-width:980px;margin:0 auto;padding-block:40px 80px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.6rem;font-weight:700}
+h3{font-size:1.1rem;font-weight:700}
+p{margin:0;max-width:68ch}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+section{display:flex;flex-direction:column;gap:18px}
+.lead{font-size:1.15rem;max-width:62ch}
+.muted{color:var(--muted)}
+code,.mono{font-family:var(--f-mono);font-size:.9em}
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;overflow-x:auto;margin:0}
+.fig svg{display:block;width:100%;height:auto;min-width:560px}
+.fig.small svg{min-width:0}
+figcaption{font-size:.85rem;color:var(--muted);margin-top:10px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.85rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:2px;display:inline-block}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.grid2>*,.grid3>*{min-width:0}
+.panel{border-top:3px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.panel.keep{border-color:var(--ok)} .panel.drop{border-color:var(--cube-r)} .panel.new{border-color:var(--virtual)}
+.panel.g1{border-color:var(--muted)} .panel.g2{border-color:var(--zone)} .panel.g3{border-color:var(--cube-y)}
+.quote{font-family:var(--f-display);font-size:1.05rem;font-weight:500}
+ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.stat{display:flex;gap:28px;flex-wrap:wrap}
+.stat div{display:flex;flex-direction:column}
+.stat b{font-family:var(--f-display);font-size:2rem;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat small{color:var(--muted);font-size:.82rem;max-width:22ch}
+
+/* layer stack */
+.stack{display:flex;flex-direction:column;gap:6px;font-size:.92rem}
+.layer{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:stretch}
+.layer>.name{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);padding-top:10px}
+.cells{display:flex;gap:6px;flex-wrap:wrap}
+.cell{flex:1 1 150px;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:4px;padding:8px 10px}
+.cell b{display:block;font-family:var(--f-display);font-size:.95rem}
+.cell span{color:var(--muted);font-size:.84rem}
+.cell.v{border-style:dashed;border-color:var(--virtual)}
+.cell.v b{color:var(--virtual)}
+.where{display:inline-block;font-family:var(--f-mono);font-size:.72rem;padding:1px 6px;border-radius:3px;border:1px solid var(--line);color:var(--muted);margin-top:4px}
+@media (max-width:600px){.layer{grid-template-columns:1fr}.layer>.name{padding-top:0}}
+
+/* repo tree */
+.tree{font-family:var(--f-mono);font-size:.85rem;line-height:1.7;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 16px;overflow-x:auto;white-space:pre;margin:0}
+.tree .c{color:var(--muted)}
+.tree .o1{color:var(--muted);font-weight:500}
+.tree .o2{color:var(--zone);font-weight:500}
+.tree .o3{color:var(--warn);font-weight:500}
+.tree .o4{color:var(--virtual);font-weight:500}
+
+/* state chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--f-mono);font-size:.78rem}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:3px;padding:3px 8px}
+.chip.int{border-color:var(--cube-r);color:var(--cube-r)}
+.arr{color:var(--muted)}
+
+/* roadmap */
+ol.road{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;counter-reset:f}
+ol.road li{counter-increment:f;display:grid;grid-template-columns:56px 1fr;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+ol.road li::before{content:"F" counter(f, decimal);font-family:var(--f-display);font-weight:800;font-size:1.4rem;color:var(--zone)}
+ol.road li>div{min-width:0;display:flex;flex-direction:column;gap:4px}
+.crit{font-size:.88rem;color:var(--muted)}
+.crit b{color:var(--ink);font-weight:600}
+.tag{font-family:var(--f-mono);font-size:.72rem;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:2px;white-space:nowrap}
+.tag.risk{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.tag.opt{background:color-mix(in srgb,var(--virtual) 15%,transparent);color:var(--virtual)}
+.tag.dep{background:color-mix(in srgb,var(--zone) 15%,transparent);color:var(--zone)}
+
+/* questions */
+ol.qs{margin:0;padding-left:1.6em;display:flex;flex-direction:column;gap:10px}
+ol.qs li{padding-left:4px}
+ol.qs li p{font-size:.88rem;color:var(--muted)}
+.who{font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;padding:1px 6px;border-radius:3px;border:1px solid var(--line);color:var(--muted);margin-right:6px;vertical-align:1px}
+.answered li{color:var(--muted)}
+.answered b{color:var(--ink)}
+
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl{overflow-x:auto}
+.formula{font-family:var(--f-mono);background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:10px 14px;font-size:.92rem;overflow-x:auto;white-space:pre}
+
+/* svg classes (colors from tokens) */
+.s-zone{fill:var(--zone-soft);stroke:var(--zone);stroke-width:.5}
+.s-cb{fill:var(--zone)}
+.s-robot{fill:var(--surface);stroke:var(--ink);stroke-width:.6}
+.s-mark{fill:var(--ink)}
+.s-head{stroke:var(--ink);stroke-width:.7;fill:none}
+.s-virt{fill:none;stroke:var(--virtual);stroke-width:.5;stroke-dasharray:1.5 1}
+.s-virtf{fill:color-mix(in srgb,var(--virtual) 10%,transparent);stroke:var(--virtual);stroke-width:.5;stroke-dasharray:1.5 1}
+.s-path{fill:none;stroke:var(--zone);stroke-width:.6;stroke-dasharray:2 1.2}
+.s-axis{stroke:var(--muted);stroke-width:.5;fill:none}
+.s-life{stroke:var(--line);stroke-width:.6;fill:none}
+.s-box{fill:var(--surface);stroke:var(--ink);stroke-width:.5}
+.s-msg{stroke:var(--ink);stroke-width:.45;fill:none}
+.s-msgv{stroke:var(--virtual);stroke-width:.45;fill:none}
+.t{fill:var(--ink);font-family:var(--f-mono);font-size:2.6px}
+.t-m{fill:var(--muted);font-family:var(--f-mono);font-size:2.4px}
+.t-v{fill:var(--virtual);font-family:var(--f-mono);font-size:2.4px}
+.t-z{fill:var(--zone);font-family:var(--f-mono);font-size:2.4px}
+.arrowhead{fill:var(--muted)}
+.ah-ink{fill:var(--ink)} .ah-z{fill:var(--zone)} .ah-v{fill:var(--virtual)}
+/* overlay on the photo: the photo is always light, so overlay inks are fixed for legibility on it */
+.ov-grid{stroke:#b0359a;stroke-opacity:.28;stroke-width:1}
+.ov-line{stroke:#b0359a;stroke-width:3;fill:none;stroke-dasharray:10 6}
+.ov-fill{fill:rgba(176,53,154,.10);stroke:#b0359a;stroke-width:3;stroke-dasharray:10 6}
+.ov-path{stroke:#1f5fc9;stroke-width:4;fill:none;stroke-dasharray:14 8}
+.ov-robot{fill:rgba(255,255,255,.82);stroke:#17212b;stroke-width:3}
+.ov-mark{fill:#17212b}
+.ov-markw{fill:#fff}
+.ov-head{stroke:#17212b;stroke-width:4;fill:none}
+.ov-axis{stroke:#17212b;stroke-width:3;fill:none}
+.ov-t{font-family:"IBM Plex Mono",Consolas,monospace;font-size:20px;fill:#17212b;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
+.ov-tv{font-family:"IBM Plex Mono",Consolas,monospace;font-size:20px;fill:#8e2a7c;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
+.ov-tz{font-family:"IBM Plex Mono",Consolas,monospace;font-size:20px;fill:#1f5fc9;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
+.ov-ah{fill:#17212b} .ov-ahz{fill:#1f5fc9}
+.note{border-left:3px solid var(--warn);padding:4px 0 4px 14px;font-size:.92rem}
+.note.v{border-color:var(--virtual)}
+.note.z{border-color:var(--zone)}
+@media (prefers-reduced-motion:no-preference){.blink{animation:b 1.6s ease-in-out infinite}@keyframes b{50%{opacity:.35}}}
+</style>
+
+<div class="wrap">
+
+<header style="display:flex;flex-direction:column;gap:14px">
+  <span class="eyebrow">Robótica · UCAB Guayana · Etapa 2 · versión 3 · 17-11-2026</span>
+  <h1>Phineas y Ferb bajo una cámara cenital</h1>
+  <p class="lead">Este documento recoge lo que pienso del proyecto y el camino que propongo. Una cámara sobre toda la pista mide dónde está cada cubo y cada carro. Nosotros convertimos esos datos en decisiones: a qué cubo va cada carro, por dónde, cuándo empuja y cuándo frena.</p>
+  <p class="muted" style="font-size:.9rem">Se basa en estas fuentes:</p>
+  <ul class="muted" style="font-size:.9rem">
+    <li>La pizarra y las notas de la clase del 17-11.</li>
+    <li>Los informes de Phineas y Ferb, y los repositorios <code>ucab-multirobot</code> y <code>Ferb-Recolector</code>.</li>
+    <li>La captura de la cámara cenital nueva.</li>
+    <li>La tesis de Castillejo (2020, tutor Lárez) y nuestra etapa de Perry.</li>
+  </ul>
+  <p class="muted" style="font-size:.9rem">Las medidas tomadas de la foto son estimaciones a ojo, con un margen de ±1 cm. Las preguntas abiertas están al final.</p>
+</header>
+
+<!-- 1. Roles -->
+<section>
+  <span class="eyebrow">Quién hace qué</span>
+  <h2>Tres grupos, un sistema</h2>
+  <p>Los grupos rotaron. La división queda así: un grupo ve, otro decide y mueve, y el tercero clasifica.</p>
+  <div class="grid3">
+    <div class="panel g1"><h3>Cenital · Samuel y compañía</h3>
+      <p class="quote">"Pueden ver, pero son mochos."</p>
+      <ul>
+        <li>Manejan la cámara nueva y su calibración.</li>
+        <li>Detectan los cubos (color y posición) y los carros (posición y orientación).</li>
+        <li>Publican la pista completa en coordenadas del mundo, de forma continua y también a pedido.</li>
+        <li>Calculan los sensores virtuales: distancias, regiones, cercanía a rojos (recomendación del profesor).</li>
+        <li>Solo entregan datos. No dan órdenes.</li>
+      </ul></div>
+    <div class="panel g2"><h3>Flota · nosotros</h3>
+      <p class="quote">"No somos mochos, pero no vemos."</p>
+      <ul>
+        <li>Leemos los datos y los sensores virtuales que publica la cenital.</li>
+        <li>Decidimos la misión, el tráfico y las rutas.</li>
+        <li>Cada carro (Phineas y Ferb) ejecuta en su propia Raspberry Pi 5 su planificación, tráfico entre pares, control y reflejos locales.</li>
+        <li>Mostramos la "proyección" virtual en pantalla.</li>
+      </ul></div>
+    <div class="panel g3"><h3>Manipulador · Vielma y compañía</h3>
+      <p class="quote">Mejorar a Perry y engancharse.</p>
+      <ul>
+        <li>Parten de nuestro Perry de la etapa 1: optimizan la pinza, ganan velocidad y precisión.</li>
+        <li>Mantienen el árbitro de la zona y el conteo.</li>
+        <li>Se integran a través del mismo contrato de datos.</li>
+      </ul></div>
+  </div>
+  <div class="note z">La palabra clave es <b>contrato</b>: la lista exacta de mensajes que cada grupo publica y consume. Si el contrato está escrito el primer día, cada grupo trabaja en paralelo sin esperar a los otros. Propongo una primera versión más abajo, en "Flujo de la aplicación".</div>
+</section>
+
+<!-- 2. Scene on the real photo -->
+<section>
+  <span class="eyebrow">La escena</span>
+  <h2>La pista vista desde la cámara nueva</h2>
+  <p>La captura mide 1280 × 720 píxeles. La pista blanca ocupa unos 1135 × 680 píxeles, que corresponden a los 116,5 × 70 cm del informe de Ferb. Cada píxel equivale a <b>~1,03 mm</b>, y un cubo de 2,5 cm ocupa unos 24 píxeles: alcanza de sobra.</p>
+  <p>La zona de entrega es la muesca azul del borde derecho, donde la cinta negra se interrumpe. A sus lados están las cajas amarilla (arriba) y verde (abajo). Perry queda fuera de la foto, a la derecha.</p>
+  <figure class="fig">
+    <svg viewBox="0 0 1280 720" role="img" aria-label="Captura de la cámara cenital con la cuadrícula del mundo, la zona y dos carros dibujados encima">
+      <defs>
+        <marker id="oa" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L6,3 L0,6 z" class="ov-ah"/></marker>
+        <marker id="oz" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L6,3 L0,6 z" class="ov-ahz"/></marker>
+        <g id="oaruco">
+          <polygon points="45,0 -30,-30 -30,30" class="ov-mark"/>
+        </g>
+      </defs>
+      <image href="cenital.jpg" x="0" y="0" width="1280" height="720"/>
+      <!-- 10 cm grid from the proposed origin (inner bottom-left corner), 9.73 px per cm -->
+      <g class="ov-grid">
+        <line x1="127.3" y1="15" x2="127.3" y2="695"/><line x1="224.6" y1="15" x2="224.6" y2="695"/><line x1="321.9" y1="15" x2="321.9" y2="695"/>
+        <line x1="419.2" y1="15" x2="419.2" y2="695"/><line x1="516.5" y1="15" x2="516.5" y2="695"/><line x1="613.8" y1="15" x2="613.8" y2="695"/>
+        <line x1="711.1" y1="15" x2="711.1" y2="695"/><line x1="808.4" y1="15" x2="808.4" y2="695"/><line x1="905.7" y1="15" x2="905.7" y2="695"/>
+        <line x1="1003" y1="15" x2="1003" y2="695"/><line x1="1100.3" y1="15" x2="1100.3" y2="695"/>
+        <line x1="30" y1="597.7" x2="1165" y2="597.7"/><line x1="30" y1="500.4" x2="1165" y2="500.4"/><line x1="30" y1="403.1" x2="1165" y2="403.1"/>
+        <line x1="30" y1="305.8" x2="1165" y2="305.8"/><line x1="30" y1="208.5" x2="1165" y2="208.5"/><line x1="30" y1="111.2" x2="1165" y2="111.2"/>
+      </g>
+      <!-- zone region -->
+      <rect x="1150" y="262" width="128" height="180" class="ov-fill"/>
+      <text x="1140" y="250" class="ov-tv" text-anchor="end">región virtual: zona (una llave)</text>
+      <text x="1272" y="40" class="ov-t" text-anchor="end">caja amarilla</text>
+      <text x="1272" y="680" class="ov-t" text-anchor="end">caja verde</text>
+      <text x="1272" y="470" class="ov-t" text-anchor="end">Perry →</text>
+      <!-- Phineas ghost -->
+      <g transform="translate(470 560) rotate(-30)">
+        <rect x="-90" y="-78" width="181" height="157" rx="14" class="ov-robot"/>
+        <rect x="91" y="-55" width="30" height="110" class="ov-robot"/>
+        <use href="#oaruco"/>
+        <line x1="0" y1="0" x2="150" y2="0" class="ov-head" marker-end="url(#oa)"/>
+      </g>
+      <circle cx="470" cy="560" r="165" class="ov-line"/>
+      <text x="470" y="712" class="ov-t" text-anchor="middle">Phineas (dibujado)</text>
+      <!-- path: to approach point behind the blue cube, then push toward the zone -->
+      <path d="M560 505 Q600 440 622 404" class="ov-path" marker-end="url(#oz)"/>
+      <path d="M640 402 L1150 352" class="ov-path" marker-end="url(#oz)"/>
+      <circle cx="622" cy="404" r="9" fill="none" stroke="#b0359a" stroke-width="3"/>
+      <text x="600" y="440" class="ov-tv" text-anchor="end">A</text>
+      <text x="900" y="345" class="ov-tz" text-anchor="middle">empuje guiado</text>
+      <!-- Ferb ghost -->
+      <g transform="translate(250 330) rotate(-60)">
+        <rect x="-90" y="-78" width="181" height="157" rx="14" class="ov-robot"/>
+        <rect x="91" y="-55" width="30" height="110" class="ov-robot"/>
+        <use href="#oaruco"/>
+        <line x1="0" y1="0" x2="150" y2="0" class="ov-head" marker-end="url(#oa)"/>
+      </g>
+      <circle cx="250" cy="330" r="165" class="ov-line"/>
+      <text x="250" y="140" class="ov-t" text-anchor="middle">Ferb (dibujado)</text>
+      <!-- origin and axes -->
+      <circle cx="30" cy="695" r="8" class="ov-mark"/>
+      <line x1="30" y1="695" x2="150" y2="695" class="ov-axis" marker-end="url(#oa)" transform="translate(0 -22)"/>
+      <line x1="52" y1="695" x2="52" y2="575" class="ov-axis" marker-end="url(#oa)"/>
+      <text x="160" y="680" class="ov-t">x</text><text x="62" y="580" class="ov-t">y</text>
+      <text x="72" y="650" class="ov-t">(0, 0)</text>
+      <text x="600" y="385" class="ov-t">punto rojo: centro de la pista</text>
+    </svg>
+    <div class="legend" style="margin-top:12px">
+      <span><i class="sw" style="border:1px solid var(--virtual);opacity:.6"></i>cuadrícula de 10 cm (origen propuesto)</span>
+      <span><i class="sw" style="border:1px dashed var(--virtual)"></i>región o sensor virtual</span>
+      <span><i class="sw" style="border:1px dashed var(--zone)"></i>ruta planificada</span>
+      <span><i class="sw" style="background:var(--ink)"></i>triángulo de cartulina en el techo</span>
+    </div>
+    <figcaption>Foto real de la cámara nueva. Los carros, la cuadrícula, las rutas y las regiones están dibujados encima, a escala: carro de 18,6 × 16,1 cm y círculo de seguridad de 17 cm de radio. Esto mismo es la "proyección virtual": el mundo dibujado sobre la imagen en la pantalla de la PC, sin proyector físico.</figcaption>
+  </figure>
+  <div class="note">La cámara cubre hasta el área de entrega del manipulador; solo el brazo queda fuera de la foto. Para entregar, el carro atraviesa la abertura de la cinta negra y deja el cubo <b>pasando la línea verde</b>. Allí no hay cinta negra, así que el reflejo de línea no protege ese tramo: lo vigila la región virtual de la zona.</div>
+</section>
+
+<!-- 3. Diagnosis -->
+<section>
+  <span class="eyebrow">Diagnóstico</span>
+  <h2>Qué recibimos</h2>
+  <p>Phineas y Ferb son el mismo robot:</p>
+  <ul>
+    <li>Chasis mecanum con cuatro motores sin encoders.</li>
+    <li>Raspberry Pi 5 con placa Fusion HAT+.</li>
+    <li>Cámara frontal de 640 × 480 a 15 cuadros por segundo, a 5,8 cm del piso.</li>
+    <li>Un sensor de línea y una pala fija.</li>
+  </ul>
+  <p>Ninguno sabe dónde está: navegan por lo que ve su cámara frontal. Los dos informes coinciden en la conclusión: el reto ya no es que un robot funcione solo, sino que varios funcionen juntos.</p>
+  <div class="stat">
+    <div><b>64,7 %</b><small>cubos entregados por Ferb (11 de 17); su meta era 85 %</small></div>
+    <div><b>34 %</b><small>del tiempo de Ferb sin avanzar, casi siempre en contacto con Phineas</small></div>
+    <div><b>44–61 %</b><small>del tiempo de Phineas esperando turno en las corridas con flota</small></div>
+    <div><b>0,15 s</b><small>retardo que hacía oscilar el giro de Phineas (75 % del tiempo girando)</small></div>
+  </div>
+  <p>Los números apuntan al mismo lugar: los carros pierden el tiempo esperando, chocando y buscando. Con la pose de ambos, cada carro sabe con anticipación que va a coincidir con el compañero, elige cubos para que no se crucen y deja de "buscar girando".</p>
+  <div class="grid3">
+    <div class="panel keep"><h3>Se conserva</h3><ul>
+      <li>Cinemática mecanum y control de motores (<code>kinematics.py</code>, <code>motors.py</code>).</li>
+      <li>Sensor de línea como reflejo de seguridad.</li>
+      <li>Árbitro de zona con turnos que caducan.</li>
+      <li><code>peer_avoidance.py</code>, ya escrito en coordenadas de mesa.</li>
+      <li>El registro de cada decisión, que fue la herramienta de ajuste de Phineas.</li>
+      <li>La regla "lógica pura con pruebas, nodo delgado".</li>
+    </ul></div>
+    <div class="panel drop"><h3>Se retira</h3><ul>
+      <li>La percepción a bordo para navegar: balizas de lego, franjas de color, modelo de cámara inclinada.</li>
+      <li>El piloto reactivo (gira buscando, empuja a ciegas).</li>
+      <li>Las dos máquinas de estado duplicadas.</li>
+      <li>Los nodos de sensores que nunca se montaron.</li>
+    </ul></div>
+    <div class="panel new"><h3>Hay que construir</h3><ul>
+      <li>El software autónomo a bordo de cada Pi: misión, tráfico entre pares y control.</li>
+      <li>La lectura de los sensores virtuales que calcula la cenital.</li>
+      <li>El HAL común del carro, con su vigilancia interna de 300 ms y reflejo de línea.</li>
+      <li>Un simulador del mundo para trabajar sin la cámara.</li>
+      <li>El visor con la proyección virtual.</li>
+    </ul></div>
+  </div>
+</section>
+
+<!-- 4. Architecture -->
+<section>
+  <span class="eyebrow">Arquitectura</span>
+  <h2>Las capas de la pizarra, con nombre, lugar y dueño</h2>
+  <p>Propongo un paradigma <b>híbrido y descentralizado</b>. Cada carro planifica de forma autónoma en su propia Raspberry Pi 5 con la vista de toda la pista y conserva dos reflejos locales: si ve la línea negra, o si falla el lazo interno de control, frena solo. Es la división de la tesis de Castillejo, con dos mejoras: la calibración con homografía y la medición del error.</p>
+  <div class="stack" role="list">
+    <div class="layer" role="listitem"><div class="name">A.C. · aplicación de control</div><div class="cells">
+      <div class="cell"><b>Misión</b><span>qué cubo toma cada carro, en qué orden</span><br><i class="where">cada carro (Pi 5)</i></div>
+      <div class="cell"><b>Tráfico</b><span>tráfico entre pares: quién pasa y quién espera; pide la llave de la zona</span><br><i class="where">cada carro (Pi 5)</i></div>
+      <div class="cell"><b>Clasificación</b><span>Perry toma y separa los cubos de la zona</span><br><i class="where">manipulador</i></div>
+    </div></div>
+    <div class="layer" role="listitem"><div class="name">A · S · A,S V · C</div><div class="cells">
+      <div class="cell"><b>Actuadores</b><span>velocidad (vx, vy, ω) de cada carro</span><br><i class="where">carro · nosotros</i></div>
+      <div class="cell"><b>Sensores</b><span>cámara cenital; sensor de línea</span><br><i class="where">cenital + carro</i></div>
+      <div class="cell v"><b>Sensores y actuadores virtuales</b><span>distancia entre carros, región de zona, cercanía a rojos, "radar"</span><br><i class="where">cenital</i></div>
+      <div class="cell"><b>Comunicación</b><span>el contrato de mensajes entre los tres grupos</span><br><i class="where">todos</i></div>
+    </div></div>
+    <div class="layer" role="listitem"><div class="name">HAL · abstracción del hardware</div><div class="cells">
+      <div class="cell"><b>Interfaz única por carro</b><span><code>drive(vx, vy, ω)</code>, <code>stop()</code>, <code>line()</code>. Phineas y Ferb difieren solo en un archivo de configuración</span><br><i class="where">carro · nosotros</i></div>
+    </div></div>
+    <div class="layer" role="listitem"><div class="name">RT · tiempo de ejecución</div><div class="cells">
+      <div class="cell"><b>Lazos a frecuencia fija</b><span>visión y planificación en cada Pi a ~20 Hz; vigilancia interna de 300 ms en el HAL del carro</span><br><i class="where">todos</i></div>
+    </div></div>
+    <div class="layer" role="listitem"><div class="name">HW</div><div class="cells">
+      <div class="cell"><b>Hardware</b><span>cámara cenital + equipo cenital (PC o Pi), 2 × (Pi 5, Fusion HAT+, 4 motores TT, TCRT5000), Perry</span></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- 5. Repository -->
+<section>
+  <span class="eyebrow">Repositorio</span>
+  <h2>Cómo organizaría <code>Tri-State-Area</code></h2>
+  <p>El repositorio está vacío al 17-11, así que es buen momento para acordar la forma. Esta propuesta sigue tres ideas:</p>
+  <ul>
+    <li><b>Arquitectura que grita:</b> las carpetas se llaman como las partes del sistema, no como tecnologías.</li>
+    <li><b>Un dueño por carpeta</b>, para que cada grupo trabaje sin pisar a los otros.</li>
+    <li><b>Lógica pura separada de ROS</b>, para probarla sin hardware. Es lo que mejor funcionó en los repositorios de Phineas y Ferb.</li>
+  </ul>
+  <p>Samuel va a armar la estructura inicial. Esto puede servirle de punto de partida.</p>
+<pre class="tree">Tri-State-Area/
+├─ README.md                <span class="c">qué es y cómo correr la demo completa</span>
+├─ docs/
+│  ├─ contrato.md           <span class="c">mensajes entre grupos: la ley del proyecto</span>
+│  ├─ pista.md              <span class="c">medidas, origen, ejes, fotos de referencia</span>
+│  ├─ arquitectura.md       <span class="c">capas y flujo (esta página, en texto)</span>
+│  └─ decisiones/           <span class="c">un registro corto por decisión (ADR)</span>
+├─ interfaces/              <span class="o4">[los tres grupos · cambios solo por PR revisado]</span>
+│  └─ tsa_interfaces/       <span class="c">.msg y .srv de ROS 2</span>
+├─ cenital/                 <span class="o1">[Samuel y compañía]</span>
+│  ├─ cenital_core/         <span class="c">calibración, detección de cubos y de marcadores (sin ROS)</span>
+│  └─ cenital_ros/          <span class="c">publica /world/state y atiende /world/get</span>
+├─ carro/                   <span class="o2">[nosotros · corre a bordo en la Pi 5 de cada carro]</span>
+│  ├─ carro_core/           <span class="c">modelo del mundo, misión, tráfico entre pares, control (sin ROS)</span>
+│  ├─ carro_hal/            <span class="c">Fusion HAT+, mecanum, sensor de línea, vigilancia interna</span>
+│  ├─ carro_ros/            <span class="c">lee /world/state y /&lt;compañero&gt;/plan → HAL; publica /&lt;robot&gt;/plan y /&lt;robot&gt;/status</span>
+│  └─ config/               <span class="c">phineas.yaml, ferb.yaml</span>
+├─ perry/                   <span class="o3">[Vielma y compañía · brazo y árbitro de zona]</span>
+├─ visor/                   <span class="c">proyección virtual: el mundo y los planes dibujados sobre la imagen</span>
+├─ sim/                     <span class="c">mundo falso con el mismo contrato: permite trabajar sin cámara ni carros</span>
+├─ tools/  docker/
+└─ .github/workflows/       <span class="c">pruebas de cada carpeta en cada PR</span></pre>
+  <div class="note z">La pieza que más tiempo ahorra es <code>sim/</code>. Si publica el mismo <code>/world/state</code> que la cámara real, nosotros podemos escribir y probar la misión, el tráfico y el control desde el primer día, sin esperar a que el grupo de la cenital termine. Lo mismo vale para Perry.</div>
+</section>
+
+<!-- 6. Flow -->
+<section>
+  <span class="eyebrow">Flujo de la aplicación</span>
+  <h2>Coordinación y ejecución, ciclo a ciclo</h2>
+  <p>El sistema es un lazo que se repite unas 20 veces por segundo. Cada vuelta tiene cuatro pasos:</p>
+  <ol>
+    <li><b>Ver.</b> La cenital captura un cuadro, lo pasa a centímetros y publica el estado del mundo: los cubos, los carros y la marca de tiempo.</li>
+    <li><b>Interpretar.</b> La cenital calcula los sensores virtuales (distancia entre carros, si alguno entró a la zona, cercanía a un rojo) y los publica. Cada carro actualiza su modelo con ellos.</li>
+    <li><b>Decidir</b> (Pi 5 de cada carro).
+      <ul>
+        <li>La misión asigna o mantiene el objetivo de ese carro.</li>
+        <li>El tráfico entre pares intercambia <code>/&lt;robot&gt;/plan</code> y frena (o cede paso) al de menor prioridad si sus círculos de seguridad se van a tocar.</li>
+        <li>El control convierte el objetivo en velocidades localmente en la Pi.</li>
+      </ul>
+    </li>
+    <li><b>Actuar</b> (HAL en la misma Pi 5). Recibe <code>(vx, vy, ω)</code> localmente y mueve los motores. Frena si ve la línea negra o si vence la vigilancia interna de 300 ms.</li>
+  </ol>
+  <figure class="fig">
+    <svg viewBox="0 0 200 128" role="img" aria-label="Diagrama de secuencia de una entrega de Phineas">
+      <defs>
+        <marker id="q1" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L6,3 L0,6 z" class="ah-ink"/></marker>
+        <marker id="q2" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L6,3 L0,6 z" class="ah-v"/></marker>
+      </defs>
+      <g>
+        <rect x="6" y="2" width="34" height="8" rx="1" class="s-box"/><text x="23" y="7.2" class="t" text-anchor="middle">Cenital</text>
+        <rect x="58" y="2" width="34" height="8" rx="1" class="s-box"/><text x="75" y="7.2" class="t" text-anchor="middle">Phineas (Pi)</text>
+        <rect x="110" y="2" width="34" height="8" rx="1" class="s-box"/><text x="127" y="7.2" class="t" text-anchor="middle">Ferb (Pi)</text>
+        <rect x="160" y="2" width="34" height="8" rx="1" class="s-box"/><text x="177" y="7.2" class="t" text-anchor="middle">Perry</text>
+        <line x1="23" y1="10" x2="23" y2="126" class="s-life"/><line x1="75" y1="10" x2="75" y2="126" class="s-life"/>
+        <line x1="127" y1="10" x2="127" y2="126" class="s-life"/><line x1="177" y1="10" x2="177" y2="126" class="s-life"/>
+      </g>
+      <line x1="23" y1="18" x2="74" y2="18" class="s-msg" marker-end="url(#q1)"/><text x="48" y="16.5" class="t-m" text-anchor="middle">/world/state · 20 Hz</text>
+      <text x="78" y="26" class="t-v">elige cubo azul #3 (local)</text>
+      <line x1="75" y1="33" x2="126" y2="33" class="s-msg" marker-end="url(#q1)"/><text x="101" y="31.5" class="t-m" text-anchor="middle">/phineas/plan (tráfico P2P)</text>
+      <line x1="127" y1="40" x2="76" y2="40" class="s-msg" marker-end="url(#q1)"/><text x="101" y="38.5" class="t-m" text-anchor="middle">/ferb/plan</text>
+      <text x="78" y="48" class="t-m">… control local hasta A y pre-zona …</text>
+      <line x1="75" y1="56" x2="176" y2="56" class="s-msg" marker-end="url(#q1)"/><text x="126" y="54.5" class="t-m" text-anchor="middle">/zone/request (phineas)</text>
+      <line x1="177" y1="63" x2="76" y2="63" class="s-msg" marker-end="url(#q1)"/><text x="126" y="61.5" class="t-m" text-anchor="middle">concedido · lease 60 s</text>
+      <text x="78" y="71" class="t-m">empuja hasta la franja (local)</text>
+      <line x1="23" y1="80" x2="74" y2="80" class="s-msg" marker-end="url(#q1)"/><text x="48" y="78.5" class="t-m" text-anchor="middle">cubo #3 en la franja</text>
+      <text x="78" y="88" class="t-m">retrocede y sale (local)</text>
+      <line x1="23" y1="96" x2="74" y2="96" class="s-msgv" marker-end="url(#q2)"/><text x="48" y="94.5" class="t-v" text-anchor="middle">sensor virtual: salió de la zona</text>
+      <line x1="75" y1="103" x2="176" y2="103" class="s-msg" marker-end="url(#q1)"/><text x="126" y="101.5" class="t-m" text-anchor="middle">/zone/release (1 azul)</text>
+      <text x="175" y="112" class="t-m" text-anchor="end">asentando → clasifica</text>
+      <line x1="75" y1="120" x2="22" y2="120" class="s-msgv" marker-end="url(#q2)"/><text x="48" y="118.5" class="t-v" text-anchor="middle">/phineas/plan → visor</text>
+    </svg>
+    <figcaption>Una entrega completa. Cada carro planifica en su propia Pi, coordina tráfico con el compañero y pide el turno directamente a Perry, así el contrato del árbitro no cambia. Las líneas magenta son sensores virtuales o datos para el visor.</figcaption>
+  </figure>
+  <h3>Estado de cada carro (en su propia Pi)</h3>
+  <div class="chips">
+    <span class="chip">LIBRE</span><span class="arr">→</span><span class="chip">IR_A_APROXIMACIÓN</span><span class="arr">→</span><span class="chip">EMPUJAR</span><span class="arr">→</span><span class="chip">PEDIR_ZONA</span><span class="arr">→</span><span class="chip">ENTREGAR</span><span class="arr">→</span><span class="chip">SALIR</span><span class="arr">→</span><span class="chip">LIBRE</span>
+  </div>
+  <div class="chips"><span class="muted" style="font-family:var(--f-body);font-size:.85rem">Interrupciones desde cualquier estado:</span><span class="chip int">ESPERAR (tráfico)</span><span class="chip int">DETENIDO (sin datos de la cámara por más de 0,5 s)</span><span class="chip int">RECUPERAR (el cubo se salió de la pala)</span></div>
+
+  <h3>Primera versión del contrato</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Mensaje</th><th>Tipo</th><th>Publica</th><th>Contenido</th></tr></thead>
+    <tbody>
+      <tr><td><code>/world/state</code></td><td>tema, ~20 Hz</td><td>cenital</td><td>marca de tiempo; cubos [id, color, x, y, confianza]; carros [nombre, x, y, θ, confianza]. En metros y radianes (convención de ROS, REP 103; los <code>multirobot_interfaces</code> actuales ya usan metros), marco "arena". Las pantallas pueden mostrar cm.</td></tr>
+      <tr><td><code>/world/sensors</code></td><td>tema, ~20 Hz</td><td>cenital</td><td>sensores virtuales: distancia entre carros, carro dentro de la zona, rojo más cercano a cada carro, eventos de región</td></tr>
+      <tr><td><code>/world/get</code></td><td>servicio</td><td>cenital</td><td>la misma foto del mundo a pedido ("retornan las coordenadas al consultarlas")</td></tr>
+      <tr><td><code>/world/image</code></td><td>tema, opcional</td><td>cenital</td><td>imagen comprimida para el visor</td></tr>
+      <tr><td><code>/&lt;robot&gt;/status</code></td><td>tema, 5 Hz</td><td>carro (Pi)</td><td>sensor de línea, batería, edad de la última orden interna del HAL, modo (frena si pasan 300 ms sin orden interna; las Pi miden con su propio reloj)</td></tr>
+      <tr><td><code>/zone/request</code>, <code>/zone/release</code>, <code>/zone/occupant</code></td><td>servicios y latido</td><td>Perry</td><td>sin cambios respecto de la etapa 1 (cada carro llama directo desde su Pi)</td></tr>
+      <tr><td><code>/&lt;robot&gt;/plan</code></td><td>tema, 5–10 Hz</td><td>cada carro (Pi)</td><td>objetivo, ruta y estado de ese carro, para tráfico P2P, el visor y el registro</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 7. Coordinates -->
+<section>
+  <span class="eyebrow">Coordenadas</span>
+  <h2>Del píxel al centímetro, y del centímetro a la pantalla</h2>
+  <p>En la pizarra aparecen tres sistemas: lo que ve la cámara (VP<sub>c</sub>), el mundo (WR) y lo que se proyecta (VP<sub>p</sub>). Como la pista es plana, cada paso es una <b>homografía</b>: una matriz H de 3 × 3 que convierte un punto de un plano en el punto correspondiente de otro, corrigiendo la perspectiva. Se calcula con cuatro esquinas conocidas. Así se hizo en Perry con la zona azul.</p>
+  <p>Ya no hay proyector físico. VP<sub>p</sub> pasa a ser la ventana del visor en la PC, y la transformación mundo → visor es la que dibuja las regiones, las rutas y los carros sobre la imagen, como en la foto de arriba.</p>
+  <div class="formula">[x_w, y_w, 1]ᵀ  ∝  H_c→w · [u, v, 1]ᵀ        (píxel de la cámara → cm del mundo)   · grupo cenital
+[u_p, v_p, 1]ᵀ ∝  H_w→p · [x_w, y_w, 1]ᵀ    (cm del mundo → píxel del visor)        · visor</div>
+  <h3>Marcador: triángulo de cartulina</h3>
+  <p>El profesor pidió un triángulo de cartulina en el techo de cada carro, el mismo método de la tesis de Castillejo. El centroide del triángulo da la posición (x, y). La punta, que es el vértice opuesto al lado más corto, da la orientación θ. Para que la punta no sea ambigua, conviene un triángulo isósceles alargado, no equilátero. Además, cada carro necesita un color distinto que no se confunda con los cubos (azul, amarillo, rojo) ni con la zona (azul, verde).</p>
+  <h3>Paralaje: con la cámara a 1 m, no es despreciable</h3>
+  <p>La homografía solo es exacta sobre el piso. El triángulo está en el techo del carro, a unos 9 cm de altura (el chasis mide 91 mm), así que la cámara lo ve desplazado hacia afuera del punto que tiene justo debajo. El desplazamiento crece con la distancia a ese punto:</p>
+  <div class="formula">p_real = c + (p_visto − c) · (H − h) / H        H = 100 cm, h ≈ 9 cm
+error  ≈ r · h / (H − h) ≈ 0,1 · r
+
+a 20 cm de c → ~2 cm de error      en una esquina (r ≈ 68 cm) → ~6,7 cm de error</div>
+  <p class="muted" style="font-size:.9rem">c es el punto del piso que queda justo debajo de la cámara. Si la cámara está centrada, coincide con el punto rojo del centro de la pista. La corrección es una línea de código, pero sin ella el error en las esquinas es casi tres veces el ancho de un cubo. Como los sensores virtuales los calcula la cenital, lo natural es que ellos publiquen la pose ya corregida.</p>
+</section>
+
+<!-- 8. Robot control -->
+<section>
+  <span class="eyebrow">Movimiento</span>
+  <h2>Ir a un punto sin girar primero</h2>
+  <div class="grid2" style="align-items:center">
+    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <p>Las ruedas mecanum permiten moverse en cualquier dirección sin girar (movimiento holonómico). El control queda simple: se calcula el error en el mundo, se rota al marco del robot y se multiplica por una ganancia, con un tope de velocidad.</p>
+      <div class="formula">e  = p_objetivo − p_robot          (cm, mundo)
+[vx, vy] = sat( K · R(−θ) · e )
+ω  = sat( K_θ · (θ_objetivo − θ) )</div>
+      <p class="muted" style="font-size:.9rem">R(−θ) rota el error del mundo al marco del robot, y "sat" limita la velocidad. La cámara mide la pose real en cada cuadro, así que el resbalamiento de las ruedas se corrige solo. Esa es la "corrección de dirección" que pidió el profesor.</p>
+    </div>
+    <figure class="fig small">
+      <svg viewBox="-30 -30 80 64" role="img" aria-label="Robot con su marco local, el objetivo y el vector de error">
+        <defs>
+          <marker id="r1" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L6,3 L0,6 z" class="ah-ink"/></marker>
+          <marker id="r2" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L6,3 L0,6 z" class="ah-z"/></marker>
+          <marker id="r3" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L6,3 L0,6 z" class="arrowhead"/></marker>
+        </defs>
+        <line x1="-26" y1="28" x2="-12" y2="28" class="s-axis" marker-end="url(#r3)"/>
+        <line x1="-26" y1="28" x2="-26" y2="14" class="s-axis" marker-end="url(#r3)"/>
+        <text x="-11" y="31" class="t-m">x_w</text><text x="-29" y="12" class="t-m">y_w</text>
+        <g transform="translate(-4 8) rotate(-25)">
+          <rect x="-9.3" y="-8" width="18.6" height="16.1" rx="1.5" class="s-robot"/>
+          <rect x="9.3" y="-5.5" width="3.2" height="11" class="s-robot"/>
+          <rect x="-7.5" y="-9.5" width="5" height="2" class="s-mark"/><rect x="2.5" y="-9.5" width="5" height="2" class="s-mark"/>
+          <rect x="-7.5" y="7.5" width="5" height="2" class="s-mark"/><rect x="2.5" y="7.5" width="5" height="2" class="s-mark"/>
+          <line x1="0" y1="0" x2="16" y2="0" class="s-head" marker-end="url(#r1)"/>
+          <line x1="0" y1="0" x2="0" y2="-12" class="s-head" marker-end="url(#r1)"/>
+          <text x="17" y="3" class="t">x_r</text><text x="1" y="-13" class="t">y_r</text>
+        </g>
+        <path d="M8 8 A12 12 0 0 0 6.9 2.9" class="s-axis"/>
+        <text x="9.5" y="5.5" class="t">θ</text>
+        <line x1="-4" y1="8" x2="38" y2="8" class="s-axis" stroke-dasharray="1 1"/>
+        <circle cx="34" cy="-20" r="1.6" class="s-cb"/>
+        <text x="31" y="-24" class="t-z">objetivo</text>
+        <line x1="-4" y1="8" x2="32.6" y2="-18.9" class="s-path" marker-end="url(#r2)"/>
+        <text x="16" y="-10" class="t-z">e</text>
+      </svg>
+      <figcaption>Vista desde arriba. El carro avanza en la dirección de e sin girar primero.</figcaption>
+    </figure>
+  </div>
+  <div class="note"><b>Riesgo principal: el retardo.</b>
+    <ul>
+      <li>Phineas oscilaba con solo 0,15 s de retardo a ~3 rad/s.</li>
+      <li>El grupo de Phineas midió además 560 a 870 ms de ping en el Wi-Fi.</li>
+      <li>Ahora el lazo pasa por la cámara cenital y la red Wi-Fi hacia cada Pi; aunque el control corre localmente en el carro, el retardo de percepción influye en la estabilidad.</li>
+    </ul>
+    <p>Hay que medirlo antes de ajustar ganancias. Si es alto hay tres salidas: bajar las velocidades, enviar segmentos cortos que el carro ejecuta por sí solo, o usar un enrutador dedicado.</p></div>
+</section>
+
+<!-- 9. Pickup + traffic -->
+<section>
+  <span class="eyebrow">Recogida y tráfico</span>
+  <h2>Empujar sin chocar</h2>
+  <div class="grid2" style="align-items:start">
+    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <h3>Empuje guiado</h3>
+      <p>La pala es pasiva, así que recoger significa empujar. El carro se coloca en un punto A detrás del cubo C, sobre la recta que va del cubo al destino G en la franja, y empuja en línea recta. La cámara confirma en cada cuadro que el cubo sigue delante de la pala.</p>
+      <div class="formula">A = C + d · (C − G) / |C − G|</div>
+      <ul>
+        <li>Phineas toma azules y Ferb amarillos. Los rojos son obstáculos.</li>
+        <li>Los cubos se dejan separados unos 1,5 cm dentro de la franja. Así lo exige Perry desde la etapa 1.</li>
+      </ul>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <h3>Anti-colisión: luces de navegación (rojo/verde)</h3>
+      <p>La cenital detecta los triángulos físicos del techo (D3) y alerta posibles colisiones (&lt; 34 cm) sin añadir stickers ni LEDs rojos o verdes al chasis. Cada Pi aplica la regla babor (rojo) / estribor (verde) con excepción de maniobra restringida (<code>SALIR</code>, <code>ENTREGAR</code> o <code>EMPUJAR</code> con cubo): ves rojo → cedes a estribor; ves verde → mantienes rumbo; de frente → ambos a estribor (<code>-vy</code> mecanum).</p>
+      <p><b>Planificar antes de moverse (re-evaluado a 20 Hz):</b> antes de apartarse a estribor, cada Pi valida que el paso quede dentro del margen interior y a ≥ 12 cm de todo cubo rojo; si está bloqueado, frena en <code>ESPERAR</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 9b. Red cubes -->
+<section>
+  <span class="eyebrow">Cubos rojos</span>
+  <h2>Evitarlos con el radio de seguridad: pros y contras</h2>
+  <p>El profesor sugirió tratar cada cubo rojo como un obstáculo y aplicarle el mismo radio que evita los choques entre carros. Así ningún carro lo empuja. Si alguno llega a la zona, Perry lo deja fuera de las cajas, pero eso es el último recurso, no el plan.</p>
+  <div class="grid2">
+    <div class="panel keep"><h3>A favor</h3><ul>
+      <li>Es un solo mecanismo: el mismo sensor virtual sirve para carros y para rojos.</li>
+      <li>El rojo nunca entra a la pala, así que no hay que sacarlo después.</li>
+      <li>El mecanismo de descarte de Perry queda como respaldo.</li>
+    </ul></div>
+    <div class="panel drop"><h3>En contra</h3><ul>
+      <li>Con 17 cm de radio, cada rojo prohíbe un disco de unos 900 cm². Cuatro rojos ocupan cerca del 40 % de la pista, aunque los discos se solapen en parte.</li>
+      <li>Un cubo objetivo dentro de un disco queda inalcanzable. <b>En la foto real pasa una vez:</b> el azul de arriba está a ~12 cm del rojo vecino.</li>
+      <li>El círculo es conservador: el carro es un rectángulo de 18,6 × 16,1 cm y lo que toca el cubo es la pala.</li>
+    </ul></div>
+  </div>
+  <p><b>Recomendación: probar una variante en dos pasos.</b></p>
+  <ol>
+    <li><b>Para trasladarse:</b> inflar el rojo solo con medio ancho del carro más un margen, unos 12 cm en lugar de 17.</li>
+    <li><b>Para empujar:</b> exigir que el pasillo de la pala, desde A hasta el destino, no tenga ningún rojo. Si el pasillo está ocupado, se elige otro punto de aproximación o se deja ese cubo para el final.</li>
+  </ol>
+  <p>Se mide con escenas del simulador: cuántos objetivos quedan inalcanzables con 17 cm y cuántos con la variante.</p>
+</section>
+
+<!-- 10. Language -->
+<section>
+  <span class="eyebrow">Lenguaje</span>
+  <h2>¿Go o Rust? Mi respuesta es no, por ahora</h2>
+  <p>Un lenguaje compilado acelera el cómputo, pero el cómputo no es lo que limita este sistema. La tabla muestra dónde se va el tiempo de un ciclo.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Dónde se va el tiempo</th><th>Orden de magnitud</th><th>¿Lo mejora Go o Rust?</th></tr></thead>
+    <tbody>
+      <tr><td>Red Wi-Fi (ping medido por el grupo de Phineas)</td><td class="num">560–870 ms</td><td>No</td></tr>
+      <tr><td>Esperar el siguiente cuadro de la cámara (15–30 cuadros/s)</td><td class="num">33–66 ms</td><td>No</td></tr>
+      <tr><td>Visión: color y ArUco con OpenCV, que por dentro ya es C++</td><td class="num">milisegundos (medir)</td><td>Casi nada</td></tr>
+      <tr><td>Misión, tráfico y control: decenas de objetos, aritmética simple</td><td class="num">microsegundos</td><td>No se notaría</td></tr>
+      <tr><td>Inercia del carro y ajuste de ganancias (oscilación de Phineas)</td><td class="num">décimas de segundo</td><td>No: es control, no lenguaje</td></tr>
+    </tbody>
+  </table></div>
+  <p>Hay además dos costos concretos:</p>
+  <ul>
+    <li><b>Soporte en ROS 2:</b> los clientes oficiales son Python (<code>rclpy</code>) y C++ (<code>rclcpp</code>). Los de Rust y Go son comunitarios, y su soporte para Lyrical sobre Ubuntu 26.04 habría que verificarlo.</li>
+    <li><b>Código heredado:</b> está todo en Python, con unas 280 pruebas, y los tres grupos ya lo conocen.</li>
+  </ul>
+  <p>En la práctica, "más eficiente" aquí significa menos retardo, mejor reparto de cubos y menos esperas. Eso se logra con medición y con algoritmos.</p>
+  <div class="note">Hay una excepción: si una medición muestra que un nodo concreto no da abasto, se optimiza ese nodo. Incluso en ese caso, el paso natural es C++ con <code>rclcpp</code> antes que Go o Rust. Ambos lenguajes tienen méritos reales, pero que sea posible no significa que convenga en un proyecto de un semestre.</div>
+</section>
+
+<!-- 11. Roadmap -->
+<section>
+  <span class="eyebrow">Hoja de ruta</span>
+  <h2>Fases, cada una con su criterio de salida</h2>
+  <p>Cada fase termina con algo medido. Gracias al simulador, las fases 2 a 4 pueden avanzar en paralelo con el trabajo del grupo de la cenital.</p>
+  <ol class="road">
+    <li><div><h3>Acordar y medir</h3>
+      <p>Contrato de mensajes firmado por los tres grupos. Medidas de la pista, origen y ejes. Red común y latencia cenital → Pi.</p>
+      <p class="crit"><b>Sale cuando:</b> <code>docs/contrato.md</code> y <code>docs/pista.md</code> están en el repositorio y la latencia está medida. <span class="tag risk">riesgo: latencia</span></p></div></li>
+    <li><div><h3>Simulador del mundo</h3>
+      <p><code>sim/</code> publica <code>/world/state</code> con cubos y carros que se mueven según las órdenes recibidas, más un retardo configurable.</p>
+      <p class="crit"><b>Sale cuando:</b> el visor muestra carros simulados moviéndose con el teclado.</p></div></li>
+    <li><div><h3>El carro como actuador</h3>
+      <p>HAL único con <code>drive(vx, vy, ω)</code>, vigilancia interna de 300 ms y reflejo de línea.</p>
+      <p class="crit"><b>Sale cuando:</b> si falla el lazo de control o la cámara, el carro frena solo, y el mismo código corre en las dos Pi.</p></div></li>
+    <li><div><h3>Ir a una pose</h3>
+      <p>Control proporcional en el mundo con saturación, primero en el simulador y luego con la cenital real.</p>
+      <p class="crit"><b>Sale cuando:</b> llega a 10 destinos al azar con error final menor que 2 cm y 5°. <span class="tag dep">depende de la cenital</span></p></div></li>
+    <li><div><h3>Empujar un cubo a la franja</h3>
+      <p>Punto de aproximación, empuje guiado, verificación con la cámara, entrega con la llave de Perry.</p>
+      <p class="crit"><b>Sale cuando:</b> un carro solo entrega al menos el 85 % de sus cubos (la meta que Ferb no alcanzó).</p></div></li>
+    <li><div><h3>Dos carros simultáneos</h3>
+      <p>Círculos de seguridad, predicción, prioridad y reparto de cubos que evite cruces.</p>
+      <p class="crit"><b>Sale cuando:</b> hay cero contactos entre carros y menos de 10 % del tiempo bloqueado (hoy, 34 %).</p></div></li>
+    <li><div><h3>Proyección virtual</h3>
+      <p>El visor dibuja sobre la imagen las regiones, rutas, círculos y el estado de cada carro.</p>
+      <p class="crit"><b>Sale cuando:</b> lo dibujado cae sobre su lugar real con error menor que 1 cm.</p></div></li>
+    <li><div><h3>Integración e informe</h3>
+      <p>Corrida completa de los tres grupos, mediciones finales e informe.</p>
+      <p class="crit"><b>Sale cuando:</b> la corrida está grabada y cada resultado del informe está ligado a un objetivo.</p></div></li>
+  </ol>
+</section>
+
+<!-- 12. Questions -->
+<section>
+  <span class="eyebrow">Preguntas</span>
+  <h2>Lo que no tengo claro</h2>
+  <p>Esta lista crece con cada versión. Cada pregunta indica a quién conviene hacérsela.</p>
+  <ol class="qs">
+    <li><span class="who">cenital</span>¿Con qué frecuencia y con qué retardo publicarán el estado del mundo?<p>De esto dependen las ganancias del control.</p></li>
+    <li><span class="who">cenital</span>¿Qué color y tamaño tendrá el triángulo de cada carro?<p>Necesitamos dos colores distintos entre sí y distintos de los cubos y de la zona. Propongo un isósceles alargado de unos 10 cm, para que la punta no sea ambigua.</p></li>
+    <li><span class="who">cenital</span>¿La cámara está justo encima del punto rojo?<p>Si no lo está, la corrección de paralaje usa otro punto c.</p></li>
+    <li><span class="who">cenital</span>¿Qué sensores virtuales publicarán, y con qué formato?<p>Nos sirven estos: distancia entre carros, carro dentro de la zona, rojo más cercano y pasillo libre hacia un destino.</p></li>
+    <li><span class="who">cenital</span>¿Qué origen y qué ejes usaremos?<p>Propongo la esquina interior inferior izquierda de la imagen, x hacia Perry, y hacia arriba, en metros en los mensajes. Es la cuadrícula dibujada en la foto.</p></li>
+    <li><span class="who">cenital</span>¿Publicarán la pose con la paralaje ya corregida?</li>
+    <li><span class="who">cenital</span>¿Habrá publicación continua y además consulta a pedido, ambas con marca de tiempo?</li>
+    <li><span class="who">cenital</span>¿La resolución de trabajo será 1280 × 720?</li>
+    <li><span class="who">manipulador</span>¿Se confirma que el árbitro de zona se mantiene sin cambios con cada carro pidiendo el turno directo desde su Pi?</li>
+    <li><span class="who">manipulador</span>¿Qué tan dentro de la línea verde hay que dejar el cubo? ¿Sigue valiendo la franja de 12 a 19,5 cm del eje y la separación de 1,5 cm entre cubos?</li>
+    <li><span class="who">profesor</span>¿Cómo se evaluará esta etapa?<p>Por ejemplo, cubos por minuto, choques, rojos tocados o tiempo total.</p></li>
+    <li><span class="who">profesor</span>¿Acepta la variante de dos pasos para los rojos en lugar del radio de seguridad completo?</li>
+    <li><span class="who">equipo</span>¿Usaremos un enrutador propio para los tres grupos? ¿En qué equipo corre la cenital y el visor el día de la demo?</li>
+    <li><span class="who">equipo</span>¿Quién se encarga de <code>sim/</code> y de <code>visor/</code>?</li>
+    <li><span class="who">medir</span>¿Cuánto espacio libre hay en el techo de cada carro para el triángulo?</li>
+  </ol>
+  <p class="muted" style="font-size:.9rem">El resto de las dudas se resolverá en la práctica.</p>
+  <h3 style="margin-top:8px">Ya respondidas</h3>
+  <ul class="answered">
+    <li><b>Proyector:</b> no hay proyector físico; la proyección es virtual, en la PC o la Pi.</li>
+    <li><b>"Optimizar la pinza":</b> le toca al grupo del manipulador (Vielma y compañía).</li>
+    <li><b>Cámara cenital nueva:</b> la maneja el grupo de Samuel, que solo entrega datos.</li>
+    <li><b>Cámaras frontales:</b> se pueden conservar, pero la navegación sale de la cenital.</li>
+    <li><b>Repositorio:</b> <code>notoriussss/Tri-State-Area</code>, vacío al 17-11. Samuel armará la estructura inicial.</li>
+    <li><b>Punto rojo:</b> es el centro de la pista.</li>
+    <li><b>Marcador:</b> un triángulo de cartulina en el techo de cada carro. Del centroide sale la posición.</li>
+    <li><b>Altura de la cámara:</b> exactamente 1 m sobre la pista.</li>
+    <li><b>Zona:</b> la cámara cubre el área de entrega, aunque el brazo queda fuera de la foto. El cubo se entrega pasando la línea verde.</li>
+    <li><b>Cubos rojos:</b> no se entregan. El profesor sugiere evitarlos con el radio de seguridad (evaluado arriba). Si alguno llega, Perry lo descarta.</li>
+    <li><b>Sensores virtuales:</b> los calcula la cenital, por recomendación del profesor.</li>
+    <li><b>VCI:</b> probablemente <i>Virtual Communication Interface</i>, la interfaz de comunicación virtual. Es una suposición nuestra, sin confirmar.</li>
+    <li><b>Medidas:</b> la pista (116,5 × 70 cm) y el carro (18,6 × 16,1 × 9,1 cm) siguen vigentes, en principio.</li>
+  </ul>
+</section>
+
+</div>

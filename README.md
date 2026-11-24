@@ -9,7 +9,7 @@ The system comprises two mobile collector robots (Phineas and Ferb), one sorting
 | Group | Folder | Responsibility |
 | --- | --- | --- |
 | **Overhead** | `overhead/` | Fixed camera 1 m above the arena. Performs camera calibration, cube and robot detection, world model tracking, virtual sensors computation, and on-screen virtual projection (`viewer_node`). Never issues commands. |
-| **Fleet** | `fleet/` | Central brain on a PC (mission, traffic negotiation, path control) and onboard software on each robot's Raspberry Pi 5 (HAL, watchdog, ground line sensor reflexes). |
+| **Fleet** | `fleet/` | Autonomous onboard software running on each robot's Raspberry Pi 5 (mission, peer-to-peer traffic negotiation, path control, HAL, internal watchdog, ground line sensor reflexes). |
 | **Manipulator** | `manipulator/` | Perry sorting arm and delivery-zone arbiter. |
 
 ## Repository Layout

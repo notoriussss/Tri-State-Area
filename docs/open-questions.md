@@ -13,7 +13,7 @@ Each question lists the group to ask. These should be tracked as repository issu
 
 ## Manipulator
 
-7. Do you accept having `fleet` request delivery-zone leases on behalf of each robot?
+7. Do you confirm the stage-1 delivery-zone arbiter contract stays unchanged with each robot calling `/zone/request` and `/zone/release` directly from its own Pi 5?
 8. How far past the green line must a cube be pushed? Do the 12–19.5 cm band from Perry's axis and the 1.5 cm minimum separation between cubes still apply?
 
 ## Professor
@@ -24,10 +24,10 @@ Each question lists the group to ask. These should be tracked as repository issu
 
 ## Team
 
-12. Will we use a dedicated Wi-Fi router for all three groups? Which PC will run `fleet` on demo day?
+12. Will we use a dedicated Wi-Fi router for all three groups? Which host will run `overhead` and the viewer on demo day?
 13. Who is responsible for `sim/` (while `viewer` belongs to `overhead`)?
 
 ## To Measure
 
 14. How much clear space is available on each robot's roof to mount the triangle marker?
-15. What is the actual network latency from the central PC to each Raspberry Pi 5?
+15. What is the actual network latency from the `overhead` host to each robot's Raspberry Pi 5 (and between Phineas and Ferb)?

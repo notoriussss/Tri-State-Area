@@ -52,4 +52,8 @@ quote-style = "double"
 
 [tool.pytest.ini_options]
 addopts = "-q"
-pythonpath = ["overhead/overhead_core"]
+pythonpath = [
+    "overhead/overhead_core",
+    "fleet/fleet_core",
+    "sim/sim_core",
+]

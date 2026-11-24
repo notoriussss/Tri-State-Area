@@ -1,7 +1,14 @@
 # `sim`
 
-Placeholder for the arena simulator.
+Lightweight 2D arena simulator implementing the Tri-State-Area ROS 2 contract without Webots or a physical camera.
 
-The simulator publishes the exact same ROS 2 contract as the real overhead camera (`/world/state`, `/world/sensors`, `/world/image`), allowing the fleet and manipulator groups to test full workflows without the physical camera or robots.
+## Packages
 
-Owner to be decided.
+- `sim_core/`: Pure Python 2D holonomic physics, push-contact model, border tape check, virtual sensors, and `MockPerryArbiter`. Tested closed-loop with two autonomous `fleet_core` agents (Phineas and Ferb).
+- `sim_ros/`: Thin ROS 2 node (`sim_node`) publishing `/world/state`, `/world/sensors`, `/zone/occupant`, `/perry/state` and serving `/world/get`, `/zone/request`, and `/zone/release`.
+
+## Running closed-loop tests
+
+```bash
+python -m pytest sim/sim_core -v
+```

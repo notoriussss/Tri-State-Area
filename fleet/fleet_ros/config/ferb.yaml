@@ -1,0 +1,61 @@
+# Configuration for Ferb (yellow collector) on Raspberry Pi 5 + SunFounder Fusion HAT+.
+# Hardware wiring is identical to phineas.yaml; only robot identity, color, and lane differ.
+
+/**/collector_node:
+  ros__parameters:
+    robot_name: "ferb"
+    peer_name: "phineas"
+    target_color: "yellow"
+    pre_zone_x_m: 0.85
+    pre_zone_y_m: 0.25
+    park_x_m: 0.18
+    park_y_m: 0.18
+
+    # D7 red-cube avoidance radius: 0.12 m (two-step variant) or 0.17 m (strict radius).
+    red_transit_radius_m: 0.12
+
+    # Loop rates and protocol timeouts.
+    control_rate_hz: 20.0
+    plan_rate_hz: 5.0
+    status_rate_hz: 5.0
+    watchdog_timeout_s: 0.30
+    zone_heartbeat_timeout_s: 2.0
+    zone_lease_renew_s: 20.0
+    zone_call_timeout_s: 3.0
+
+    # Chassis geometry (65 mm mecanum wheels, 186 x 161 mm frame).
+    wheel_radius_m: 0.0325
+    half_wheelbase_m: 0.0605
+    half_track_m: 0.0655
+    max_wheel_speed_mps: 0.24
+
+    # Motor backend: "fusion_hat" (I2C 0x17), "gpio" (Cokoino 2x DRV8833), or "fake".
+    motor_driver: "fusion_hat"
+    fl_channels: [6, 7]
+    fr_channels: [11, 10]
+    rl_channels: [9, 8]
+    rr_channels: [4, 5]
+    fl_pins: [24, 25]
+    fr_pins: [26, 16]
+    rl_pins: [17, 27]
+    rr_pins: [22, 23]
+    nsleep_pins: [12, 13]
+    fl_inverted: true
+    fr_inverted: false
+    rl_inverted: false
+    rr_inverted: true
+    pwm_frequency_hz: 200
+    max_duty_ratio: 0.9
+
+    # Bottom TCRT5000 line sensor (3.3 V ONLY): DO on GPIO 27, AO on Fusion HAT+ ADC A0.
+    line_pin: 27
+    line_black_value: 1
+    line_confirm_reads: 2
+    line_adc_channel: 0
+    line_black_mv: 900
+    battery_v: 0.0
+
+    # Embedded web controller (starts safely in MANUAL until toggled to AUTO).
+    auto_enabled: false
+    web_host: "0.0.0.0"
+    web_port: 8081

@@ -5,4 +5,5 @@ __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
+Ferb-Recolector/
 overhead/overhead_core/captures/

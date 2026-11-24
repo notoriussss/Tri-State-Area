@@ -1,7 +1,14 @@
 # `fleet`
 
-This folder is owned by the **fleet** group.
+Owned by the **fleet** group (Phineas and Ferb autonomous collector robots).
 
-The fleet group decides its internal layout (e.g. central brain on the PC, onboard robot code on each Raspberry Pi 5, per-robot configuration).
+## Packages
 
-Do not create subfolders here from other packages.
+- `fleet_core/`: Pure Python core algorithms and hardware abstractions (mecanum kinematics, Fusion HAT+ / GPIO motor drivers, TCRT5000 line sensor, local safety reflexes, world model, holonomic controller, navigation, mission, P2P traffic, and zone choreography). No `rclpy` dependency; tested with `pytest`.
+- `fleet_ros/`: Thin ROS 2 Lyrical adapters, per-robot YAML configs (`phineas.yaml`, `ferb.yaml`), and launch files running onboard each Raspberry Pi 5.
+
+## Running unit tests
+
+```bash
+python -m pytest fleet/fleet_core
+```
