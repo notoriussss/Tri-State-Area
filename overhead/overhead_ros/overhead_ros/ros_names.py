@@ -22,6 +22,8 @@ PERRY_STATE_TOPIC: str = "/perry/state"
 WORLD_GET_SERVICE: str = "/world/get"
 WORLD_CORRIDOR_FREE_SERVICE: str = "/world/corridor_free"
 OVERHEAD_RECALIBRATE_SERVICE: str = "/overhead/recalibrate"
+PERRY_ZONE_REQUEST_SERVICE: str = "/zone/request"
+PERRY_ZONE_RELEASE_SERVICE: str = "/zone/release"
 
 # QoS profiles matching contract specifications
 STATE_QOS: QoSProfile = QoSProfile(
@@ -59,6 +61,14 @@ ZONE_OCCUPANT_QOS: QoSProfile = QoSProfile(
     durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
 )
 
+# VOLATILE on purpose: a late-joining robot must never receive a cached stale occupant.
+ROBOT_ZONE_OCCUPANT_QOS: QoSProfile = QoSProfile(
+    history=QoSHistoryPolicy.KEEP_LAST,
+    depth=1,
+    reliability=QoSReliabilityPolicy.RELIABLE,
+    durability=QoSDurabilityPolicy.VOLATILE,
+)
+
 PERRY_STATE_QOS: QoSProfile = QoSProfile(
     history=QoSHistoryPolicy.KEEP_LAST,
     depth=5,
@@ -68,6 +78,7 @@ PERRY_STATE_QOS: QoSProfile = QoSProfile(
 
 # Node names
 OVERHEAD_NODE_NAME: str = "overhead_node"
+MANIPULATOR_RELAY_NODE_NAME: str = "manipulator_relay_node"
 
 # Overhead node ROS parameter names
 PARAM_CAMERA_INDEX: str = "camera_index"
@@ -91,3 +102,26 @@ PARAM_HSV_RED_1: str = "hsv_red_1"
 PARAM_HSV_RED_2: str = "hsv_red_2"
 PARAM_HSV_ROBOT_PHINEAS: str = "hsv_robot_phineas"
 PARAM_HSV_ROBOT_FERB: str = "hsv_robot_ferb"
+
+# Manipulator relay node ROS parameter names
+PARAM_PERRY_CALL_TIMEOUT_S: str = "perry_call_timeout_s"
+PARAM_HEARTBEAT_TIMEOUT_S: str = "heartbeat_timeout_s"
+PARAM_REPUBLISH_RATE_HZ: str = "republish_rate_hz"
+
+
+def zone_request_service(robot: str) -> str:
+    """Builds the per-robot zone request service name."""
+    cleaned_robot = robot.strip("/")
+    return f"/{cleaned_robot}{PERRY_ZONE_REQUEST_SERVICE}"
+
+
+def zone_release_service(robot: str) -> str:
+    """Builds the per-robot zone release service name."""
+    cleaned_robot = robot.strip("/")
+    return f"/{cleaned_robot}{PERRY_ZONE_RELEASE_SERVICE}"
+
+
+def zone_occupant_topic(robot: str) -> str:
+    """Builds the per-robot zone occupant topic name."""
+    cleaned_robot = robot.strip("/")
+    return f"/{cleaned_robot}{ZONE_OCCUPANT_TOPIC}"

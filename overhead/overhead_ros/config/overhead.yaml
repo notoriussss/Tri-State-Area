@@ -28,3 +28,10 @@ overhead_node:
     # TODO(overhead): calibrate robot triangle marker colors with physical cardstock
     hsv_robot_phineas: [40, 100, 100, 80, 255, 255]
     hsv_robot_ferb: [140, 100, 100, 165, 255, 255]
+
+manipulator_relay_node:
+  ros__parameters:
+    robots: ["phineas", "ferb"]
+    perry_call_timeout_s: 5.0
+    heartbeat_timeout_s: 2.0
+    republish_rate_hz: 2.0

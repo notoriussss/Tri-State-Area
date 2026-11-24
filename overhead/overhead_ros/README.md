@@ -38,3 +38,23 @@ Captures frames from a live camera or a still image (`video_source`), calibrates
 
 - **Publishes:** `/world/state` (`tsa_interfaces/WorldState`), `/world/sensors` (`tsa_interfaces/VirtualSensors`), `/world/image` (`sensor_msgs/CompressedImage`)
 - **Services:** `/world/get` (`tsa_interfaces/GetWorld`), `/overhead/recalibrate` (`std_srvs/Trigger`)
+
+### `manipulator_relay_node`
+
+Relays delivery-zone requests, releases, and `/zone/occupant` heartbeats between the collector robots and Perry using the pure routing rules in `overhead_core.relay`. Stops republishing `/<robot>/zone/occupant` when Perry's heartbeat ages past `heartbeat_timeout_s` on the local monotonic clock. Launched alongside `overhead_node` when `use_relay:=true`.
+
+#### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `robots` | `string[]` | `["phineas", "ferb"]` | Configured robot namespaces served and republished by the relay. |
+| `perry_call_timeout_s` | `double` | `5.0` | Timeout in seconds when forwarding zone service calls to Perry. |
+| `heartbeat_timeout_s` | `double` | `2.0` | Maximum local age in seconds before Perry's `/zone/occupant` heartbeat is treated as stale. |
+| `republish_rate_hz` | `double` | `2.0` | Timer rate in Hz for republishing fresh `/<robot>/zone/occupant` heartbeats. |
+
+#### Topics and Services
+
+- **Subscribes:** `/zone/occupant` (`std_msgs/String`)
+- **Publishes:** `/<robot>/zone/occupant` (`std_msgs/String`)
+- **Services:** `/<robot>/zone/request` (`multirobot_interfaces/RequestZone`), `/<robot>/zone/release` (`multirobot_interfaces/ReleaseZone`)
+- **Clients:** `/zone/request` (`multirobot_interfaces/RequestZone`), `/zone/release` (`multirobot_interfaces/ReleaseZone`)

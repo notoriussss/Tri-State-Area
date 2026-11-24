@@ -11,6 +11,7 @@
 
   <depend>rclpy</depend>
   <depend>overhead_core</depend>
+  <depend>multirobot_interfaces</depend>
   <depend>tsa_interfaces</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>

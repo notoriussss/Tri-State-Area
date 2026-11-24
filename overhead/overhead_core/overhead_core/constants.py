@@ -317,3 +317,20 @@ HSV_CHANNEL_COUNT: int = 3
 # Empty string sentinels for optional safety and zone fields
 NO_OBSTACLE_KIND: str = ""
 NO_ZONE_OCCUPANT: str = ""
+
+# Manipulator relay node defaults and log messages
+DEFAULT_RELAY_REPUBLISH_RATE_HZ: float = 2.0
+MIN_RELAY_REPUBLISH_RATE_HZ: float = 0.1
+DEFAULT_LEASE_SECONDS: float = 0.0
+DEFAULT_DELIVERED_TOTAL: int = 0
+LOG_RELAY_INITIALIZED_FMT: str = "Manipulator relay node initialized for robots: {}."
+LOG_RELAY_HEARTBEAT_STALE_FMT: str = (
+    "Perry /zone/occupant heartbeat became stale (age={:.2f}s > {:.2f}s); stopping republish."
+)
+LOG_RELAY_HEARTBEAT_RECOVERED: str = "Perry /zone/occupant heartbeat recovered; resuming republish."
+LOG_RELAY_REJECTED_FMT: str = "Rejected {} for unknown or unconfigured robot '{}'."
+LOG_RELAY_PERRY_UNAVAILABLE_FMT: str = (
+    "Perry service '{}' is not ready for robot '{}'; returning failure."
+)
+LOG_RELAY_PERRY_TIMEOUT_FMT: str = "Perry service '{}' timed out after {:.2f}s for robot '{}'."
+LOG_RELAY_PERRY_CALL_FAILED_FMT: str = "Perry service '{}' call failed for robot '{}': {}"

@@ -436,7 +436,7 @@ class OverheadNode(Node):
         if now_s - self._last_warn_s < WARN_THROTTLE_PERIOD_S:
             return
         self._last_warn_s = now_s
-        self.get_logger().warn(message)
+        self.get_logger().warning(message)
 
     def _apply_event(
         self,
