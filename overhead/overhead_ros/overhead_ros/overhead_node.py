@@ -8,6 +8,7 @@ import numpy as np
 import rclpy
 from multirobot_interfaces.msg import RobotState
 from overhead_core import virtual_sensors
+from overhead_core.aruco_robots import ArucoRobotConfig
 from overhead_core.calibration import validate_arena_quad
 from overhead_core.constants import (
     ARENA_HEIGHT_M,
@@ -15,6 +16,9 @@ from overhead_core.constants import (
     CALIBRATION_RETRY_S,
     CAM_HEIGHT_M,
     CAMERA_RETRY_S,
+    DEFAULT_ARUCO_DICTIONARY,
+    DEFAULT_ARUCO_HEADING_OFFSET_RAD,
+    DEFAULT_ARUCO_IDS,
     DEFAULT_CAMERA_CENTER_WORLD,
     DEFAULT_CAMERA_INDEX,
     DEFAULT_CAPTURE_HEIGHT_PX,
@@ -41,6 +45,7 @@ from overhead_core.constants import (
     LOG_NO_FRAME_DURING_CALIBRATION,
     LOG_NODE_INITIALIZED,
     LOG_STATE_TRANSITION_FMT,
+    MAX_CUBE_AREA_PX,
     MIN_IMAGE_TIMER_RATE_HZ,
     MIN_MAIN_TIMER_RATE_HZ,
     MSG_RECALIBRATE_FAILED,
@@ -53,6 +58,7 @@ from overhead_core.constants import (
     WARN_THROTTLE_PERIOD_S,
     CubeColor,
     ObstacleKind,
+    RobotDetector,
     RobotName,
 )
 from overhead_core.corridor import corridor_free
@@ -117,6 +123,9 @@ from overhead_ros.ros_names import (
     OVERHEAD_RECALIBRATE_SERVICE,
     PARAM_ARENA_HEIGHT_M,
     PARAM_ARENA_WIDTH_M,
+    PARAM_ARUCO_DICTIONARY,
+    PARAM_ARUCO_HEADING_OFFSET_RAD,
+    PARAM_ARUCO_IDS,
     PARAM_CALIBRATION_RETRY_S,
     PARAM_CAM_HEIGHT_M,
     PARAM_CAMERA_CENTER_WORLD,
@@ -129,9 +138,11 @@ from overhead_ros.ros_names import (
     PARAM_HSV_ROBOT_PHINEAS,
     PARAM_HSV_YELLOW,
     PARAM_IMAGE_RATE_HZ,
+    PARAM_MAX_AREA_PX,
     PARAM_MIN_AREA_PX,
     PARAM_NEAR_RED_M,
     PARAM_RATE_HZ,
+    PARAM_ROBOT_DETECTOR,
     PARAM_ROBOTS,
     PARAM_VIDEO_SOURCE,
     PARAM_WIDTH,
@@ -335,8 +346,28 @@ class OverheadNode(Node):
             DEFAULT_MIN_AREA_PX,
         )
         self.declare_parameter(
+            PARAM_MAX_AREA_PX,
+            MAX_CUBE_AREA_PX,
+        )
+        self.declare_parameter(
             PARAM_NEAR_RED_M,
             NEAR_RED_DISTANCE_M,
+        )
+        self.declare_parameter(
+            PARAM_ROBOT_DETECTOR,
+            RobotDetector.TRIANGLE.value,
+        )
+        self.declare_parameter(
+            PARAM_ARUCO_DICTIONARY,
+            DEFAULT_ARUCO_DICTIONARY,
+        )
+        self.declare_parameter(
+            PARAM_ARUCO_IDS,
+            list(DEFAULT_ARUCO_IDS),
+        )
+        self.declare_parameter(
+            PARAM_ARUCO_HEADING_OFFSET_RAD,
+            DEFAULT_ARUCO_HEADING_OFFSET_RAD,
         )
 
         self.declare_parameter(
@@ -401,7 +432,27 @@ class OverheadNode(Node):
         self._robots = tuple(str(name) for name in self.get_parameter(PARAM_ROBOTS).value)
         self._image_rate_hz = float(self.get_parameter(PARAM_IMAGE_RATE_HZ).value)
         self._min_area_px = int(self.get_parameter(PARAM_MIN_AREA_PX).value)
+        self._max_area_px = int(self.get_parameter(PARAM_MAX_AREA_PX).value)
         self._near_red_m = float(self.get_parameter(PARAM_NEAR_RED_M).value)
+        robot_detector = RobotDetector(
+            str(self.get_parameter(PARAM_ROBOT_DETECTOR).value),
+        )
+        aruco_dictionary = str(self.get_parameter(PARAM_ARUCO_DICTIONARY).value)
+        aruco_ids = [int(marker_id) for marker_id in self.get_parameter(PARAM_ARUCO_IDS).value]
+        aruco_heading_offset_rad = float(
+            self.get_parameter(PARAM_ARUCO_HEADING_OFFSET_RAD).value,
+        )
+        aruco_config = ArucoRobotConfig(
+            dictionary_name=aruco_dictionary,
+            marker_ids=dict(
+                zip(
+                    self._robots,
+                    aruco_ids,
+                    strict=False,
+                )
+            ),
+            heading_offset_rad=aruco_heading_offset_rad,
+        )
 
         hsv_ranges: dict[str, list[tuple[Any, Any]]] = {
             CubeColor.BLUE.value: [self._read_hsv_pair(PARAM_HSV_BLUE)],
@@ -425,6 +476,9 @@ class OverheadNode(Node):
             arena_width_m=self._arena_width_m,
             arena_height_m=self._arena_height_m,
             robot_names=self._robots,
+            max_area_px=self._max_area_px,
+            robot_detector=robot_detector,
+            aruco=aruco_config,
         )
 
     def _log_warn_throttled(

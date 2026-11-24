@@ -16,7 +16,12 @@ overhead_node:
     robots: ["phineas", "ferb"]
     image_rate_hz: 5.0
     min_area_px: 150
+    max_area_px: 1500
     near_red_m: 0.17
+    robot_detector: "triangle"
+    aruco_dictionary: "DICT_4X4_50"
+    aruco_ids: [0, 1]
+    aruco_heading_offset_rad: 0.0
     # Cube HSV ranges [H_lo, S_lo, V_lo, H_hi, S_hi, V_hi] (OpenCV ranges: H 0-180, S 0-255, V 0-255)
     # Red uses two hue bands spanning 0 and 180
     # Lower hue 110 excludes the blue delivery-zone background (~101); cubes are 118-125

@@ -6,12 +6,16 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+from overhead_core.aruco_robots import ArucoRobotConfig
 from overhead_core.constants import (
     ARENA_HEIGHT_M,
     ARENA_WIDTH_M,
+    ARUCO_ID_PHINEAS,
+    DEFAULT_ARUCO_DICTIONARY,
     DEFAULT_DETECTION_CONFIDENCE,
     DEFAULT_ZONE_RECT,
     CubeColor,
+    RobotDetector,
     RobotName,
 )
 from overhead_core.geometry import (
@@ -148,3 +152,82 @@ def test_should_detect_robot_pose_when_synthetic_triangle_present() -> None:
         phineas.confidence,
         DEFAULT_DETECTION_CONFIDENCE,
     )
+
+
+def _make_aruco_arena_image() -> tuple[np.ndarray, np.ndarray]:
+    image = np.full(
+        (720, 1280, 3),
+        245,
+        dtype=np.uint8,
+    )
+    cv2.rectangle(
+        image,
+        (40, 30),
+        (1240, 690),
+        (0, 0, 0),
+        20,
+    )
+    dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+    marker_gray = cv2.aruco.generateImageMarker(
+        dictionary,
+        ARUCO_ID_PHINEAS,
+        121,
+    )
+    marker_bgr = cv2.cvtColor(
+        marker_gray,
+        cv2.COLOR_GRAY2BGR,
+    )
+    image[180:301, 280:401] = marker_bgr
+    corners = detect_arena_corners(image)
+    homography = compute_homography(
+        corners,
+        ARENA_WIDTH_M,
+        ARENA_HEIGHT_M,
+    )
+    return image, homography
+
+
+def test_should_dispatch_to_aruco_detector_when_aruco_configured() -> None:
+    image, homography = _make_aruco_arena_image()
+    config = WorldFrameConfig(
+        robot_detector=RobotDetector.ARUCO,
+        aruco=ArucoRobotConfig(
+            dictionary_name=DEFAULT_ARUCO_DICTIONARY,
+            marker_ids={RobotName.PHINEAS.value: ARUCO_ID_PHINEAS},
+            heading_offset_rad=0.0,
+            marker_height_m=0.0,
+        ),
+    )
+
+    poses = detect_robot_poses(
+        image,
+        homography=homography,
+        config=config,
+    )
+
+    assert set(poses.keys()) == {RobotName.PHINEAS.value}
+    phineas = poses[RobotName.PHINEAS.value]
+    assert 0.0 < phineas.x < ARENA_WIDTH_M
+    assert 0.0 < phineas.y < ARENA_HEIGHT_M
+    assert math.isclose(
+        phineas.theta,
+        math.pi / 2.0,
+        abs_tol=0.1,
+    )
+    assert math.isclose(
+        phineas.confidence,
+        DEFAULT_DETECTION_CONFIDENCE,
+    )
+
+
+def test_should_not_detect_aruco_marker_when_triangle_detector_selected() -> None:
+    image, homography = _make_aruco_arena_image()
+    config = WorldFrameConfig(robot_detector=RobotDetector.TRIANGLE)
+
+    poses = detect_robot_poses(
+        image,
+        homography=homography,
+        config=config,
+    )
+
+    assert poses == {}

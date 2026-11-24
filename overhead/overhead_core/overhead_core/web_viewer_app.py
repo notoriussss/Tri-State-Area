@@ -11,21 +11,30 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from overhead_core.aruco_robots import ArucoRobotConfig
 from overhead_core.constants import (
     CAPTURE_RETRY_SLEEP_S,
     CAPTURE_TIMESTAMP_FORMAT,
     CAPTURES_DIR_NAME,
+    DEFAULT_ARUCO_DICTIONARY,
+    DEFAULT_ARUCO_IDS_ARG,
     DEFAULT_CAMERA_INDEX,
     DEFAULT_CAPTURE_HEIGHT_PX,
     DEFAULT_CAPTURE_WIDTH_PX,
+    DEFAULT_ROBOT_NAMES,
     DEFAULT_WEB_HOST,
     DEFAULT_WEB_PORT,
     FPS_SMOOTHING_ALPHA,
     JPEG_EXTENSION,
     THREAD_JOIN_TIMEOUT_S,
     WINDOWS_PLATFORM,
+    RobotDetector,
 )
-from overhead_core.viewer_pipeline import calibrate_frame, process_frame
+from overhead_core.viewer_pipeline import (
+    ViewerPipelineConfig,
+    calibrate_frame,
+    process_frame,
+)
 from overhead_core.web_viewer import ViewerSnapshot, create_web_server
 
 LOGGER = logging.getLogger(__name__)
@@ -100,11 +109,14 @@ class CameraViewerState:
     def __init__(
         self,
         captures_dir: Path | None = None,
+        *,
+        pipeline_config: ViewerPipelineConfig | None = None,
     ) -> None:
         """Initializes empty camera viewer state.
 
         Args:
             captures_dir: Directory where raw snapshot JPEGs are written.
+            pipeline_config: Optional vision pipeline configuration for frame processing.
         """
         self._lock = threading.Lock()
         self._homography: np.ndarray | None = None
@@ -115,6 +127,9 @@ class CameraViewerState:
         self._last_frame_s: float | None = None
         self._fps: float = 0.0
         self._captures_dir = captures_dir if captures_dir is not None else default_captures_dir()
+        self._pipeline_config = (
+            pipeline_config if pipeline_config is not None else ViewerPipelineConfig()
+        )
 
     def get_snapshot(self) -> ViewerSnapshot | None:
         """Returns the most recent processed ViewerSnapshot."""
@@ -167,6 +182,7 @@ class CameraViewerState:
             frame_bgr,
             homography,
             corners_px=corners_px,
+            config=self._pipeline_config,
         )
         raw_copy = frame_bgr.copy()
         snapshot = ViewerSnapshot(
@@ -287,7 +303,53 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default=DEFAULT_WEB_PORT,
         help="HTTP server TCP port.",
     )
+    parser.add_argument(
+        "--robot-detector",
+        type=str,
+        choices=[detector.value for detector in RobotDetector],
+        default=RobotDetector.TRIANGLE.value,
+        help="Robot marker detection backend.",
+    )
+    parser.add_argument(
+        "--aruco-dictionary",
+        type=str,
+        default=DEFAULT_ARUCO_DICTIONARY,
+        help="OpenCV ArUco dictionary name used with the aruco detector.",
+    )
+    parser.add_argument(
+        "--aruco-ids",
+        type=str,
+        default=DEFAULT_ARUCO_IDS_ARG,
+        help="Comma-separated ArUco marker IDs matching robots in order.",
+    )
     return parser
+
+
+def _parse_aruco_ids(raw_ids: str) -> list[int]:
+    """Parses a comma-separated string of ArUco marker IDs into integers."""
+    tokens = [token.strip() for token in raw_ids.split(",") if token.strip()]
+    return [int(token) for token in tokens]
+
+
+def build_pipeline_config(args: argparse.Namespace) -> ViewerPipelineConfig:
+    """Builds a ViewerPipelineConfig from parsed web viewer CLI arguments."""
+    detector = RobotDetector(args.robot_detector)
+    aruco_ids = _parse_aruco_ids(args.aruco_ids)
+    marker_ids = dict(
+        zip(
+            DEFAULT_ROBOT_NAMES,
+            aruco_ids,
+            strict=False,
+        )
+    )
+    aruco_config = ArucoRobotConfig(
+        dictionary_name=args.aruco_dictionary,
+        marker_ids=marker_ids,
+    )
+    return ViewerPipelineConfig(
+        robot_detector=detector,
+        aruco=aruco_config,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -297,13 +359,14 @@ def main(argv: list[str] | None = None) -> int:
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     )
     args = build_arg_parser().parse_args(argv)
+    pipeline_config = build_pipeline_config(args)
 
     cap = open_camera(
         args.camera_index,
         width_px=args.width,
         height_px=args.height,
     )
-    state = CameraViewerState()
+    state = CameraViewerState(pipeline_config=pipeline_config)
     stop_event = threading.Event()
     capture_thread = threading.Thread(
         target=_capture_loop,

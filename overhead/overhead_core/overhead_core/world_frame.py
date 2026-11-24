@@ -6,6 +6,10 @@ from typing import Any
 import cv2
 import numpy as np
 
+from overhead_core.aruco_robots import (
+    ArucoRobotConfig,
+    detect_aruco_robots,
+)
 from overhead_core.constants import (
     ARENA_HEIGHT_M,
     ARENA_WIDTH_M,
@@ -18,8 +22,11 @@ from overhead_core.constants import (
     DEFAULT_ROBOT_HSV_RANGES,
     DEFAULT_ROBOT_MIN_AREA_PX,
     DEFAULT_ROBOT_NAMES,
+    ERR_UNKNOWN_ROBOT_DETECTOR_FMT,
     HEADING_STEP_PX,
+    MAX_CUBE_AREA_PX,
     ROBOT_MARKER_HEIGHT_M,
+    RobotDetector,
 )
 from overhead_core.cubes import detect_cubes
 from overhead_core.geometry import image_to_world
@@ -48,6 +55,9 @@ class WorldFrameConfig:
     arena_width_m: float = ARENA_WIDTH_M
     arena_height_m: float = ARENA_HEIGHT_M
     robot_names: tuple[str, ...] = DEFAULT_ROBOT_NAMES
+    max_area_px: int = MAX_CUBE_AREA_PX
+    robot_detector: RobotDetector = RobotDetector.TRIANGLE
+    aruco: ArucoRobotConfig | None = None
 
 
 def _build_hsv_mask(
@@ -109,6 +119,7 @@ def process_cubes(
         None,
         cfg.hsv_ranges,
         min_area_px=cfg.min_area_px,
+        max_area_px=cfg.max_area_px,
     )
 
     floor_dets: list[tuple[str, float, float, float]] = []
@@ -138,28 +149,15 @@ def process_cubes(
     )
 
 
-def detect_robot_poses(
+def _detect_triangle_robot_poses(
     frame: np.ndarray,
     *,
     homography: np.ndarray,
-    config: WorldFrameConfig | None = None,
+    config: WorldFrameConfig,
 ) -> dict[str, RobotPose]:
-    """Detects robot triangle markers and returns parallax-corrected world poses.
-
-    Args:
-        frame: Input BGR camera frame.
-        homography: 3x3 homography mapping image pixels to world arena meters.
-        config: Optional vision and geometry configuration.
-
-    Returns:
-        Mapping from detected robot name to its RobotPose in world coordinates.
-    """
-    if frame is None or frame.size == 0:
-        return {}
-
-    cfg = config if config is not None else WorldFrameConfig()
+    """Detects robot triangle markers and returns parallax-corrected world poses."""
     center_arr = np.asarray(
-        cfg.camera_center_world,
+        config.camera_center_world,
         dtype=np.float64,
     )
     hsv_frame = cv2.cvtColor(
@@ -168,8 +166,8 @@ def detect_robot_poses(
     )
 
     poses: dict[str, RobotPose] = {}
-    for robot_name in cfg.robot_names:
-        ranges = cfg.robot_hsv_ranges.get(robot_name)
+    for robot_name in config.robot_names:
+        ranges = config.robot_hsv_ranges.get(robot_name)
         if not ranges:
             continue
 
@@ -179,7 +177,7 @@ def detect_robot_poses(
         )
         pose = triangle_pose(
             robot_mask,
-            min_area_px=cfg.robot_min_area_px,
+            min_area_px=config.robot_min_area_px,
         )
         if pose is None:
             continue
@@ -193,7 +191,7 @@ def detect_robot_poses(
             seen_world,
             center_arr,
             object_height_m=ROBOT_MARKER_HEIGHT_M,
-            cam_height_m=cfg.cam_height_m,
+            cam_height_m=config.cam_height_m,
         )
         theta_world = heading_to_world(
             homography,
@@ -211,3 +209,47 @@ def detect_robot_poses(
         )
 
     return poses
+
+
+def detect_robot_poses(
+    frame: np.ndarray,
+    *,
+    homography: np.ndarray,
+    config: WorldFrameConfig | None = None,
+) -> dict[str, RobotPose]:
+    """Detects robot markers using the configured backend and returns world poses.
+
+    Args:
+        frame: Input BGR camera frame.
+        homography: 3x3 homography mapping image pixels to world arena meters.
+        config: Optional vision and geometry configuration.
+
+    Returns:
+        Mapping from detected robot name to its RobotPose in world coordinates.
+
+    Raises:
+        ValueError: If config.robot_detector is not a recognized RobotDetector value.
+    """
+    if frame is None or frame.size == 0:
+        return {}
+
+    cfg = config if config is not None else WorldFrameConfig()
+    if cfg.robot_detector == RobotDetector.ARUCO:
+        return detect_aruco_robots(
+            frame,
+            homography=homography,
+            config=cfg.aruco,
+            camera_center_world=cfg.camera_center_world,
+            cam_height_m=cfg.cam_height_m,
+        )
+
+    if cfg.robot_detector != RobotDetector.TRIANGLE:
+        raise ValueError(
+            ERR_UNKNOWN_ROBOT_DETECTOR_FMT.format(cfg.robot_detector),
+        )
+
+    return _detect_triangle_robot_poses(
+        frame,
+        homography=homography,
+        config=cfg,
+    )
