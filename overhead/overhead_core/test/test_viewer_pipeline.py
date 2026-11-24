@@ -23,7 +23,9 @@ from overhead_core.viewer_pipeline import (
     calibrate_frame,
     process_frame,
 )
+from overhead_core.viewer_safety import ViewerSafety
 from overhead_core.web_viewer_app import (
+    CameraViewerState,
     build_arg_parser,
     build_pipeline_config,
 )
@@ -282,3 +284,43 @@ def test_should_build_aruco_pipeline_config_when_cli_flags_provided():
         RobotName.PHINEAS.value: 3,
         RobotName.FERB.value: 7,
     }
+
+
+def test_should_populate_safety_and_overlay_when_safety_holder_passed():
+    image = _make_synthetic_arena_image()
+    homography, corners = calibrate_frame(image)
+    safety = ViewerSafety()
+
+    without_safety = process_frame(
+        image,
+        homography,
+        corners_px=corners,
+    )
+    with_safety = process_frame(
+        image,
+        homography,
+        corners_px=corners,
+        safety=safety,
+        now_s=1.0,
+    )
+
+    assert without_safety.safety is None
+    assert with_safety.safety is not None
+    assert RobotName.PHINEAS.value in with_safety.safety.safety.per_robot
+    assert not np.array_equal(
+        without_safety.views[ViewerView.RECTIFIED.value],
+        with_safety.views[ViewerView.RECTIFIED.value],
+    )
+
+
+def test_should_publish_robot_safety_in_snapshot_when_camera_state_updated():
+    image = _make_synthetic_arena_image()
+    state = CameraViewerState()
+
+    state.update_from_frame(image)
+    snapshot = state.get_snapshot()
+
+    assert snapshot is not None
+    assert snapshot.is_calibrated is True
+    assert len(snapshot.robots) == 1
+    assert snapshot.robots[0].name == RobotName.PHINEAS.value

@@ -136,3 +136,25 @@ class SafetyResult:
 
     circles: list[Obstacle]
     per_robot: dict[str, RobotSafety]
+
+
+@dataclass(frozen=True)
+class RobotSafetyStatus:
+    """Serializable collision status summary for a single robot in the web viewer."""
+
+    name: str
+    level: CollisionLevel
+    ttc_s: float
+    nearest_kind: ObstacleKind | None
+    nearest_dist_m: float
+
+
+@dataclass(frozen=True)
+class ViewerSafetyResult:
+    """Combined held poses, velocities, and safety evaluation for one viewer frame."""
+
+    robot_poses: list[RobotPose]
+    safety: SafetyResult
+    velocities: dict[str, tuple[float, float]]
+    lost_names: tuple[str, ...]
+    is_all_seen: bool

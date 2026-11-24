@@ -29,10 +29,12 @@ from overhead_core.constants import (
     DEFAULT_CAMERA_CENTER_WORLD,
     DEFAULT_CUBE_HSV_RANGES,
     DEFAULT_DARK_THRESH,
+    DEFAULT_DETECTION_CONFIDENCE,
     DEFAULT_MIN_AREA_PX,
     DEFAULT_RECTIFY_PX_PER_M,
     DEFAULT_ROBOT_HSV_RANGES,
     DEFAULT_ROBOT_MIN_AREA_PX,
+    DEFAULT_ZONE_RECT,
     DRAW_LINE_THICKNESS_PX,
     EMPTY_DARK_PIXEL_MIN_COUNT,
     FONT_SCALE_BANNER,
@@ -72,6 +74,16 @@ from overhead_core.geometry import (
     world_to_image,
 )
 from overhead_core.parallax import correct_parallax
+from overhead_core.types import (
+    RobotPose,
+    ViewerSafetyResult,
+)
+from overhead_core.viewer_overlay import (
+    SafetyOverlayConfig,
+    draw_safety_overlay,
+    world_to_rectified_px,
+)
+from overhead_core.viewer_safety import ViewerSafety
 from overhead_core.world_frame import (
     WorldFrameConfig,
     detect_robot_poses,
@@ -138,6 +150,7 @@ class PipelineOutput:
     robots: list[ViewerRobotResult]
     is_calibrated: bool
     corners_px: np.ndarray | None
+    safety: ViewerSafetyResult | None = None
 
 
 def _normalize_hsv_config(
@@ -379,9 +392,13 @@ def _world_to_rectified_px(
     config: ViewerPipelineConfig,
 ) -> tuple[int, int]:
     """Maps world meters (x, y) to rectified image pixel coordinates (u, v)."""
-    u_px = int(round((x_m + config.margin_m) * config.px_per_m))
-    v_px = int(round((config.arena_height_m + config.margin_m - y_m) * config.px_per_m))
-    return u_px, v_px
+    return world_to_rectified_px(
+        x_m,
+        y_m,
+        arena_height_m=config.arena_height_m,
+        px_per_m=config.px_per_m,
+        margin_m=config.margin_m,
+    )
 
 
 def _draw_not_calibrated_banner(image: np.ndarray) -> None:
@@ -572,6 +589,7 @@ def _draw_rectified_view(
     cubes: list[ViewerCubeResult],
     robots: list[ViewerRobotResult],
     config: ViewerPipelineConfig,
+    safety_result: ViewerSafetyResult | None = None,
 ) -> np.ndarray:
     """Renders the top-down rectified view with annotated cubes and robots."""
     out_w = max(
@@ -631,6 +649,19 @@ def _draw_rectified_view(
             rectified,
             robot,
             center_px=center_px,
+        )
+
+    if safety_result is not None:
+        rectified = draw_safety_overlay(
+            rectified,
+            safety_result.safety,
+            safety_result.robot_poses,
+            config=SafetyOverlayConfig(
+                arena_height_m=config.arena_height_m,
+                px_per_m=config.px_per_m,
+                margin_m=config.margin_m,
+                zone_rect=DEFAULT_ZONE_RECT,
+            ),
         )
 
     return rectified
@@ -705,6 +736,8 @@ def process_frame(
     *,
     corners_px: np.ndarray | None = None,
     config: ViewerPipelineConfig | None = None,
+    safety: ViewerSafety | None = None,
+    now_s: float | None = None,
 ) -> PipelineOutput:
     """Runs detection and renders raw, rectified, and mask views for one frame.
 
@@ -717,6 +750,8 @@ def process_frame(
         hsv_config: HSV ranges config or cube HSV dictionary.
         corners_px: Optional 4x2 arena corner pixels for raw view overlay.
         config: Optional geometry, parallax, and rendering configuration.
+        safety: Optional stateful safety holder for velocity, hold, and radar checks.
+        now_s: Optional monotonic timestamp in seconds passed to safety evaluation.
 
     Returns:
         PipelineOutput containing annotated view images and detected world objects.
@@ -750,6 +785,28 @@ def process_frame(
             pipeline_config=pipeline_cfg,
         )
 
+    safety_result: ViewerSafetyResult | None = None
+    if homography is not None and safety is not None:
+        robot_poses = [
+            RobotPose(
+                name=robot.name,
+                x=robot.x_m,
+                y=robot.y_m,
+                theta=robot.theta_rad,
+                confidence=DEFAULT_DETECTION_CONFIDENCE,
+            )
+            for robot in robots
+        ]
+        cube_tuples = [
+            (idx, cube.color, cube.x_m, cube.y_m, DEFAULT_DETECTION_CONFIDENCE)
+            for idx, cube in enumerate(cubes)
+        ]
+        safety_result = safety.update(
+            robot_poses,
+            cube_tuples,
+            now_s=now_s,
+        )
+
     views = {
         ViewerView.RAW.value: _draw_raw_view(
             frame_bgr,
@@ -761,6 +818,7 @@ def process_frame(
             cubes=cubes,
             robots=robots,
             config=pipeline_cfg,
+            safety_result=safety_result,
         ),
         ViewerView.MASK.value: _draw_mask_view(
             frame_bgr,
@@ -776,6 +834,7 @@ def process_frame(
         robots=robots,
         is_calibrated=is_calibrated,
         corners_px=resolved_corners,
+        safety=safety_result,
     )
 
 

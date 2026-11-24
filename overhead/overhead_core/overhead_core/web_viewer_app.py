@@ -35,6 +35,10 @@ from overhead_core.viewer_pipeline import (
     calibrate_frame,
     process_frame,
 )
+from overhead_core.viewer_safety import (
+    ViewerSafety,
+    build_robot_statuses,
+)
 from overhead_core.web_viewer import ViewerSnapshot, create_web_server
 
 LOGGER = logging.getLogger(__name__)
@@ -130,6 +134,10 @@ class CameraViewerState:
         self._pipeline_config = (
             pipeline_config if pipeline_config is not None else ViewerPipelineConfig()
         )
+        self._safety = ViewerSafety(
+            arena_width_m=self._pipeline_config.arena_width_m,
+            arena_height_m=self._pipeline_config.arena_height_m,
+        )
 
     def get_snapshot(self) -> ViewerSnapshot | None:
         """Returns the most recent processed ViewerSnapshot."""
@@ -183,15 +191,24 @@ class CameraViewerState:
             homography,
             corners_px=corners_px,
             config=self._pipeline_config,
+            safety=self._safety,
+            now_s=now_s,
         )
         raw_copy = frame_bgr.copy()
+        robot_statuses = (
+            build_robot_statuses(output.safety.safety) if output.safety is not None else ()
+        )
+        robot_count = (
+            len(output.safety.robot_poses) if output.safety is not None else len(output.robots)
+        )
         snapshot = ViewerSnapshot(
             views=output.views,
             raw_frame=raw_copy,
             fps=fps,
             cube_count=len(output.cubes),
-            robot_count=len(output.robots),
+            robot_count=robot_count,
             is_calibrated=output.is_calibrated,
+            robots=robot_statuses,
         )
         with self._lock:
             self._latest_raw_frame = raw_copy
