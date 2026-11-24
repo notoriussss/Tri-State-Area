@@ -10,6 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import numpy as np
+import pytest
 from overhead_core.camera_session import CameraSession
 from overhead_core.constants import (
     CAMERA_RETRY_S,
@@ -146,13 +147,36 @@ def test_should_decode_fixture_frame_with_expected_shape_when_http_server_serves
     assert frame.shape == EXPECTED_FRAME_SHAPE
 
 
+class _ListHandler(logging.Handler):
+    """Collects log records without relying on the pytest logging plugin."""
+
+    def __init__(self) -> None:
+        super().__init__(level=logging.WARNING)
+        self.records: list[logging.LogRecord] = []
+
+    def emit(self, record: logging.LogRecord) -> None:
+        self.records.append(record)
+
+
+@pytest.fixture
+def frame_source_logs() -> Iterator[_ListHandler]:
+    """Attaches a collecting handler to the frame source logger.
+
+    The ROS container runs pytest with root handlers removed, so caplog stays empty there.
+    """
+    logger = logging.getLogger("overhead_core.frame_source")
+    handler = _ListHandler()
+    previous_level = logger.level
+    logger.addHandler(handler)
+    logger.setLevel(logging.WARNING)
+    yield handler
+    logger.removeHandler(handler)
+    logger.setLevel(previous_level)
+
+
 def test_should_return_none_and_log_once_per_distinct_error_when_http_fails(
-    caplog,
+    frame_source_logs: _ListHandler,
 ) -> None:
-    caplog.set_level(
-        logging.WARNING,
-        logger="overhead_core.frame_source",
-    )
 
     with _running_frame_server("503") as (url, behavior):
         source = HttpFrameSource(
@@ -178,14 +202,12 @@ def test_should_return_none_and_log_once_per_distinct_error_when_http_fails(
     assert second_garbage is None
     assert timeout_frame is None
     assert final_open is False
-    assert len(caplog.records) == 3
+    assert len(frame_source_logs.records) == 3
 
 
-def test_should_recover_when_http_server_starts_answering_again(caplog) -> None:
-    caplog.set_level(
-        logging.WARNING,
-        logger="overhead_core.frame_source",
-    )
+def test_should_recover_when_http_server_starts_answering_again(
+    frame_source_logs: _ListHandler,
+) -> None:
 
     with _running_frame_server("503") as (url, behavior):
         source = HttpFrameSource(url)
@@ -210,7 +232,7 @@ def test_should_recover_when_http_server_starts_answering_again(caplog) -> None:
     assert source.is_open() is True
     assert after_reopen_frame is not None
     assert after_reopen_frame.shape == EXPECTED_FRAME_SHAPE
-    assert len(caplog.records) == 2
+    assert len(frame_source_logs.records) == 2
 
 
 def test_should_retry_with_camera_session_when_http_source_unavailable_then_ready() -> None:
