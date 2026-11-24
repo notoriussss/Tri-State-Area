@@ -71,3 +71,19 @@ Relays delivery-zone requests, releases, and `/zone/occupant` heartbeats between
 - **Publishes:** `/<robot>/zone/occupant` (`std_msgs/String`)
 - **Services:** `/<robot>/zone/request` (`multirobot_interfaces/RequestZone`), `/<robot>/zone/release` (`multirobot_interfaces/ReleaseZone`)
 - **Clients:** `/zone/request` (`multirobot_interfaces/RequestZone`), `/zone/release` (`multirobot_interfaces/ReleaseZone`)
+
+## Tests
+
+The ROS 2 integration tests in `overhead/overhead_ros/test/` run in-process against still-photo fixtures and a `FakePerry` node using a PID-isolated `ROS_DOMAIN_ID`, so no physical camera or Perry hardware is required.
+
+From `overhead/docker`, build and run all `overhead_core` and `overhead_ros` tests in the ROS 2 Lyrical container:
+
+```bash
+docker compose run --rm overhead run-tests
+```
+
+Inside an already-sourced ROS 2 Lyrical workspace (`/ws/install/setup.bash`), run only the ROS integration tests with:
+
+```bash
+python3 -m pytest overhead/overhead_ros/test -q -p no:cacheprovider
+```

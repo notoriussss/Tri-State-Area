@@ -86,7 +86,7 @@ class OverheadNode(Node):
 
     def _create_ros_interfaces(self) -> None:
         """Creates publishers, subscriptions, services, and periodic timers."""
-        self._publishers = WorldPublishers(self)
+        self._world_publishers = WorldPublishers(self)
         self._sub_zone_occupant = self.create_subscription(
             String,
             ros_names.ZONE_OCCUPANT_TOPIC,
@@ -218,8 +218,8 @@ class OverheadNode(Node):
         response: GetWorld.Response,
     ) -> GetWorld.Response:
         """Returns the most recently published world state and virtual sensors."""
-        response.world = self._publishers.latest_state
-        response.sensors = self._publishers.latest_sensors
+        response.world = self._world_publishers.latest_state
+        response.sensors = self._world_publishers.latest_sensors
         return response
 
     def _on_corridor_free(
@@ -281,7 +281,7 @@ class OverheadNode(Node):
         )
         self._latest_red_obstacles = evaluation.red_obstacles
 
-        self._publishers.publish_world(
+        self._world_publishers.publish_world(
             stamp_msg=self.get_clock().now().to_msg(),
             detection=detection,
             evaluation=evaluation,
@@ -325,7 +325,7 @@ class OverheadNode(Node):
         if latest_frame is None or homography is None:
             return
 
-        is_published = self._publishers.publish_image(
+        is_published = self._world_publishers.publish_image(
             latest_frame,
             homography=homography,
             stamp_msg=self.get_clock().now().to_msg(),
