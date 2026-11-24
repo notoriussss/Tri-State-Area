@@ -184,8 +184,8 @@ consecutive poses, smoothed (exponential, factor as a constant), robust to a ski
 **Status:** Done — implemented and tested in `overhead_core/velocity.py`.
 
 **O9. Obstacles with safety circles (core).** `overhead_core/obstacles.py`: build the list from
-tracked cubes, robots and the arena. Safety radii as constants: `RED_CUBE_SAFETY_M = 0.128` (robot half width + cube half diagonal + pose error margin),
-`ROBOT_SAFETY_M = 0.16` (scoop reach + half the pose error margin), `CUBE_SAFETY_M = 0.05`, `CARRY_EXTENSION_M = 0.025` (added in front
+tracked cubes, robots and the arena. Safety radii as constants: `RED_CUBE_SAFETY_M = 0.113` (robot half width + cube half diagonal + pose error margin),
+`ROBOT_SAFETY_M = 0.152` (scoop reach + half the pose error margin), `CUBE_SAFETY_M = 0.033`, `CARRY_EXTENSION_M = 0.025` (added in front
 of a robot carrying a cube). Arena walls from the arena size. The zone becomes an obstacle for
 every robot except the one named in `/zone/occupant`.
 **Status:** Done — implemented and tested in `overhead_core/obstacles.py` and `overhead_core/world_safety.py`.
@@ -296,7 +296,7 @@ Messages are shared by three groups. To add or change anything in `interfaces/ts
 
 ## 7. Open questions (do not decide them alone)
 
-- Red safety radius: overhead now uses 0.128 m, derived from measured geometry (decision D7 asked 0.17 m, or 0.12 m plus a free corridor, to be tested in `sim/`; fleet has not confirmed).
+- Red safety radius: overhead now uses 0.113 m, derived from measured geometry (decision D7 asked 0.17 m, or 0.12 m plus a free corridor, to be tested in `sim/`; fleet has not confirmed).
 - Do the robots read their own `RobotObstacles` for a braking reflex, or only the fleet?
 - Triangle colors for Phineas and Ferb (not blue, yellow, red or green).
 - Is the camera exactly above the red dot?
