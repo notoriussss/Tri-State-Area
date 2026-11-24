@@ -1,5 +1,6 @@
 """Package constants and enums for overhead_core."""
 
+import math
 from enum import StrEnum
 
 # Camera and arena geometry constants
@@ -230,3 +231,28 @@ class ObstacleKind(StrEnum):
     CUBE = "CUBE"
     WALL = "WALL"
     ZONE = "ZONE"
+
+
+# Radar sensing defaults
+RADAR_SECTOR_COUNT: int = 8
+RADAR_RAYS_PER_SECTOR: int = 5
+RADAR_MAX_RANGE_M: float = 2.0
+RAY_PARALLEL_EPSILON: float = 1e-12
+RAY_ENDPOINT_TOLERANCE: float = 1e-9
+
+# Collision assessment thresholds and defaults
+COLLISION_CONE_HALF_ANGLE_RAD: float = math.pi / 3.0
+COLLISION_CONE_RAY_COUNT: int = 13
+COLLISION_SLOW_DIST_M: float = 0.60
+COLLISION_STOP_DIST_M: float = 0.40
+COLLISION_SLOW_TTC_S: float = 2.0
+COLLISION_STOP_TTC_S: float = 1.0
+VELOCITY_ZERO_EPSILON: float = 1e-12
+
+
+class CollisionLevel(StrEnum):
+    """Collision severity levels reported for each robot."""
+
+    CLEAR = "CLEAR"
+    SLOW = "SLOW"
+    STOP = "STOP"

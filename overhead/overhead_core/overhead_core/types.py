@@ -2,6 +2,11 @@
 
 from dataclasses import dataclass, field
 
+from overhead_core.constants import (
+    CollisionLevel,
+    ObstacleKind,
+)
+
 
 @dataclass(frozen=True)
 class CubeDetection:
@@ -85,3 +90,14 @@ class ObstacleSet:
 
     circles: list[Obstacle]
     walls: list[WallSegment]
+
+
+@dataclass(frozen=True)
+class CollisionAssessment:
+    """Forward-cone collision assessment for a single robot."""
+
+    level: CollisionLevel
+    time_to_collision_s: float
+    nearest_kind: ObstacleKind | None
+    nearest_dist_m: float
+    nearest_bearing_rad: float
