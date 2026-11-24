@@ -46,3 +46,9 @@ jobs:
 
       - name: Run overhead_core tests
         run: python -m pytest overhead/overhead_core
+
+      - name: Run fleet_core tests
+        run: python -m pytest fleet/fleet_core
+
+      - name: Run sim_core tests
+        run: python -m pytest sim/sim_core

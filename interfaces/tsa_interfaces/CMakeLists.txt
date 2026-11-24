@@ -14,6 +14,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RobotSensors.msg"
   "msg/VirtualSensors.msg"
   "msg/RobotStatus.msg"
+  "msg/Pose2D.msg"
   "msg/RobotPlan.msg"
   "msg/FleetPlan.msg"
   "srv/GetWorld.srv"

@@ -1,0 +1,405 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 980" width="1600" height="980" role="img" aria-label="Gráfico ilustrativo de la estrategia de movimiento de Phineas y Ferb siguiendo los 6 pilares">
+  <defs>
+    <style>
+      .font-sans { font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif; }
+      .font-mono { font-family: "Cascadia Code", "Consolas", "Courier New", monospace; }
+      .title { font-size: 26px; font-weight: 800; fill: #0F172A; letter-spacing: -0.3px; }
+      .subtitle { font-size: 13.5px; font-weight: 500; fill: #475569; }
+      .sec-lbl { font-size: 11px; font-weight: 700; fill: #64748B; letter-spacing: 0.9px; text-transform: uppercase; }
+      .lbl { font-size: 12.5px; font-weight: 600; fill: #1E293B; }
+      .lbl-sm { font-size: 11px; font-weight: 500; fill: #475569; }
+      .lbl-mono { font-size: 11.5px; font-weight: 600; fill: #0F172A; }
+      .lbl-blue { font-size: 12px; font-weight: 700; fill: #1D4ED8; }
+      .lbl-mag { font-size: 11.5px; font-weight: 700; fill: #A21CAF; }
+      .lbl-red { font-size: 11.5px; font-weight: 700; fill: #B91C1C; }
+      .lbl-grn { font-size: 12px; font-weight: 700; fill: #15803D; }
+      .lbl-amb { font-size: 12px; font-weight: 700; fill: #A16207; }
+      .card-title { font-size: 14px; font-weight: 800; fill: #0F172A; }
+      .card-body { font-size: 12px; font-weight: 500; fill: #334155; }
+      .badge-num { font-size: 13px; font-weight: 800; fill: #FFFFFF; }
+      .pill-txt { font-size: 11px; font-weight: 700; }
+    </style>
+
+    <filter id="shadow" x="-6%" y="-6%" width="114%" height="114%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <filter id="soft-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0F172A" flood-opacity="0.12"/>
+    </filter>
+
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 1 1 L 9 5 L 1 9 z" fill="#1E293B"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 1 1 L 9 5 L 1 9 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arr-mag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 1 1 L 9 5 L 1 9 z" fill="#C026D3"/>
+    </marker>
+    <marker id="arr-grn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 1 1 L 9 5 L 1 9 z" fill="#16A34A"/>
+    </marker>
+    <marker id="arr-amb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 1 1 L 9 5 L 1 9 z" fill="#D97706"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 1 1 L 9 5 L 1 9 z" fill="#DC2626"/>
+    </marker>
+
+    <pattern id="arena-grid" width="74" height="74" patternUnits="userSpaceOnUse">
+      <path d="M 74 0 L 0 0 0 74" fill="none" stroke="#E2E8F0" stroke-width="1"/>
+    </pattern>
+
+    <!-- Reusable Mecanum Robot Base (centered at 0,0, facing +x) -->
+    <g id="mecanum-wheels">
+      <rect x="-42" y="-50" width="26" height="10" rx="3" fill="#1E293B"/>
+      <rect x="14" y="-50" width="26" height="10" rx="3" fill="#1E293B"/>
+      <rect x="-42" y="40" width="26" height="10" rx="3" fill="#1E293B"/>
+      <rect x="14" y="40" width="26" height="10" rx="3" fill="#1E293B"/>
+      <line x1="-38" y1="-50" x2="-20" y2="-40" stroke="#64748B" stroke-width="1.5"/>
+      <line x1="18" y1="-40" x2="36" y2="-50" stroke="#64748B" stroke-width="1.5"/>
+      <line x1="-38" y1="40" x2="-20" y2="50" stroke="#64748B" stroke-width="1.5"/>
+      <line x1="18" y1="50" x2="36" y2="40" stroke="#64748B" stroke-width="1.5"/>
+    </g>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1600" height="980" fill="#F1F5F9"/>
+  <rect x="16" y="16" width="1568" height="948" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <!-- Header -->
+  <rect x="36" y="34" width="6" height="48" rx="3" fill="#2563EB"/>
+  <text x="54" y="57" class="font-sans title">Estrategia de Movimiento: Phineas y Ferb (Los 6 Pilares)</text>
+  <text x="54" y="79" class="font-sans subtitle">Arquitectura descentralizada · Cada carro planifica, coordina tráfico P2P y controla localmente en su Raspberry Pi 5 (~20 Hz)</text>
+
+  <!-- Header Legend Pills -->
+  <g transform="translate(1030, 42)" class="font-sans">
+    <rect x="0" y="0" width="122" height="28" rx="14" fill="#EFF6FF" stroke="#93C5FD"/>
+    <circle cx="16" cy="14" r="5" fill="#2563EB"/>
+    <text x="27" y="18" class="pill-txt" fill="#1D4ED8">Phineas (Azul)</text>
+
+    <rect x="132" y="0" width="128" height="28" rx="14" fill="#FEFCE8" stroke="#FDE047"/>
+    <circle cx="148" cy="14" r="5" fill="#EAB308"/>
+    <text x="159" y="18" class="pill-txt" fill="#A16207">Ferb (Amarillo)</text>
+
+    <rect x="270" y="0" width="118" height="28" rx="14" fill="#FEF2F2" stroke="#FCA5A5"/>
+    <circle cx="286" cy="14" r="5" fill="#DC2626"/>
+    <text x="297" y="18" class="pill-txt" fill="#B91C1C">Rojo (Evitar)</text>
+
+    <rect x="398" y="0" width="136" height="28" rx="14" fill="#FDF4FF" stroke="#E879F9"/>
+    <line x1="408" y1="14" x2="424" y2="14" stroke="#C026D3" stroke-width="2.5" stroke-dasharray="4 3"/>
+    <text x="430" y="18" class="pill-txt" fill="#A21CAF">Sensor Virtual</text>
+  </g>
+
+  <!-- Divider -->
+  <line x1="36" y1="98" x2="1564" y2="98" stroke="#E2E8F0" stroke-width="1.5"/>
+
+  <!-- ================= MAIN ARENA ILLUSTRATION ================= -->
+  <text x="80" y="120" class="font-sans sec-lbl">VISTA SUPERIOR DE LA PISTA (116,5 × 70 CM) Y COREOGRAFÍA DE MOVIMIENTO</text>
+
+  <!-- Arena Floor + Grid -->
+  <rect x="80" y="132" width="862" height="518" fill="#FFFFFF"/>
+  <rect x="80" y="132" width="862" height="518" fill="url(#arena-grid)"/>
+
+  <!-- Blue Delivery Notch (Muesca Azul) -->
+  <rect x="942" y="318" width="126" height="146" rx="4" fill="#DBEAFE" stroke="#2563EB" stroke-width="2.5"/>
+  <text x="1005" y="310" class="font-sans lbl-blue" text-anchor="middle">Zona de entrega</text>
+
+  <!-- Green Delivery Line -->
+  <line x1="964" y1="322" x2="964" y2="460" stroke="#16A34A" stroke-width="5.5" stroke-linecap="round"/>
+  <text x="954" y="486" class="font-sans lbl-grn" text-anchor="middle">Línea verde</text>
+
+  <!-- Virtual Stop Limit x_max inside Zone (no black tape!) -->
+  <line x1="1046" y1="318" x2="1046" y2="464" stroke="#C026D3" stroke-width="2.5" stroke-dasharray="6 4"/>
+  <line x1="1046" y1="464" x2="1046" y2="498" stroke="#C026D3" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="1038" y="514" class="font-sans lbl-mag" text-anchor="middle">Tope virtual x_max</text>
+  <text x="1038" y="528" class="font-sans lbl-sm" text-anchor="middle">(sin cinta negra)</text>
+
+  <!-- Drop Slots inside Delivery Zone -->
+  <rect x="978" y="346" width="22" height="22" rx="3" fill="#2563EB" stroke="#1E3A8A" stroke-width="1.5" opacity="0.9"/>
+  <text x="989" y="361" class="font-mono" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">G1</text>
+  <rect x="978" y="408" width="22" height="22" rx="3" fill="#FACC15" stroke="#A16207" stroke-width="1.5" opacity="0.9"/>
+  <text x="989" y="423" class="font-mono" font-size="11" font-weight="700" fill="#713F12" text-anchor="middle">G2</text>
+  <!-- Separation Bracket >= 1.5 cm -->
+  <line x1="1006" y1="368" x2="1006" y2="408" stroke="#1E293B" stroke-width="1.5"/>
+  <line x1="1002" y1="368" x2="1010" y2="368" stroke="#1E293B" stroke-width="1.5"/>
+  <line x1="1002" y1="408" x2="1010" y2="408" stroke="#1E293B" stroke-width="1.5"/>
+  <text x="1010" y="392" class="font-mono" font-size="9.5" font-weight="700" fill="#1E293B">≥1,5cm</text>
+
+  <!-- Black Tape Border (interrupted cleanly at the blue notch y=318..464) -->
+  <path d="M 942 318 L 942 132 L 80 132 L 80 650 L 942 650 L 942 464"
+        fill="none" stroke="#0F172A" stroke-width="9" stroke-linejoin="round" stroke-linecap="square"/>
+
+  <!-- Virtual Inner Safety Margin -->
+  <rect x="102" y="154" width="818" height="474" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <text x="114" y="172" class="font-sans lbl-sm">Margen virtual interior (evita disparar reflejo de cinta negra)</text>
+
+  <!-- Parking Area (Bottom-Left) -->
+  <rect x="114" y="544" width="154" height="72" rx="8" fill="#F8FAFC" stroke="#64748B" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <text x="191" y="575" class="font-sans lbl" text-anchor="middle">ESTACIONADO</text>
+  <text x="191" y="593" class="font-sans lbl-sm" text-anchor="middle">Esquina segura si</text>
+  <text x="191" y="607" class="font-sans lbl-sm" text-anchor="middle">acaba su color</text>
+
+  <!-- Pre-Zone Staging Line (x ~ 0.85 m) -->
+  <line x1="734" y1="154" x2="734" y2="628" stroke="#C026D3" stroke-width="2.5" stroke-dasharray="8 5"/>
+  <rect x="652" y="138" width="164" height="24" rx="12" fill="#FDF4FF" stroke="#D946EF" stroke-width="1.2"/>
+  <text x="734" y="154" class="font-sans lbl-mag" text-anchor="middle">Línea pre-zona (x ≈ 0,85 m)</text>
+  <text x="744" y="290" class="font-sans lbl-sm">Carril sup.</text>
+  <text x="744" y="520" class="font-sans lbl-sm">Carril inf.</text>
+
+  <!-- Arena Center Red Dot (c) -->
+  <circle cx="511" cy="391" r="7" fill="#EF4444" stroke="#FFFFFF" stroke-width="2"/>
+  <text x="511" y="413" class="font-sans lbl-sm" text-anchor="middle">centro (c) · cámara 1 m</text>
+
+  <!-- Coordinate Axes at Bottom-Left (0, 0) -->
+  <g transform="translate(80, 650)">
+    <circle cx="0" cy="0" r="5" fill="#0F172A"/>
+    <line x1="0" y1="0" x2="72" y2="0" stroke="#0F172A" stroke-width="2.5" marker-end="url(#arr-dark)" transform="translate(0, 18)"/>
+    <line x1="0" y1="0" x2="0" y2="-72" stroke="#0F172A" stroke-width="2.5" marker-end="url(#arr-dark)" transform="translate(-18, 0)"/>
+    <text x="78" y="23" class="font-mono lbl-mono">+x (Perry)</text>
+    <text x="-38" y="-76" class="font-mono lbl-mono">+y</text>
+    <text x="-38" y="20" class="font-mono lbl-mono">(0,0)</text>
+  </g>
+
+  <!-- ================= OBSTACLES (RED CUBES + 12 CM HALO) ================= -->
+  <!-- Red Cube 1 (blocks transit) -->
+  <circle cx="368" cy="344" r="56" fill="#FEE2E2" fill-opacity="0.48" stroke="#DC2626" stroke-width="2" stroke-dasharray="6 4"/>
+  <rect x="357" y="333" width="22" height="22" rx="3" fill="#DC2626" stroke="#7F1D1D" stroke-width="1.5" filter="url(#soft-shadow)"/>
+  <text x="368" y="392" class="font-sans lbl-red" text-anchor="middle">Rojo · 12 cm</text>
+
+  <!-- Red Cube 2 (blocks direct push corridor -> triggers 2-stage dog-leg) -->
+  <circle cx="608" cy="304" r="56" fill="#FEE2E2" fill-opacity="0.48" stroke="#DC2626" stroke-width="2" stroke-dasharray="6 4"/>
+  <rect x="597" y="293" width="22" height="22" rx="3" fill="#DC2626" stroke="#7F1D1D" stroke-width="1.5" filter="url(#soft-shadow)"/>
+  <text x="608" y="352" class="font-sans lbl-red" text-anchor="middle">Rojo en pasillo</text>
+
+  <!-- ================= TRAJECTORIES & TARGET POINTS ================= -->
+  <!-- Approach Point A -->
+  <circle cx="322" cy="224" r="9" fill="#FDF4FF" stroke="#C026D3" stroke-width="2.5"/>
+  <text x="312" y="208" class="font-mono lbl-mag" text-anchor="end">A (aprox.)</text>
+
+  <!-- Blue Target Cube C -->
+  <rect x="424" y="213" width="22" height="22" rx="3" fill="#2563EB" stroke="#1E3A8A" stroke-width="1.5" filter="url(#soft-shadow)"/>
+  <text x="435" y="204" class="font-mono lbl-blue" text-anchor="middle">C (azul)</text>
+
+  <!-- Intermediate Dog-leg Point M -->
+  <circle cx="585" cy="196" r="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="2.5"/>
+  <text x="585" y="182" class="font-mono lbl-blue" text-anchor="middle">M (quiebre 2 etapas)</text>
+
+  <!-- Transit curve from Phineas around Red Cube 1 to A -->
+  <path d="M 244 294 Q 252 224 310 224" fill="none" stroke="#2563EB" stroke-width="3" stroke-dasharray="7 5" marker-end="url(#arr-blue)"/>
+  <text x="236" y="236" class="font-sans lbl-blue" text-anchor="end">Tránsito</text>
+  <text x="236" y="250" class="font-sans lbl-sm" text-anchor="end">(rodea rojo 12 cm)</text>
+
+  <!-- Guided Push Stage 1: A -> C -> M -->
+  <path d="M 334 224 L 420 224" fill="none" stroke="#2563EB" stroke-width="3.5" marker-end="url(#arr-blue)"/>
+  <path d="M 450 220 L 573 198" fill="none" stroke="#2563EB" stroke-width="3.5" marker-end="url(#arr-blue)"/>
+
+  <!-- Guided Push Stage 2: M -> Pre-zone staging -> Deliver past Green Line -> G1 -->
+  <path d="M 595 202 Q 674 224 726 322" fill="none" stroke="#2563EB" stroke-width="3.5" marker-end="url(#arr-blue)"/>
+  <path d="M 740 342 L 972 356" fill="none" stroke="#16A34A" stroke-width="4" marker-end="url(#arr-grn)"/>
+  <rect x="782" y="314" width="132" height="22" rx="11" fill="#DCFCE7" stroke="#86EFAC"/>
+  <text x="848" y="329" class="font-sans lbl-grn" text-anchor="middle">ENTREGAR (con llave)</text>
+
+  <!-- Straight Reverse Exit Arrow (-vx) from Zone -->
+  <path d="M 970 382 L 774 382" fill="none" stroke="#C026D3" stroke-width="3.2" stroke-dasharray="8 4" marker-end="url(#arr-mag)"/>
+  <rect x="782" y="390" width="144" height="22" rx="11" fill="#FDF4FF" stroke="#E879F9"/>
+  <text x="854" y="405" class="font-sans lbl-mag" text-anchor="middle">SALIR recto (-vx) + release</text>
+
+  <!-- ================= ROBOT 1: PHINEAS (Pi 5) ================= -->
+  <g transform="translate(208, 354) rotate(-22)" filter="url(#soft-shadow)">
+    <use href="#mecanum-wheels"/>
+    <!-- Chassis -->
+    <rect x="-46" y="-40" width="92" height="80" rx="12" fill="#EFF6FF" stroke="#1D4ED8" stroke-width="2.5"/>
+    <!-- Front Scoop -->
+    <path d="M 46 -26 L 62 -26 L 62 26 L 46 26" fill="#DBEAFE" stroke="#1D4ED8" stroke-width="2.5"/>
+    <!-- Elongated Cardstock Triangle Marker -->
+    <polygon points="32,0 -24,-20 -24,20" fill="#2563EB" stroke="#1E3A8A" stroke-width="1.5"/>
+    <!-- Local Velocity Vectors (vx, vy) -->
+    <line x1="0" y1="0" x2="78" y2="0" stroke="#0F172A" stroke-width="2.2" marker-end="url(#arr-dark)"/>
+    <line x1="0" y1="0" x2="0" y2="-56" stroke="#0F172A" stroke-width="2.2" marker-end="url(#arr-dark)"/>
+    <text x="80" y="4" class="font-mono" font-size="11" font-weight="800" fill="#0F172A">vx</text>
+    <text x="5" y="-56" class="font-mono" font-size="11" font-weight="800" fill="#0F172A">vy</text>
+  </g>
+  <rect x="148" y="416" width="122" height="24" rx="12" fill="#1D4ED8"/>
+  <text x="209" y="432" class="font-sans pill-txt" fill="#FFFFFF" text-anchor="middle">Phineas · Pi 5</text>
+
+  <!-- Cube-Slip Recovery Mini-Callout -->
+  <path d="M 442 252 Q 418 274 398 258" fill="none" stroke="#DC2626" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arr-red)"/>
+  <text x="452" y="266" class="font-sans lbl-red">RECUPERAR (-12 cm)</text>
+
+  <!-- ================= ROBOT 2: FERB (Pi 5) + 17 CM CIRCLE + NAV LIGHTS + SIDESTEP ================= -->
+  <!-- 17 cm Safety Circle around Ferb -->
+  <circle cx="520" cy="526" r="88" fill="#FDF4FF" fill-opacity="0.28" stroke="#C026D3" stroke-width="1.8" stroke-dasharray="7 5"/>
+  <!-- Port (Red / Left) and Starboard (Green / Right) Navigation Light Arcs -->
+  <path d="M 433.3 510.7 A 88 88 0 0 1 606.7 510.7" fill="none" stroke="#DC2626" stroke-width="4.2" stroke-linecap="round"/>
+  <path d="M 433.3 541.3 A 88 88 0 0 0 606.7 541.3" fill="none" stroke="#16A34A" stroke-width="4.2" stroke-linecap="round"/>
+  <text x="442" y="462" class="font-sans lbl-red" text-anchor="end">Babor (Rojo)</text>
+  <text x="612" y="586" class="font-sans lbl-grn" text-anchor="start">Estribor (Verde)</text>
+  <text x="520" y="456" class="font-sans lbl-mag" text-anchor="middle">Círculo seguridad 17 cm</text>
+
+  <!-- Yellow Target Cube in front of Ferb -->
+  <rect x="652" y="515" width="22" height="22" rx="3" fill="#FACC15" stroke="#A16207" stroke-width="1.5" filter="url(#soft-shadow)"/>
+  <text x="663" y="505" class="font-mono lbl-amb" text-anchor="middle">C (amarillo)</text>
+
+  <!-- Ferb Chassis -->
+  <g transform="translate(520, 526) rotate(0)" filter="url(#soft-shadow)">
+    <use href="#mecanum-wheels"/>
+    <rect x="-46" y="-40" width="92" height="80" rx="12" fill="#FEFCE8" stroke="#CA8A04" stroke-width="2.5"/>
+    <path d="M 46 -26 L 62 -26 L 62 26 L 46 26" fill="#FEF08A" stroke="#CA8A04" stroke-width="2.5"/>
+    <!-- Cardstock Triangle Marker -->
+    <polygon points="32,0 -24,-20 -24,20" fill="#EAB308" stroke="#854D0E" stroke-width="1.5"/>
+  </g>
+  <rect x="466" y="582" width="108" height="24" rx="12" fill="#CA8A04"/>
+  <text x="520" y="598" class="font-sans pill-txt" fill="#FFFFFF" text-anchor="middle">Ferb · Pi 5</text>
+
+  <!-- Starboard Evasion Arrow -->
+  <path d="M 464 526 L 382 558" fill="none" stroke="#16A34A" stroke-width="3.2" marker-end="url(#arr-grn)"/>
+  <text x="374" y="556" class="font-sans lbl-grn" text-anchor="end">Desvío a estribor</text>
+  <text x="374" y="571" class="font-sans lbl-sm" text-anchor="end">(planificado sin rojos 12 cm)</text>
+
+  <!-- ================= OUTSIDE RIGHT: BOXES & PERRY ARM ================= -->
+  <!-- Yellow Box -->
+  <rect x="1096" y="132" width="144" height="92" rx="10" fill="#FEF9C3" stroke="#CA8A04" stroke-width="2.5" filter="url(#soft-shadow)"/>
+  <text x="1168" y="174" class="font-sans card-title" fill="#854D0E" text-anchor="middle">Caja Amarilla</text>
+  <text x="1168" y="194" class="font-sans lbl-sm" text-anchor="middle">Cubos de Ferb</text>
+
+  <!-- Perry Sorting Arm -->
+  <rect x="1096" y="302" width="144" height="176" rx="12" fill="#F8FAFC" stroke="#334155" stroke-width="2" filter="url(#soft-shadow)"/>
+  <!-- Stylized Arm Graphic -->
+  <circle cx="1182" cy="378" r="24" fill="#334155"/>
+  <circle cx="1182" cy="378" r="10" fill="#94A3B8"/>
+  <line x1="1182" y1="378" x2="1126" y2="378" stroke="#0F172A" stroke-width="10" stroke-linecap="round"/>
+  <path d="M 1126 368 L 1110 362 M 1126 388 L 1110 394" stroke="#0F172A" stroke-width="4" stroke-linecap="round"/>
+  <text x="1168" y="330" class="font-sans card-title" text-anchor="middle">Perry (Pi)</text>
+  <text x="1168" y="434" class="font-sans lbl" text-anchor="middle">Árbitro (60 s)</text>
+  <text x="1168" y="452" class="font-sans lbl-sm" text-anchor="middle">Clasifica o descarta</text>
+  <text x="1168" y="466" class="font-sans lbl-sm" text-anchor="middle">cubos rojos</text>
+
+  <!-- Green Box -->
+  <rect x="1096" y="558" width="144" height="92" rx="10" fill="#DCFCE7" stroke="#16A34A" stroke-width="2.5" filter="url(#soft-shadow)"/>
+  <text x="1168" y="600" class="font-sans card-title" fill="#166534" text-anchor="middle">Caja Verde</text>
+  <text x="1168" y="620" class="font-sans lbl-sm" text-anchor="middle">Cubos de Phineas</text>
+
+  <!-- ================= NUMBERED PILLAR CALLOUT BADGES ON ARENA ================= -->
+  <!-- Badge 1: Mission -->
+  <g transform="translate(380, 194)"><circle r="13" fill="#2563EB" stroke="#FFFFFF" stroke-width="2"/><text y="4.5" class="font-sans badge-num" text-anchor="middle">1</text></g>
+  <!-- Badge 2: Navigation & Red avoidance -->
+  <g transform="translate(652, 258)"><circle r="13" fill="#DC2626" stroke="#FFFFFF" stroke-width="2"/><text y="4.5" class="font-sans badge-num" text-anchor="middle">2</text></g>
+  <!-- Badge 3: P2P Traffic -->
+  <g transform="translate(432, 492)"><circle r="13" fill="#C026D3" stroke="#FFFFFF" stroke-width="2"/><text y="4.5" class="font-sans badge-num" text-anchor="middle">3</text></g>
+  <!-- Badge 4: Perry Delivery -->
+  <g transform="translate(1005, 280)"><circle r="13" fill="#16A34A" stroke="#FFFFFF" stroke-width="2"/><text y="4.5" class="font-sans badge-num" text-anchor="middle">4</text></g>
+  <!-- Badge 5: Holonomic Control -->
+  <g transform="translate(134, 360)"><circle r="13" fill="#0284C7" stroke="#FFFFFF" stroke-width="2"/><text y="4.5" class="font-sans badge-num" text-anchor="middle">5</text></g>
+  <!-- Badge 6: Safety Reflexes -->
+  <g transform="translate(106, 226)"><circle r="13" fill="#EA580C" stroke="#FFFFFF" stroke-width="2"/><text y="4.5" class="font-sans badge-num" text-anchor="middle">6</text></g>
+
+  <!-- ================= RIGHT SIDEBAR: ONBOARD PI 5 LOOP & RULES ================= -->
+  <g transform="translate(1272, 132)">
+    <rect x="0" y="0" width="292" height="518" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>
+    <text x="18" y="28" class="font-sans sec-lbl">CICLO A BORDO EN CADA PI 5</text>
+
+    <!-- Step Boxes -->
+    <rect x="16" y="42" width="260" height="52" rx="8" fill="#FFFFFF" stroke="#94A3B8"/>
+    <text x="28" y="63" class="font-sans lbl">1. Percibir (Cenital · 20 Hz)</text>
+    <text x="28" y="81" class="font-mono lbl-sm">/world/state + /world/sensors</text>
+    <line x1="146" y1="94" x2="146" y2="112" stroke="#64748B" stroke-width="2" marker-end="url(#arr-dark)"/>
+
+    <rect x="16" y="114" width="260" height="56" rx="8" fill="#EFF6FF" stroke="#3B82F6"/>
+    <text x="28" y="135" class="font-sans lbl-blue">2. Planificar y Negociar P2P</text>
+    <text x="28" y="153" class="font-mono lbl-sm">/phineas/plan ↔ /ferb/plan</text>
+    <line x1="146" y1="170" x2="146" y2="188" stroke="#2563EB" stroke-width="2" marker-end="url(#arr-blue)"/>
+
+    <rect x="16" y="190" width="260" height="56" rx="8" fill="#F0FDF4" stroke="#22C55E"/>
+    <text x="28" y="211" class="font-sans lbl-grn">3. Turno Directo con Perry</text>
+    <text x="28" y="229" class="font-mono lbl-sm">/zone/request y /zone/release</text>
+    <line x1="146" y1="246" x2="146" y2="264" stroke="#16A34A" stroke-width="2" marker-end="url(#arr-grn)"/>
+
+    <rect x="16" y="266" width="260" height="56" rx="8" fill="#FFF7ED" stroke="#F97316"/>
+    <text x="28" y="287" class="font-sans lbl" fill="#C2410C">4. Control Local + HAL (misma Pi)</text>
+    <text x="28" y="305" class="font-sans lbl-sm">Motores + línea negra + 300 ms</text>
+
+    <!-- Navigation Lights Priority Box -->
+    <line x1="16" y1="338" x2="276" y2="338" stroke="#CBD5E1"/>
+    <text x="18" y="360" class="font-sans sec-lbl">LUCES DE NAVEGACIÓN (COLREGS)</text>
+    <text x="18" y="382" class="font-sans lbl">1. Prioridad: SALIR / con cubo</text>
+    <text x="18" y="400" class="font-sans lbl">2. Ves ROJO → cedes a estribor</text>
+    <text x="18" y="418" class="font-sans lbl">3. Ves VERDE → mantienes rumbo</text>
+    <text x="18" y="436" class="font-sans lbl">4. Planificar antes (sin rojos 12 cm)</text>
+
+    <!-- Holonomic Formula Box -->
+    <line x1="16" y1="452" x2="276" y2="452" stroke="#CBD5E1"/>
+    <text x="18" y="472" class="font-sans sec-lbl">CONTROL MECANUM LOCAL</text>
+    <text x="18" y="492" class="font-mono lbl-mono">[vx, vy] = sat(K · R(-θ) · e)</text>
+    <text x="18" y="509" class="font-mono lbl-mono">ωz = sat(Kθ · (θ_obj - θ))</text>
+  </g>
+
+  <!-- ================= BOTTOM STRIP: 6 PILLAR SUMMARY CARDS (3 x 2 GRID) ================= -->
+  <text x="36" y="694" class="font-sans sec-lbl">RESUMEN DE LOS 6 PILARES DE LA ESTRATEGIA DE MOVIMIENTO</text>
+
+  <!-- Card 1 -->
+  <g transform="translate(36, 706)">
+    <rect width="496" height="112" rx="10" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5"/>
+    <circle cx="24" cy="26" r="13" fill="#2563EB"/>
+    <text x="24" y="30.5" class="font-sans badge-num" text-anchor="middle">1</text>
+    <text x="46" y="31" class="font-sans card-title">Pilar 1 · Misión Distribuida</text>
+    <text x="18" y="56" class="font-sans card-body">• Partición natural: Phineas → azules, Ferb → amarillos.</text>
+    <text x="18" y="76" class="font-sans card-body">• Costo mínimo + histéresis (objetivo pegajoso) y barrido en bordes.</text>
+    <text x="18" y="96" class="font-sans card-body">• Al terminar su color, se retira a ESTACIONADO sin estorbar.</text>
+  </g>
+
+  <!-- Card 2 -->
+  <g transform="translate(552, 706)">
+    <rect width="496" height="112" rx="10" fill="#FEF2F2" stroke="#FECACA" stroke-width="1.5"/>
+    <circle cx="24" cy="26" r="13" fill="#DC2626"/>
+    <text x="24" y="30.5" class="font-sans badge-num" text-anchor="middle">2</text>
+    <text x="46" y="31" class="font-sans card-title">Pilar 2 · Navegación y Cubos Rojos</text>
+    <text x="18" y="56" class="font-sans card-body">• Tránsito sin cubo: inflar rojos a 12 cm y rodear dentro del margen.</text>
+    <text x="18" y="76" class="font-sans card-body">• Empuje desde A: exigir pasillo de pala (~18 cm) libre de rojos.</text>
+    <text x="18" y="96" class="font-sans card-body">• Si un rojo tapa el pasillo: quiebre en 2 etapas (C → M → pre-zona).</text>
+  </g>
+
+  <!-- Card 3 -->
+  <g transform="translate(1068, 706)">
+    <rect width="496" height="112" rx="10" fill="#FDF4FF" stroke="#F5D0FE" stroke-width="1.5"/>
+    <circle cx="24" cy="26" r="13" fill="#C026D3"/>
+    <text x="24" y="30.5" class="font-sans badge-num" text-anchor="middle">3</text>
+    <text x="46" y="31" class="font-sans card-title">Pilar 3 · Luces de Navegación (Rojo/Verde)</text>
+    <text x="18" y="56" class="font-sans card-body">• Cenital usa los triángulos físicos (D3) para alertar colisiones (&lt; 34 cm).</text>
+    <text x="18" y="76" class="font-sans card-body">• Ves ROJO → cedes a estribor; ves VERDE → pasas; de frente → derecha.</text>
+    <text x="18" y="96" class="font-sans card-body">• Planificar antes de mover: validar margen y ≥ 12 cm de rojos (si no, frenar).</text>
+  </g>
+
+  <!-- Card 4 -->
+  <g transform="translate(36, 832)">
+    <rect width="496" height="112" rx="10" fill="#F0FDF4" stroke="#BBF7D0" stroke-width="1.5"/>
+    <circle cx="24" cy="26" r="13" fill="#16A34A"/>
+    <text x="24" y="30.5" class="font-sans badge-num" text-anchor="middle">4</text>
+    <text x="46" y="31" class="font-sans card-title">Pilar 4 · Entrega Directa con Perry</text>
+    <text x="18" y="56" class="font-sans card-body">• Parar en línea pre-zona (x ≈ 0,85 m) y pedir /zone/request directo.</text>
+    <text x="18" y="76" class="font-sans card-body">• Elegir ranura libre (≥ 1,5 cm) y empujar respetando tope x_max.</text>
+    <text x="18" y="96" class="font-sans card-body">• Retroceder recto (-vx) sin girar hasta left:zone → /zone/release.</text>
+  </g>
+
+  <!-- Card 5 -->
+  <g transform="translate(552, 832)">
+    <rect width="496" height="112" rx="10" fill="#F0F9FF" stroke="#BAE6FD" stroke-width="1.5"/>
+    <circle cx="24" cy="26" r="13" fill="#0284C7"/>
+    <text x="24" y="30.5" class="font-sans badge-num" text-anchor="middle">5</text>
+    <text x="46" y="31" class="font-sans card-title">Pilar 5 · Control Holonómico Local</text>
+    <text x="18" y="56" class="font-sans card-body">• Control proporcional mecanum corre en la misma Pi que los motores.</text>
+    <text x="18" y="76" class="font-sans card-body">• Topes suaves + rampa + zona muerta (&lt; 2 cm, &lt; 5°) contra oscilación.</text>
+    <text x="18" y="96" class="font-sans card-body">• Enrutador dedicado (&lt; 30 ms) y predicción corta si latencia &gt; 150 ms.</text>
+  </g>
+
+  <!-- Card 6 -->
+  <g transform="translate(1068, 832)">
+    <rect width="496" height="112" rx="10" fill="#FFF7ED" stroke="#FED7AA" stroke-width="1.5"/>
+    <circle cx="24" cy="26" r="13" fill="#EA580C"/>
+    <text x="24" y="30.5" class="font-sans badge-num" text-anchor="middle">6</text>
+    <text x="46" y="31" class="font-sans card-title">Pilar 6 · Seguridad y Recuperación</text>
+    <text x="18" y="56" class="font-sans card-body">• Reflejos locales: línea negra (escape al centro) + watchdog 300 ms.</text>
+    <text x="18" y="76" class="font-sans card-body">• Sin cámara &gt; 0,5 s (reloj local) → DETENIDO inmediato.</text>
+    <text x="18" y="96" class="font-sans card-body">• Cubo fuera de pala → RECUPERAR (-12 cm y recalcular A).</text>
+  </g>
+</svg>
