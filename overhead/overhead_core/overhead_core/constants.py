@@ -209,3 +209,24 @@ CAMERA_RETRY_S: float = 1.0
 
 # Lost robot hold timing default
 ROBOT_HOLD_S: float = 0.5
+
+# Velocity estimation defaults
+VELOCITY_SMOOTHING_ALPHA: float = 0.5
+MIN_VELOCITY_DT_S: float = 0.005
+VELOCITY_MAX_GAP_S: float = 0.5
+
+# Obstacle safety radii
+RED_CUBE_SAFETY_M: float = 0.17
+ROBOT_SAFETY_M: float = 0.17
+CUBE_SAFETY_M: float = 0.05
+CARRY_EXTENSION_M: float = 0.025
+
+
+class ObstacleKind(StrEnum):
+    """Categories of obstacles in the arena safety representation."""
+
+    RED_CUBE = "RED_CUBE"
+    ROBOT = "ROBOT"
+    CUBE = "CUBE"
+    WALL = "WALL"
+    ZONE = "ZONE"

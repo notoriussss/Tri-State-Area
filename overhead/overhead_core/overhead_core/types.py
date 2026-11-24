@@ -53,3 +53,35 @@ class VirtualSensorsResult:
     robots_in_zone: list[str]
     per_robot: dict[str, RobotSensorsResult]
     in_zone: set[str]
+
+
+@dataclass(frozen=True)
+class Obstacle:
+    """Circular obstacle with position, safety radius, and velocity in arena frame."""
+
+    kind: str
+    obstacle_id: int
+    x_m: float
+    y_m: float
+    radius_m: float
+    vx_mps: float
+    vy_mps: float
+
+
+@dataclass(frozen=True)
+class WallSegment:
+    """Line-segment obstacle representing an arena wall or delivery zone border."""
+
+    kind: str
+    x0_m: float
+    y0_m: float
+    x1_m: float
+    y1_m: float
+
+
+@dataclass(frozen=True)
+class ObstacleSet:
+    """Complete set of circular and segment obstacles for a single robot."""
+
+    circles: list[Obstacle]
+    walls: list[WallSegment]
