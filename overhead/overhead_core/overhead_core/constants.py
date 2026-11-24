@@ -253,7 +253,15 @@ MIN_VELOCITY_DT_S: float = 0.005
 VELOCITY_MAX_GAP_S: float = 0.5
 
 # Obstacle safety radii
-RED_CUBE_SAFETY_M: float = 0.17
+# Red cube keep-out radius for the robot centre, built from measured geometry (photos 2026-11-24,
+# about 1.03 mm per pixel): the robot is 0.161 m wide, a cube is about 0.025 m wide, and the pose
+# estimate may be off by about 0.03 m (provisional triangle centre offset plus heading error).
+# The scoop reaches 0.145 m ahead of the centre, further than this radius; the STOP distance
+# covers that direction.
+ROBOT_HALF_WIDTH_M: float = 0.0805
+CUBE_HALF_DIAGONAL_M: float = 0.0177
+POSE_ERROR_MARGIN_M: float = 0.03
+RED_CUBE_SAFETY_M: float = ROBOT_HALF_WIDTH_M + CUBE_HALF_DIAGONAL_M + POSE_ERROR_MARGIN_M
 ROBOT_SAFETY_M: float = 0.17
 CUBE_SAFETY_M: float = 0.05
 CARRY_EXTENSION_M: float = 0.025
