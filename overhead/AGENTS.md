@@ -20,10 +20,11 @@ report** what is needed and why. Do not work around it.
 
 ### The role, in one line
 
-The overhead camera **sees and reports; it never gives orders.** It publishes where things are,
-what is near each robot and how close a collision is. Mission, traffic, paths and speeds belong
-to the fleet. If a task asks the overhead to choose a cube, plan a path, command a robot or
-decide who yields, it is out of scope.
+The overhead camera **sees, reports and relays; it never gives orders.** It publishes where
+things are, what is near each robot and how close a collision is, and it is the only link
+between Perry (the manipulator) and the robots (section 5, phase 2b). Mission, traffic, paths
+and speeds belong to the fleet. If a task asks the overhead to choose a cube, plan a path,
+command a robot, decide who yields or grant the zone, it is out of scope.
 
 ---
 
@@ -173,6 +174,48 @@ least `width / 2` away from every red safety circle; return the blocking ids. Se
 **O13. Wire obstacles into the node.** Subscribe to `/zone/occupant` (`std_msgs/String`),
 compute O8–O11 each cycle, fill the new fields of `/world/sensors`. Only after O7 is merged.
 
+### Phase 2b — Manipulator relay
+
+The overhead group owns the communication with Perry. Perry's arbiter and its contract
+(`multirobot_interfaces`, `/zone/*`) stay unchanged; only the overhead talks to it. Every
+message from Perry is either **for us** (we consume it) or **for a robot** (we forward it
+unchanged). The relay forwards, it never decides: it does not grant, deny, delay or rewrite
+anything.
+
+| From Perry | For | What we do |
+|---|---|---|
+| `/zone/occupant` (heartbeat, 2 Hz) | us | Zone becomes an obstacle for every robot except the occupant (O9) |
+| `/zone/occupant` (heartbeat, 2 Hz) | robots | Republish per robot as `/<robot>/zone/occupant` while it is fresh |
+| `/perry/state` (`gate_closed`, count) | us | Zone obstacle for everyone while the gate is closed; count shown in the viewer |
+| `/zone/request` response | the robot that asked | Return Perry's response as is |
+| `/zone/release` response | the robot that released | Return Perry's response as is |
+
+| From a robot | We forward to Perry |
+|---|---|
+| `/<robot>/zone/request` (`RequestZone`) | `/zone/request`, same request |
+| `/<robot>/zone/release` (`ReleaseZone`) | `/zone/release`, same request |
+
+**O17. Routing rules (core).** `overhead_core/relay.py`, no ROS: given a message kind and its
+fields, return the destinations (`US`, a robot name, or both) and whether the data is still fresh
+(`PERRY_HEARTBEAT_TIMEOUT_S = 2.0`, measured with our own clock from reception). Stale data is
+never forwarded. Tests: every row of the two tables, stale heartbeat dropped, unknown robot
+name rejected.
+
+**O18. Relay node (ros).** `overhead_ros/manipulator_relay_node.py`: subscribes to Perry's
+topics, offers one `RequestZone` / `ReleaseZone` service per robot and calls Perry's services
+asynchronously (never block a callback; time out after `PERRY_CALL_TIMEOUT_S` and return
+`granted=false` / `ok=false` with the timeout logged). Topic and service names in
+`ros_names.py`. Launched from `overhead.launch.py`.
+
+**O19. Heartbeat safety.** If Perry's heartbeat is older than `PERRY_HEARTBEAT_TIMEOUT_S`, stop
+republishing `/<robot>/zone/occupant`, so each robot sees the silence and applies its own
+2 s stop rule. Never publish a heartbeat that did not come from Perry.
+
+**O20. Contract proposal for the relay.** The per-robot names above and the change of who calls
+Perry go in the contract (section 6). Decision D8 today says the fleet requests the zone on
+behalf of each robot; this replaces that path and needs the fleet's and Perry's approval.
+Implement O17–O19 against the proposed names behind parameters until it is approved.
+
 ### Phase 3 — Real hardware
 
 **O14. Calibration checklist on the real arena.** Measure and record in
@@ -209,6 +252,8 @@ Messages are shared by three groups. To add or change anything in `interfaces/ts
 - Triangle colors for Phineas and Ferb (not blue, yellow, red or green).
 - Is the camera exactly above the red dot?
 - Should `WorldState` carry a capture-to-publish latency field?
+- Relay: who calls `/<robot>/zone/request`, the robot's own Pi or the fleet brain on its behalf?
+  And does any Perry message besides the zone ones need to reach the robots?
 
 When one of these blocks a task, implement it behind a parameter with the current default and
 note the question in the PR.
