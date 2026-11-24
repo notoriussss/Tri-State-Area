@@ -1,5 +1,6 @@
 """Package constants and enums for overhead_core."""
 
+import math
 from enum import StrEnum
 
 # Camera and arena geometry constants
@@ -60,3 +61,323 @@ class VirtualSensorEvent(StrEnum):
     ENTERED_ZONE = "entered:zone"
     LEFT_ZONE = "left:zone"
     NEAR_RED_PREFIX = "near:red"
+
+
+class ViewerView(StrEnum):
+    """Supported image views served by the overhead web viewer."""
+
+    RAW = "raw"
+    RECTIFIED = "rectified"
+    MASK = "mask"
+
+
+# Viewer pipeline geometry and detection defaults
+DEFAULT_DARK_THRESH: int = 70
+DEFAULT_ROBOT_MIN_AREA_PX: int = 50
+DEFAULT_RECTIFY_PX_PER_M: float = 500.0
+HEADING_STEP_PX: float = 20.0
+METERS_TO_CM: float = 100.0
+EMPTY_DARK_PIXEL_MIN_COUNT: int = 1
+MIN_CORNER_BOUND_MARGIN_PX: float = 1.0
+
+# Default HSV ranges [H, S, V] matching overhead.yaml
+DEFAULT_CUBE_HSV_RANGES: dict[
+    str,
+    list[tuple[tuple[int, int, int], tuple[int, int, int]]],
+] = {
+    # Lower hue 110 excludes the blue delivery-zone background (~101); cubes are 118-125
+    CubeColor.BLUE.value: [
+        ((110, 80, 25), (135, 255, 255)),
+    ],
+    CubeColor.YELLOW.value: [
+        ((20, 100, 55), (35, 255, 255)),
+    ],
+    CubeColor.RED.value: [
+        ((0, 120, 55), (10, 255, 255)),
+        ((170, 120, 55), (180, 255, 255)),
+    ],
+}
+
+DEFAULT_ROBOT_HSV_RANGES: dict[
+    str,
+    list[tuple[tuple[int, int, int], tuple[int, int, int]]],
+] = {
+    RobotName.PHINEAS.value: [
+        ((40, 100, 100), (80, 255, 255)),
+    ],
+    RobotName.FERB.value: [
+        ((140, 100, 100), (165, 255, 255)),
+    ],
+}
+
+# Viewer drawing colors (BGR) and styles
+COLOR_BGR_BLUE: tuple[int, int, int] = (255, 0, 0)
+COLOR_BGR_YELLOW: tuple[int, int, int] = (0, 230, 230)
+COLOR_BGR_RED: tuple[int, int, int] = (0, 0, 255)
+COLOR_BGR_GREEN: tuple[int, int, int] = (0, 255, 0)
+COLOR_BGR_MAGENTA: tuple[int, int, int] = (255, 0, 255)
+COLOR_BGR_CYAN: tuple[int, int, int] = (255, 255, 0)
+COLOR_BGR_WHITE: tuple[int, int, int] = (255, 255, 255)
+COLOR_BGR_BLACK: tuple[int, int, int] = (0, 0, 0)
+COLOR_BGR_BANNER_BG: tuple[int, int, int] = (0, 0, 180)
+COLOR_BGR_UNKNOWN: tuple[int, int, int] = (200, 200, 200)
+
+CUBE_COLOR_BGR: dict[str, tuple[int, int, int]] = {
+    CubeColor.BLUE.value: COLOR_BGR_BLUE,
+    CubeColor.YELLOW.value: COLOR_BGR_YELLOW,
+    CubeColor.RED.value: COLOR_BGR_RED,
+}
+
+ROBOT_COLOR_BGR: dict[str, tuple[int, int, int]] = {
+    RobotName.PHINEAS.value: COLOR_BGR_GREEN,
+    RobotName.FERB.value: COLOR_BGR_MAGENTA,
+}
+
+VIEWER_CORNER_LABELS: tuple[str, str, str, str] = (
+    "BL",
+    "BR",
+    "TR",
+    "TL",
+)
+CORNER_RADIUS_PX: int = 6
+CUBE_MARKER_RADIUS_PX: int = 8
+ROBOT_TRIANGLE_LENGTH_PX: float = 24.0
+ROBOT_TRIANGLE_HALF_BASE_PX: float = 10.0
+ROBOT_TRIANGLE_REAR_RATIO: float = 0.6
+ROBOT_ARROW_LEN_PX: float = 35.0
+ROBOT_ARROW_TIP_RATIO: float = 0.3
+DRAW_LINE_THICKNESS_PX: int = 2
+LABEL_OUTLINE_THICKNESS_PX: int = 1
+LABEL_OFFSET_X_PX: int = 10
+LABEL_OFFSET_Y_PX: int = -8
+CORNER_LABEL_OFFSET_PX: int = 8
+FONT_SCALE_LABEL: float = 0.45
+FONT_SCALE_BANNER: float = 0.8
+FONT_SCALE_HINT: float = 0.55
+BANNER_HEIGHT_PX: int = 44
+BANNER_TEXT_X_PX: int = 16
+BANNER_TEXT_Y_PX: int = 30
+PLACEHOLDER_TEXT_X_PX: int = 140
+PLACEHOLDER_TEXT_Y_PX: int = 180
+PLACEHOLDER_HINT_Y_PX: int = 220
+MASK_BG_DIM_ALPHA: float = 0.35
+MASK_OVERLAY_ALPHA: float = 0.65
+VIEWER_TEXT_NOT_CALIBRATED: str = "NOT CALIBRATED"
+VIEWER_TEXT_CALIBRATION_HINT: str = "Arena corners not detected"
+
+# Standalone web viewer server and CLI defaults
+DEFAULT_WEB_HOST: str = "0.0.0.0"
+DEFAULT_WEB_PORT: int = 8080
+DEFAULT_CAMERA_INDEX: int = 0
+DEFAULT_CAPTURE_WIDTH_PX: int = 1280
+DEFAULT_CAPTURE_HEIGHT_PX: int = 720
+VIEWER_JPEG_QUALITY: int = 85
+VIEWER_STREAM_FPS_HZ: float = 20.0
+CAPTURE_RETRY_SLEEP_S: float = 0.05
+THREAD_JOIN_TIMEOUT_S: float = 2.0
+FPS_SMOOTHING_ALPHA: float = 0.2
+WINDOWS_PLATFORM: str = "win32"
+
+STATIC_DIR_NAME: str = "static"
+VIEWER_HTML_FILENAME: str = "viewer.html"
+CAPTURES_DIR_NAME: str = "captures"
+CAPTURE_TIMESTAMP_FORMAT: str = "%Y%m%d_%H%M%S_%f"
+JPEG_EXTENSION: str = ".jpg"
+
+HTTP_PATH_INDEX: str = "/"
+HTTP_PATH_STREAM_PREFIX: str = "/stream/"
+HTTP_PATH_STREAM_SUFFIX: str = ".mjpg"
+HTTP_PATH_SNAPSHOT: str = "/snapshot.jpg"
+HTTP_PATH_RECALIBRATE: str = "/recalibrate"
+HTTP_PATH_STATUS: str = "/status"
+HTTP_QUERY_VIEW_KEY: str = "view"
+
+MJPEG_BOUNDARY: str = "frame"
+CONTENT_TYPE_HTML: str = "text/html; charset=utf-8"
+CONTENT_TYPE_JPEG: str = "image/jpeg"
+CONTENT_TYPE_JSON: str = "application/json; charset=utf-8"
+CONTENT_TYPE_MJPEG: str = f"multipart/x-mixed-replace; boundary={MJPEG_BOUNDARY}"
+CACHE_CONTROL_NO_CACHE: str = "no-cache, no-store, must-revalidate"
+
+# Arena calibration validation thresholds
+QUAD_POINT_DIMS: int = 2
+MIN_ARENA_AREA_FRACTION: float = 0.25
+ARENA_ASPECT_TOLERANCE_RATIO: float = 0.15
+
+# Camera state machine timing defaults
+NO_FRAME_TIMEOUT_S: float = 0.5
+CAMERA_RETRY_S: float = 1.0
+
+# Lost robot hold timing default
+ROBOT_HOLD_S: float = 0.5
+
+# Velocity estimation defaults
+VELOCITY_SMOOTHING_ALPHA: float = 0.5
+MIN_VELOCITY_DT_S: float = 0.005
+VELOCITY_MAX_GAP_S: float = 0.5
+
+# Obstacle safety radii
+RED_CUBE_SAFETY_M: float = 0.17
+ROBOT_SAFETY_M: float = 0.17
+CUBE_SAFETY_M: float = 0.05
+CARRY_EXTENSION_M: float = 0.025
+
+
+class ObstacleKind(StrEnum):
+    """Categories of obstacles in the arena safety representation."""
+
+    RED_CUBE = "RED_CUBE"
+    ROBOT = "ROBOT"
+    CUBE = "CUBE"
+    WALL = "WALL"
+    ZONE = "ZONE"
+
+
+# Radar sensing defaults
+RADAR_SECTOR_COUNT: int = 8
+RADAR_RAYS_PER_SECTOR: int = 5
+RADAR_MAX_RANGE_M: float = 2.0
+RAY_PARALLEL_EPSILON: float = 1e-12
+RAY_ENDPOINT_TOLERANCE: float = 1e-9
+
+# Collision assessment thresholds and defaults
+COLLISION_CONE_HALF_ANGLE_RAD: float = math.pi / 3.0
+COLLISION_CONE_RAY_COUNT: int = 13
+COLLISION_SLOW_DIST_M: float = 0.60
+COLLISION_STOP_DIST_M: float = 0.40
+COLLISION_SLOW_TTC_S: float = 2.0
+COLLISION_STOP_TTC_S: float = 1.0
+VELOCITY_ZERO_EPSILON: float = 1e-12
+
+
+class CollisionLevel(StrEnum):
+    """Collision severity levels reported for each robot."""
+
+    CLEAR = "CLEAR"
+    SLOW = "SLOW"
+    STOP = "STOP"
+
+
+# Manipulator relay timeouts and routing categories
+PERRY_HEARTBEAT_TIMEOUT_S: float = 2.0
+PERRY_CALL_TIMEOUT_S: float = 5.0
+
+
+class RelayMessageKind(StrEnum):
+    """Message kinds routed by the manipulator relay."""
+
+    ZONE_OCCUPANT = "ZONE_OCCUPANT"
+    PERRY_STATE = "PERRY_STATE"
+    ZONE_REQUEST_RESPONSE = "ZONE_REQUEST_RESPONSE"
+    ZONE_RELEASE_RESPONSE = "ZONE_RELEASE_RESPONSE"
+    ROBOT_ZONE_REQUEST = "ROBOT_ZONE_REQUEST"
+    ROBOT_ZONE_RELEASE = "ROBOT_ZONE_RELEASE"
+
+
+class RelayDestination(StrEnum):
+    """Target destinations for messages routed by the manipulator relay."""
+
+    US = "US"
+    ROBOT = "ROBOT"
+    PERRY = "PERRY"
+
+
+# Overhead node defaults and calibration timing
+DEFAULT_VIDEO_SOURCE: str = ""
+CALIBRATION_RETRY_S: float = 1.0
+DEFAULT_RATE_HZ: float = 20.0
+DEFAULT_IMAGE_RATE_HZ: float = 5.0
+MIN_MAIN_TIMER_RATE_HZ: float = 1.0
+MIN_IMAGE_TIMER_RATE_HZ: float = 0.5
+DEFAULT_ROBOT_NAMES: tuple[str, ...] = (
+    RobotName.PHINEAS.value,
+    RobotName.FERB.value,
+)
+DEFAULT_DETECTION_CONFIDENCE: float = 1.0
+DEFAULT_IMAGE_JPEG_QUALITY: int = 80
+IMAGE_COMPRESSION_FORMAT: str = "jpeg"
+WARN_THROTTLE_PERIOD_S: float = 5.0
+
+# Overhead node log and service response messages
+LOG_NODE_INITIALIZED: str = "Overhead node initialized."
+LOG_STATE_TRANSITION_FMT: str = "Overhead state transition: {} -> {} (event={})."
+LOG_CAMERA_OPENED: str = "Frame source opened."
+LOG_CAMERA_OPEN_RETRY: str = "Frame source unavailable; retrying reopen."
+LOG_CALIBRATION_SUCCESS: str = "Arena homography calibration succeeded."
+LOG_CALIBRATION_FAILED_FMT: str = "Arena calibration failed: {}"
+LOG_CALIBRATION_INVALID_QUAD: str = "Detected arena quad failed geometry validation."
+LOG_NO_FRAME_DURING_CALIBRATION: str = "No frame available during calibration."
+LOG_IMAGE_ENCODE_FAILED: str = "Failed to JPEG-encode rectified arena image."
+MSG_RECALIBRATE_SUCCESS: str = "Overhead camera recalibrated successfully."
+MSG_RECALIBRATE_FAILED: str = "Overhead camera recalibration failed."
+MSG_RECALIBRATE_UNAVAILABLE: str = "Frame source unavailable for recalibration."
+
+HSV_CHANNEL_COUNT: int = 3
+
+# Empty string sentinels for optional safety and zone fields
+NO_OBSTACLE_KIND: str = ""
+NO_ZONE_OCCUPANT: str = ""
+
+# Manipulator relay node defaults and log messages
+DEFAULT_RELAY_REPUBLISH_RATE_HZ: float = 2.0
+MIN_RELAY_REPUBLISH_RATE_HZ: float = 0.1
+DEFAULT_LEASE_SECONDS: float = 0.0
+DEFAULT_DELIVERED_TOTAL: int = 0
+LOG_RELAY_INITIALIZED_FMT: str = "Manipulator relay node initialized for robots: {}."
+LOG_RELAY_HEARTBEAT_STALE_FMT: str = (
+    "Perry /zone/occupant heartbeat became stale (age={:.2f}s > {:.2f}s); stopping republish."
+)
+LOG_RELAY_HEARTBEAT_RECOVERED: str = "Perry /zone/occupant heartbeat recovered; resuming republish."
+LOG_RELAY_REJECTED_FMT: str = "Rejected {} for unknown or unconfigured robot '{}'."
+LOG_RELAY_PERRY_UNAVAILABLE_FMT: str = (
+    "Perry service '{}' is not ready for robot '{}'; returning failure."
+)
+LOG_RELAY_PERRY_TIMEOUT_FMT: str = "Perry service '{}' timed out after {:.2f}s for robot '{}'."
+LOG_RELAY_PERRY_CALL_FAILED_FMT: str = "Perry service '{}' call failed for robot '{}': {}"
+
+
+class RobotDetector(StrEnum):
+    """Supported robot marker detection backends."""
+
+    TRIANGLE = "triangle"
+    ARUCO = "aruco"
+
+
+# ArUco robot marker detection defaults
+DEFAULT_ROBOT_DETECTOR: RobotDetector = RobotDetector.TRIANGLE
+DEFAULT_ARUCO_DICTIONARY: str = "DICT_4X4_50"
+ARUCO_ID_PHINEAS: int = 0
+ARUCO_ID_FERB: int = 1
+DEFAULT_ARUCO_IDS: tuple[int, ...] = (
+    ARUCO_ID_PHINEAS,
+    ARUCO_ID_FERB,
+)
+DEFAULT_ARUCO_IDS_ARG: str = f"{ARUCO_ID_PHINEAS},{ARUCO_ID_FERB}"
+DEFAULT_ARUCO_HEADING_OFFSET_RAD: float = 0.0
+ARUCO_DICT_PREFIX: str = "DICT_"
+ERR_UNKNOWN_ARUCO_DICTIONARY_FMT: str = "Unknown ArUco dictionary: '{}'."
+ERR_UNKNOWN_ROBOT_DETECTOR_FMT: str = "Unknown robot detector: '{}'."
+
+# Upper area bound rejecting large non-cube blobs such as robot markers
+MAX_CUBE_AREA_PX: int = 1500
+
+# Safety overlay colors, geometry, and blending constants
+COLOR_BGR_AMBER: tuple[int, int, int] = (0, 191, 255)
+COLOR_BGR_GRAY: tuple[int, int, int] = (140, 140, 140)
+COLOR_BGR_ZONE_OUTLINE: tuple[int, int, int] = (255, 180, 0)
+
+COLLISION_LEVEL_COLOR_BGR: dict[CollisionLevel, tuple[int, int, int]] = {
+    CollisionLevel.CLEAR: COLOR_BGR_GREEN,
+    CollisionLevel.SLOW: COLOR_BGR_AMBER,
+    CollisionLevel.STOP: COLOR_BGR_RED,
+}
+
+SAFETY_CIRCLE_ALPHA: float = 0.45
+SAFETY_CIRCLE_RED_THICKNESS_PX: int = 2
+SAFETY_CIRCLE_GRAY_THICKNESS_PX: int = 1
+ROBOT_SAFETY_RING_THICKNESS_PX: int = 3
+RADAR_SPOKE_THICKNESS_PX: int = 2
+RADAR_SPOKE_MAX_LEN_PX: float = 60.0
+ZONE_OUTLINE_THICKNESS_PX: int = 2
+SAFETY_LABEL_OFFSET_Y_PX: int = 18
+STATUS_FLOAT_PRECISION: int = 3

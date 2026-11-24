@@ -5,7 +5,10 @@ from typing import Any
 import cv2
 import numpy as np
 
-from overhead_core.constants import DEFAULT_MIN_AREA_PX
+from overhead_core.constants import (
+    DEFAULT_MIN_AREA_PX,
+    MAX_CUBE_AREA_PX,
+)
 
 
 def detect_cubes(
@@ -14,6 +17,7 @@ def detect_cubes(
     hsv_ranges: dict[str, list[tuple[Any, Any]]],
     *,
     min_area_px: int = DEFAULT_MIN_AREA_PX,
+    max_area_px: int = MAX_CUBE_AREA_PX,
 ) -> list[tuple[str, float, float, float]]:
     """Detects colored cubes within the arena bounds.
 
@@ -22,6 +26,8 @@ def detect_cubes(
         arena_mask: Binary mask with 255 inside the arena and 0 outside (or None).
         hsv_ranges: Dictionary mapping color names to lists of (lower_hsv, upper_hsv) bounds.
         min_area_px: Minimum contour area in pixels to be considered a cube.
+        max_area_px: Maximum contour area in pixels; anything larger is rejected as a
+            non-cube blob (for example, a robot marker).
 
     Returns:
         List of detections formatted as (color, u_px, v_px, area_px).
@@ -73,7 +79,7 @@ def detect_cubes(
 
         for contour in contours:
             area = cv2.contourArea(contour)
-            if area < min_area_px:
+            if area < min_area_px or area > max_area_px:
                 continue
 
             moments = cv2.moments(contour)

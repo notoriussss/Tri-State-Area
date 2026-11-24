@@ -47,9 +47,59 @@ VirtualSensors
 
 > Overhead derives collision alerts (`robot_distance < 0.34 m` / `"near:robot"`) from the existing physical roof triangles (D3)—no physical red/green lights are added to the chassis. Each robot resolves evasion locally with the virtual red/green navigation-light rule, planning and validating clearance from red cubes (`≥ 0.12 m`) and borders before moving. (Adding `"near:robot"` to `overhead_core` requires coordination with `overhead`.)
 
+#### Proposed Obstacle & Collision Fields on `/world/sensors` (O7)
+
+Status: proposal, pending approval from overhead, fleet and manipulator
+
+- **Publisher:** `overhead`
+- **Consumers:** `fleet` (and `viewer_node`)
+- **Rate:** same as `/world/sensors` (target 20 Hz, minimum 15 Hz)
+- **QoS:** best effort, keep last 1
+
+Appended to `VirtualSensors` after the existing fields:
+
+```text
+  obstacles[]             Obstacle
+    kind                  string      "RED_CUBE" | "ROBOT" | "CUBE" | "WALL" | "ZONE"
+    id                    uint32      obstacle identifier (cube id for cubes)
+    x, y                  float64     m, obstacle center in frame "arena"
+    radius                float64     m, safety circle radius
+    vx, vy                float64     m/s, velocity in frame "arena"
+  per_robot_obstacles[]   RobotObstacles
+    name                  string      "phineas" | "ferb"
+    sectors[8]            float64[8]  m, free distance per 45-degree sector CCW from scoop (sector 0 centered on scoop)
+    level                 string      "CLEAR" | "SLOW" | "STOP"
+    time_to_collision     float64     s (-1.0 if none)
+    nearest_kind          string      kind of nearest obstacle ("" if none)
+    nearest_dist          float64     m (-1.0 if none)
+    nearest_bearing       float64     rad, bearing to nearest obstacle relative to the scoop
+```
+
 ### `/world/get` · service (`tsa_interfaces/srv/GetWorld`)
 
 Empty request. Responds with the latest `WorldState` and `VirtualSensors` pair for on-demand queries.
+
+### `/world/corridor_free` · service (`tsa_interfaces/srv/CorridorFree`)
+
+Status: proposal, pending approval from overhead, fleet and manipulator
+
+- **Server:** `overhead`
+- **Consumers:** `fleet`
+- **Rate:** on demand
+- **QoS:** default service QoS
+
+Checks whether the straight corridor from start `A` to goal `G` is clear of blocking obstacles:
+
+```text
+CorridorFree
+  request:
+    ax, ay          float64   m, start point A in frame "arena"
+    gx, gy          float64   m, goal point G in frame "arena"
+    width           float64   m, corridor width
+  response:
+    free            bool      true if no blocking obstacle intersects the corridor
+    blocking_ids[]  uint32    ids of obstacles blocking the corridor
+```
 
 ### `/world/image` · topic · optional (5 Hz)
 
@@ -61,7 +111,7 @@ Each robot runs its own planner, peer-to-peer traffic logic, controller, and HAL
 
 ### `/phineas/plan`, `/ferb/plan` · topic · ~5–10 Hz
 
-Each robot publishes its own `tsa_interfaces/msg/RobotPlan` containing its current state (`IDLE`, `GO_TO_APPROACH`, `PUSH`, `REQUEST_ZONE`, `DELIVER`, `LEAVE`, `WAIT`, `STOPPED`, `RECOVER`), `target_cube_id`, `target_pose` (`geometry_msgs/Pose2D`), and `path` (`geometry_msgs/Point[]`). Used by the peer robot for distributed traffic coordination, by `overhead`'s `viewer_node`, and for logging.
+Each robot publishes its own `tsa_interfaces/msg/RobotPlan` containing its current state (`IDLE`, `GO_TO_APPROACH`, `PUSH`, `REQUEST_ZONE`, `DELIVER`, `LEAVE`, `WAIT`, `STOPPED`, `RECOVER`), `target_cube_id`, `target_pose` (`tsa_interfaces/Pose2D`, since `geometry_msgs/Pose2D` no longer exists in ROS 2 Lyrical), and `path` (`geometry_msgs/Point[]`). Used by the peer robot for distributed traffic coordination, by `overhead`'s `viewer_node`, and for logging.
 
 > Note: `interfaces/tsa_interfaces/` currently also includes `FleetPlan` and `overhead`'s `viewer_node` currently subscribes to `/fleet/plan`; migrating the interface package and `viewer_node` to per-robot plan topics requires a cross-group PR.
 
@@ -84,6 +134,43 @@ Uses the existing `multirobot_interfaces` contract already tested across all thr
 - `/perry/state`: arm state (`gate_closed` = delivery zone closed).
 - Delivery zone lease duration: 60 s.
 
+## Manipulator Relay Through Overhead (O20)
+
+Status: proposal, pending approval from overhead, fleet and manipulator
+
+`overhead` is the only node that talks directly to Perry (`manipulator`: `/zone/request`, `/zone/release`, `/zone/occupant`, and `/perry/state` of type `multirobot_interfaces/msg/RobotState`). Perry's stage-1 arbiter and `multirobot_interfaces` remain unchanged. `overhead` only relays: it never grants, denies, delays, or rewrites any request, response, or heartbeat.
+
+### `/<robot>/zone/request` · service (`multirobot_interfaces/srv/RequestZone`)
+
+- **Server:** `overhead` (forwarding to Perry's `/zone/request`, `multirobot_interfaces/srv/RequestZone`)
+- **Consumers:** `fleet` or onboard `<robot>` (`phineas`, `ferb`)
+- **Rate:** on demand
+- **QoS:** default service QoS
+
+Forwards the `RequestZone` request unchanged to Perry's `/zone/request` and answers with Perry's `RequestZone` response unchanged.
+
+### `/<robot>/zone/release` · service (`multirobot_interfaces/srv/ReleaseZone`)
+
+- **Server:** `overhead` (forwarding to Perry's `/zone/release`, `multirobot_interfaces/srv/ReleaseZone`)
+- **Consumers:** `fleet` or onboard `<robot>` (`phineas`, `ferb`)
+- **Rate:** on demand
+- **QoS:** default service QoS
+
+Forwards the `ReleaseZone` request unchanged to Perry's `/zone/release` and answers with Perry's `ReleaseZone` response unchanged.
+
+### `/<robot>/zone/occupant` · topic (`std_msgs/msg/String`)
+
+- **Publisher:** `overhead` (republishing Perry's `/zone/occupant`, `std_msgs/msg/String`)
+- **Consumers:** `fleet` or onboard `<robot>` (`phineas`, `ferb`)
+- **Rate:** 2 Hz (matching Perry's `/zone/occupant`)
+- **QoS:** default QoS (matching `/zone/occupant`)
+
+Republished by `overhead` only while Perry's `/zone/occupant` heartbeat is fresh. Measured on `overhead`'s own local clock from reception, the heartbeat is stale after `2.0 s`; stale data is never forwarded, and `overhead` never synthesizes a heartbeat that did not come from Perry.
+
+### Compatibility
+
+This proposal replaces the earlier arrangement in which `fleet` called Perry's `/zone/request` and `/zone/release` services directly on behalf of each robot (decision D8, documented under [Manipulator (Unchanged from Stage 1)](#manipulator-unchanged-from-stage-1)) and therefore requires approval from `fleet` and `manipulator`.
+
 ## Suggested QoS Profiles
 
 | Topic / Service | QoS |
@@ -91,3 +178,5 @@ Uses the existing `multirobot_interfaces` contract already tested across all thr
 | `/world/state`, `/world/sensors`, `/world/image` | best effort, keep last 1 (sensor/stream data: latest sample wins) |
 | `/<robot>/status`, `/<robot>/plan` | reliable, keep last 1 |
 | `/world/get`, zone services | default service QoS |
+| `/world/corridor_free`, `/<robot>/zone/request`, `/<robot>/zone/release` (proposal) | default service QoS |
+| `/<robot>/zone/occupant` (proposal) | default QoS (matching `/zone/occupant`) |

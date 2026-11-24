@@ -1,0 +1,9 @@
+# Check whether a straight corridor from A to G is clear of obstacles in frame "arena" (units: meters)
+float64 ax            # meters, start point A x coordinate in frame "arena"
+float64 ay            # meters, start point A y coordinate in frame "arena"
+float64 gx            # meters, goal point G x coordinate in frame "arena"
+float64 gy            # meters, goal point G y coordinate in frame "arena"
+float64 width         # meters, corridor width
+---
+bool free             # true if no blocking obstacle intersects the corridor
+uint32[] blocking_ids # ids of obstacles blocking the corridor
